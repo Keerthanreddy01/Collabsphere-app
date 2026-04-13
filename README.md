@@ -1,24 +1,34 @@
 <div align="center">
 
 ```text
-   ______ ____  _      _               ____   _____  _    _  ______  _____  ______ 
-  / ____// __ \| |    | |        /\   |  _ \ / ____|| |  | ||  ____||  __ \|  ____|
- | |    | |  | | |    | |       /  \  | |_) | (___  | |__| || |__   | |__) || |__   
- | |    | |  | | |    | |      / /\ \ |  _ < \___ \ |  __  ||  __|  |  _  / |  __|  
- | |____| |__| | |____| |____ / ____ \| |_) |____) || |  | || |____ | | \ \ | |____ 
-  \______\____/|______|______/_/    \_\____/|_____/ |_|  |_||______||_|  \_\|______|
+ ██████╗  ██████╗ ██╗     ██╗      █████╗ ██████╗ ███████╗██████╗ ██╗  ██╗███████╗██████╗ ███████╗
+██╔════╝ ██╔═══██╗██║     ██║     ██╔══██╗██╔══██╗██╔════╝██╔══██╗██║  ██║██╔════╝██╔══██╗██╔════╝
+██║      ██║   ██║██║     ██║     ███████║██████╔╝███████╗██████╔╝███████║█████╗  ██████╔╝█████╗  
+██║      ██║   ██║██║     ██║     ██╔══██║██╔══██╗╚════██║██╔═══╝ ██╔══██║██╔══╝  ██╔══██╗██╔══╝  
+╚██████╗ ╚██████╔╝███████╗███████╗██║  ██║██████╔╝███████║██║     ██║  ██║███████╗██║  ██║███████╗
+ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝
 ```
 
-### Where teams move faster. Together.
-
-[![Platform](https://img.shields.io/badge/PLATFORM-IOS%20%7C%20ANDROID%20%7C%20WEB-111111?style=for-the-badge&logo=apple)](https://expo.dev/)
-[![TypeScript](https://img.shields.io/badge/TYPESCRIPT-5.0%2B-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Expo](https://img.shields.io/badge/EXPO-54%2B-000020?style=for-the-badge&logo=expo)](https://expo.dev/)
-[![License](https://img.shields.io/badge/LICENSE-MIT-44CC11?style=for-the-badge)](./LICENSE)
-
-</div>
+<p align="center">
+  <b>Where teams move faster. Together.</b>
+</p>
 
 ---
+
+<p align="center">
+  <img src="https://img.shields.io/badge/PLATFORM-IOS%20%7C%20ANDROID%20%7C%20WEB-222222?style=for-the-badge&logo=apple" />
+  <img src="https://img.shields.io/badge/TYPESCRIPT-5.0%2B-3178C6?style=for-the-badge&logo=typescript" />
+  <img src="https://img.shields.io/badge/NEXT.JS-15%2B-000000?style=for-the-badge&logo=nextdotjs" />
+  <img src="https://img.shields.io/badge/EXPO-54%2B-000020?style=for-the-badge&logo=expo" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/LICENSE-MIT-44CC11?style=for-the-badge" />
+</p>
+
+---
+
+</div>
 
 ## 🚀 Overview
 
