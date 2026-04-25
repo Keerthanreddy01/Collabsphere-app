@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -11,224 +11,263 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Lucid from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { Typography } from '../components/Typography';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
-// Bulletproof Icon Resolver
 const Icon = ({ name, ...props }: { name: string; [key: string]: any }) => {
   const IconComponent = (Lucid as any)[name];
   if (!IconComponent) return null;
   return <IconComponent {...props} />;
 };
 
+// ─── Memoized Room Card ─────────────────────────────────────────────
+const RoomCard = memo(({ title, members, status, color, image, index }: any) => (
+  <Animated.View
+    entering={FadeInRight.delay(index * 120).springify().damping(20)}
+    style={styles.roomCard}
+  >
+    <Image source={{ uri: image }} style={styles.roomImage} />
+    <View style={styles.roomOverlay}>
+      <View style={[styles.statusBadge, { backgroundColor: color }]}>
+        <Typography style={styles.statusBadgeText}>{status}</Typography>
+      </View>
+      <View>
+        <Typography style={styles.roomTitle}>{title}</Typography>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+          <Icon name="Users" size={13} color="#FFF" />
+          <Typography style={styles.membersCount}>{members} ACTIVE</Typography>
+        </View>
+      </View>
+    </View>
+  </Animated.View>
+));
+
+// ─── Memoized Workshop Item ─────────────────────────────────────────
+const WorkshopItem = memo(({ title, time, host, rsvps, onPressHost, index }: any) => (
+  <Animated.View entering={FadeInDown.delay(index * 100).springify().damping(20)}>
+    <TouchableOpacity style={styles.workshopItem} onPress={onPressHost} activeOpacity={0.85}>
+      <View style={[styles.workshopIcon, { backgroundColor: '#FFEB3B' }]}>
+        <Icon name="Calendar" size={22} color="#000" />
+      </View>
+      <View style={{ flex: 1, marginLeft: 18 }}>
+        <Typography style={styles.workshopTitle}>{title}</Typography>
+        <Typography style={styles.workshopMeta}>
+          {time} • BY {host.toUpperCase()}
+        </Typography>
+      </View>
+      <View style={styles.rsvpBadge}>
+        <Typography style={styles.rsvpText}>{rsvps}</Typography>
+      </View>
+    </TouchableOpacity>
+  </Animated.View>
+));
+
+// ─── Memoized Project Card ──────────────────────────────────────────
+const ProjectCard = memo(({ name, stack, mission, role, onPress, index }: any) => (
+  <Animated.View entering={FadeInDown.delay(200 + index * 100).springify().damping(20)}>
+    <TouchableOpacity style={styles.projectCard} onPress={onPress} activeOpacity={0.85}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <View style={{ flex: 1, marginRight: 12 }}>
+          <Typography style={styles.projNameText}>{name}</Typography>
+          <Typography style={styles.projStackText}>{stack}</Typography>
+        </View>
+        <View style={styles.roleBadge}>
+          <Typography style={styles.roleBadgeText}>{role}</Typography>
+        </View>
+      </View>
+      <Typography style={styles.projMissionText}>{mission}</Typography>
+      <View style={styles.projectFooter}>
+        <View style={styles.priorityBox}>
+          <Icon name="Zap" size={15} color="#000" />
+          <Typography style={styles.priorityText}>HIGH PRIORITY</Typography>
+        </View>
+        <View style={styles.applySmallBtn}>
+          <Typography style={styles.applyText}>APPLY NOW</Typography>
+        </View>
+      </View>
+    </TouchableOpacity>
+  </Animated.View>
+));
+
+// ─── Main Screen ────────────────────────────────────────────────────
 export const SquadScreen = ({ navigation }: any) => {
+  const ROOM_CARDS = [
+    {
+      title: 'NEXUS PROTOCOL',
+      members: 12,
+      status: 'DEEP WORK',
+      color: '#2979FF',
+      image: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=400',
+    },
+    {
+      title: 'QUANTUM ML',
+      members: 5,
+      status: 'CODE REVIEW',
+      color: '#FF1744',
+      image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400',
+    },
+    {
+      title: 'WEB3 LABS',
+      members: 8,
+      status: 'SHIPPING',
+      color: '#00E676',
+      image: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400',
+    },
+  ];
+
   return (
-    <View style={[styles.container, { backgroundColor: '#FFEB3B' }]}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-           <Typography style={styles.headerTitle}>SQUADS</Typography>
-           <TouchableOpacity style={styles.addBtn}>
-              <Icon name="Plus" color="#000" size={28} />
-           </TouchableOpacity>
+          <Typography style={styles.headerTitle}>SQUADS</Typography>
+          <TouchableOpacity style={styles.addBtn} activeOpacity={0.85}>
+            <Icon name="Plus" color="#000" size={26} />
+          </TouchableOpacity>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-           
-           {/* Section 1: Active Collab Rooms */}
-           <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                 <Typography style={styles.sectionTitle}>COLLAB ROOMS</Typography>
-                 <TouchableOpacity>
-                   <Typography style={styles.seeAllText}>VIEW ALL</Typography>
-                 </TouchableOpacity>
-              </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll} contentContainerStyle={{ paddingRight: 50 }}>
-                 <RoomCard 
-                   title="NEXUS PROTOCOL" 
-                   members={12} 
-                   status="DEEP WORK" 
-                   color="#2979FF"
-                   image="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=400"
-                 />
-                 <RoomCard 
-                   title="QUANTUM ML" 
-                   members={5} 
-                   status="CODE REVIEW" 
-                   color="#FF1744"
-                   image="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400"
-                 />
-              </ScrollView>
-           </View>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          decelerationRate="fast"
+          scrollEventThrottle={16}
+        >
+          {/* ── Collab Rooms ─────────────────────────── */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Typography style={styles.sectionTitle}>COLLAB ROOMS</Typography>
+              <TouchableOpacity activeOpacity={0.85}>
+                <Typography style={styles.seeAllText}>VIEW ALL</Typography>
+              </TouchableOpacity>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.horizontalScroll}
+              contentContainerStyle={{ paddingRight: 50 }}
+              decelerationRate="fast"
+            >
+              {ROOM_CARDS.map((card, idx) => (
+                <RoomCard key={card.title} {...card} index={idx} />
+              ))}
+            </ScrollView>
+          </View>
 
-           {/* Section 2: Technical Workshops */}
-           <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                  <Typography style={styles.sectionTitle}>WORKSHOPS</Typography>
-               </View>
-               <View style={styles.workshopList}>
-                  <WorkshopItem 
-                     title="RUST MEMORY SAFETY" 
-                     time="TODAY, 6:00 PM"
-                     host="Alex_Dev"
-                     rsvps={142}
-                     onPressHost={() => navigation.navigate('Chat', { name: 'Alex_Dev' })}
-                  />
-                  <WorkshopItem 
-                     title="SCALING LLMS" 
-                     time="TOMORROW, 10:00 AM"
-                     host="Marcus_AI"
-                     rsvps={289}
-                     onPressHost={() => navigation.navigate('Chat', { name: 'Marcus_AI' })}
-                  />
-               </View>
-           </View>
+          {/* ── Workshops ────────────────────────────── */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Typography style={styles.sectionTitle}>WORKSHOPS</Typography>
+            </View>
+            <View style={styles.workshopList}>
+              <WorkshopItem
+                index={0}
+                title="RUST MEMORY SAFETY"
+                time="TODAY, 6:00 PM"
+                host="Alex_Dev"
+                rsvps={142}
+                onPressHost={() => navigation.navigate('Chat', { name: 'Alex_Dev' })}
+              />
+              <WorkshopItem
+                index={1}
+                title="SCALING LLMS"
+                time="TOMORROW, 10:00 AM"
+                host="Marcus_AI"
+                rsvps={289}
+                onPressHost={() => navigation.navigate('Chat', { name: 'Marcus_AI' })}
+              />
+            </View>
+          </View>
 
-           {/* Section 3: Open Roles (Recruitment) */}
-           <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                  <Typography style={styles.sectionTitle}>OPEN MISSIONS</Typography>
-               </View>
-               
-               <ProjectCard 
-                 name="AROMI FRONTEND"
-                 stack="REACT NATIVE • REANIMATED"
-                 mission="Building a world-class health companion for rural regions."
-                 role="LEAD UI BUILDER"
-                 onPress={() => navigation.navigate('Chat', { name: 'AroMi Team' })}
-               />
-
-               <ProjectCard 
-                 name="CHAINLINK BRIDGE"
-                 stack="SOLIDITY • RUST"
-                 mission="Trustless cross-chain asset migration protocol."
-                 role="CONTRACT DEV"
-                 onPress={() => navigation.navigate('Chat', { name: 'ChainLink Team' })}
-               />
-           </View>
+          {/* ── Open Missions ────────────────────────── */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Typography style={styles.sectionTitle}>OPEN MISSIONS</Typography>
+            </View>
+            <ProjectCard
+              index={0}
+              name="AROMI FRONTEND"
+              stack="REACT NATIVE • REANIMATED"
+              mission="Building a world-class health companion for rural regions."
+              role="LEAD UI BUILDER"
+              onPress={() => navigation.navigate('Chat', { name: 'AroMi Team' })}
+            />
+            <ProjectCard
+              index={1}
+              name="CHAINLINK BRIDGE"
+              stack="SOLIDITY • RUST"
+              mission="Trustless cross-chain asset migration protocol."
+              role="CONTRACT DEV"
+              onPress={() => navigation.navigate('Chat', { name: 'ChainLink Team' })}
+            />
+          </View>
         </ScrollView>
       </SafeAreaView>
-      
-      {/* Floating Action Bar */}
+
+      {/* Floating Network Bar */}
       <View style={styles.bottomBar}>
-         <View style={styles.barInner}>
-            <View style={styles.barMeta}>
-               <Typography style={styles.barLabel}>NETWORK STATUS</Typography>
-               <Typography style={styles.barValue}>● ACTIVE SYNCHRONIZATION</Typography>
-            </View>
-            <TouchableOpacity style={styles.createBtn}>
-               <Typography style={styles.createBtnText}>NEW PROJECT</Typography>
-            </TouchableOpacity>
-         </View>
+        <View style={styles.barInner}>
+          <View style={styles.barMeta}>
+            <Typography style={styles.barLabel}>NETWORK STATUS</Typography>
+            <Typography style={styles.barValue}>● ACTIVE SYNCHRONIZATION</Typography>
+          </View>
+          <TouchableOpacity style={styles.createBtn} activeOpacity={0.85}>
+            <Typography style={styles.createBtnText}>NEW PROJECT</Typography>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 };
 
-const RoomCard = ({ title, members, status, color, image }: any) => (
-  <View style={styles.roomCard}>
-    <Image source={{ uri: image }} style={styles.roomImage} />
-    <View style={styles.roomOverlay}>
-       <View style={[styles.statusBadge, { backgroundColor: color }]}>
-          <Typography style={styles.statusBadgeText}>{status}</Typography>
-       </View>
-       <View>
-          <Typography style={styles.roomTitle}>{title}</Typography>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-             <Icon name="Users" size={14} color="#FFF" />
-             <Typography style={styles.membersCount}>{members} ACTIVE</Typography>
-          </View>
-       </View>
-    </View>
-  </View>
-);
-
-const WorkshopItem = ({ title, time, host, rsvps, onPressHost }: any) => (
-  <TouchableOpacity style={styles.workshopItem} onPress={onPressHost}>
-     <View style={[styles.workshopIcon, { backgroundColor: '#FFEB3B' }]}>
-        <Icon name="Calendar" size={24} color="#000" />
-     </View>
-     <View style={{ flex: 1, marginLeft: 20 }}>
-        <Typography style={styles.workshopTitle}>{title}</Typography>
-        <Typography style={styles.workshopMeta}>{time} • BY {host.toUpperCase()}</Typography>
-     </View>
-     <View style={styles.rsvpBadge}>
-        <Typography style={styles.rsvpText}>{rsvps}</Typography>
-     </View>
-  </TouchableOpacity>
-);
-
-const ProjectCard = ({ name, stack, mission, role, onPress }: any) => (
-  <TouchableOpacity style={styles.projectCard} onPress={onPress}>
-     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <View style={{ flex: 1 }}>
-           <Typography style={styles.projNameText}>{name}</Typography>
-           <Typography style={styles.projStackText}>{stack}</Typography>
-        </View>
-        <View style={styles.roleBadge}>
-           <Typography style={styles.roleBadgeText}>{role}</Typography>
-        </View>
-     </View>
-     <Typography style={styles.projMissionText}>
-        {mission}
-     </Typography>
-     <View style={styles.projectFooter}>
-        <View style={styles.priorityBox}>
-           <Icon name="Zap" size={16} color="#000" />
-           <Typography style={styles.priorityText}>HIGH PRIORITY</Typography>
-        </View>
-        <View style={styles.applySmallBtn}>
-           <Typography style={styles.applyText}>APPLY</Typography>
-        </View>
-     </View>
-  </TouchableOpacity>
-);
-
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#FFEB3B' },
   safeArea: { flex: 1 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 25,
-    paddingVertical: 20,
+    paddingVertical: 18,
   },
   headerTitle: { fontSize: 36, fontWeight: '900', color: '#000', letterSpacing: -2 },
   addBtn: {
-     width: 60,
-     height: 60,
-     borderRadius: 30,
-     backgroundColor: '#FFF',
-     justifyContent: 'center',
-     alignItems: 'center',
-     borderWidth: 3,
-     borderColor: '#000',
-     elevation: 8,
-     shadowColor: '#000',
-     shadowOpacity: 1,
-     shadowRadius: 0,
-     shadowOffset: { width: 4, height: 4 }
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#000',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    shadowOffset: { width: 4, height: 4 },
   },
   scrollContent: { paddingBottom: 220 },
-  section: { marginTop: 35, paddingHorizontal: 25 },
-  sectionHeader: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: 20 
+  section: { marginTop: 30, paddingHorizontal: 25 },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 18,
   },
-  sectionTitle: { fontSize: 24, fontWeight: '900', color: '#000', letterSpacing: -1 },
-  seeAllText: { fontSize: 13, fontWeight: '900', color: '#000', textDecorationLine: 'underline' },
+  sectionTitle: { fontSize: 22, fontWeight: '900', color: '#000', letterSpacing: -1 },
+  seeAllText: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#000',
+    textDecorationLine: 'underline',
+  },
   horizontalScroll: { marginHorizontal: -25, paddingLeft: 25 },
   roomCard: {
     width: 260,
-    height: 180,
-    borderRadius: 35,
-    marginRight: 20,
+    height: 178,
+    borderRadius: 34,
+    marginRight: 18,
     overflow: 'hidden',
     borderWidth: 4,
     borderColor: '#000',
@@ -237,76 +276,147 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 1,
     shadowRadius: 0,
-    shadowOffset: { width: 8, height: 8 }
+    shadowOffset: { width: 8, height: 8 },
   },
-  roomImage: { ...StyleSheet.absoluteFillObject, opacity: 0.6 },
-  roomOverlay: { ...StyleSheet.absoluteFillObject, padding: 25, justifyContent: 'space-between' },
-  statusBadge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, borderWidth: 2, borderColor: '#000' },
+  roomImage: { ...StyleSheet.absoluteFillObject, opacity: 0.55 },
+  roomOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    padding: 22,
+    justifyContent: 'space-between',
+  },
+  statusBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#000',
+  },
   statusBadgeText: { color: '#000', fontWeight: '900', fontSize: 10 },
-  roomTitle: { fontSize: 22, fontWeight: '900', color: '#FFF' },
-  membersCount: { marginLeft: 8, color: '#FFF', fontWeight: '900', fontSize: 11 },
-  workshopList: { gap: 20 },
+  roomTitle: { fontSize: 21, fontWeight: '900', color: '#FFF' },
+  membersCount: { marginLeft: 7, color: '#FFF', fontWeight: '900', fontSize: 11 },
+
+  workshopList: { gap: 16 },
   workshopItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    padding: 24,
-    borderRadius: 30,
+    padding: 22,
+    borderRadius: 28,
     borderWidth: 3,
     borderColor: '#000',
     elevation: 10,
     shadowColor: '#000',
     shadowOpacity: 1,
     shadowRadius: 0,
-    shadowOffset: { width: 6, height: 6 }
+    shadowOffset: { width: 6, height: 6 },
   },
-  workshopIcon: { width: 54, height: 54, borderRadius: 12, borderWidth: 2, borderColor: '#000', justifyContent: 'center', alignItems: 'center' },
-  workshopTitle: { fontSize: 17, fontWeight: '900', color: '#000' },
-  workshopMeta: { fontSize: 11, color: 'rgba(0,0,0,0.4)', fontWeight: '900', marginTop: 4 },
-  rsvpBadge: { backgroundColor: '#FFEB3B', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 15, borderWidth: 2, borderColor: '#000' },
-  rsvpText: { color: '#000', fontWeight: '900', fontSize: 14 },
+  workshopIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  workshopTitle: { fontSize: 16, fontWeight: '900', color: '#000' },
+  workshopMeta: { fontSize: 10, color: 'rgba(0,0,0,0.4)', fontWeight: '900', marginTop: 4 },
+  rsvpBadge: {
+    backgroundColor: '#FFEB3B',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#000',
+  },
+  rsvpText: { color: '#000', fontWeight: '900', fontSize: 13 },
+
   projectCard: {
     backgroundColor: '#FFF',
-    borderRadius: 40,
-    padding: 25,
+    borderRadius: 38,
+    padding: 22,
     borderWidth: 4,
     borderColor: '#000',
-    marginBottom: 25,
-    elevation: 15,
+    marginBottom: 20,
+    elevation: 12,
     shadowColor: '#000',
     shadowOpacity: 1,
     shadowRadius: 0,
-    shadowOffset: { width: 10, height: 10 }
+    shadowOffset: { width: 8, height: 8 },
   },
-  projNameText: { fontSize: 24, fontWeight: '900', color: '#000', letterSpacing: -1 },
-  projStackText: { fontSize: 12, fontWeight: '900', color: '#2979FF', marginTop: 4 },
-  roleBadge: { backgroundColor: '#00E676', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, borderWidth: 2, borderColor: '#000' },
-  roleBadgeText: { fontWeight: '900', fontSize: 10, color: '#000' },
-  projMissionText: { fontSize: 16, color: '#444', marginTop: 20, fontWeight: '700', lineHeight: 22 },
-  projectFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 25, paddingTop: 20, borderTopWidth: 2, borderTopColor: '#000', borderStyle: 'dashed' },
-  priorityBox: { flexDirection: 'row', alignItems: 'center' },
-  priorityText: { marginLeft: 10, color: '#000', fontWeight: '900', fontSize: 11 },
-  applySmallBtn: { backgroundColor: '#000', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
-  applyText: { color: '#FFF', fontWeight: '900', fontSize: 13 },
+  projNameText: { fontSize: 22, fontWeight: '900', color: '#000', letterSpacing: -1 },
+  projStackText: { fontSize: 11, fontWeight: '900', color: '#2979FF', marginTop: 4 },
+  roleBadge: {
+    backgroundColor: '#00E676',
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#000',
+  },
+  roleBadgeText: { fontWeight: '900', fontSize: 9, color: '#000' },
+  projMissionText: {
+    fontSize: 14,
+    color: '#444',
+    marginTop: 18,
+    fontWeight: '700',
+    lineHeight: 20,
+  },
+  projectFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 22,
+    paddingTop: 18,
+    borderTopWidth: 2,
+    borderTopColor: '#000',
+    borderStyle: 'dashed',
+  },
+  priorityBox: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  priorityText: { color: '#000', fontWeight: '900', fontSize: 11 },
+  applySmallBtn: {
+    backgroundColor: '#000',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  applyText: { color: '#FFF', fontWeight: '900', fontSize: 12 },
+
   bottomBar: {
     position: 'absolute',
-    bottom: 25,
+    bottom: 110,    // sits above the tab bar
     left: 20,
     right: 20,
     backgroundColor: '#FFF',
-    borderRadius: 40,
+    borderRadius: 38,
     borderWidth: 4,
     borderColor: '#000',
-    elevation: 20,
+    elevation: 18,
     shadowColor: '#000',
     shadowOpacity: 1,
     shadowRadius: 0,
-    shadowOffset: { width: 0, height: 10 }
+    shadowOffset: { width: 0, height: 8 },
   },
-  barInner: { padding: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  barInner: {
+    padding: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   barMeta: { flex: 1 },
-  barLabel: { fontSize: 10, fontWeight: '900', color: 'rgba(0,0,0,0.4)', letterSpacing: 1 },
-  barValue: { fontSize: 12, fontWeight: '900', color: '#00E676', marginTop: 2 },
-  createBtn: { backgroundColor: '#000', paddingHorizontal: 25, paddingVertical: 15, borderRadius: 25 },
-  createBtnText: { color: '#FFF', fontWeight: '900', fontSize: 14 }
+  barLabel: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: 'rgba(0,0,0,0.4)',
+    letterSpacing: 1,
+  },
+  barValue: { fontSize: 11, fontWeight: '900', color: '#00E676', marginTop: 2 },
+  createBtn: {
+    backgroundColor: '#000',
+    paddingHorizontal: 22,
+    paddingVertical: 13,
+    borderRadius: 24,
+  },
+  createBtnText: { color: '#FFF', fontWeight: '900', fontSize: 13 },
 });
