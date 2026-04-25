@@ -5,11 +5,12 @@ import {
   ScrollView, 
   TouchableOpacity, 
   Image, 
-  Dimensions 
+  Dimensions,
+  StatusBar,
+  Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Lucid from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Typography } from '../components/Typography';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
@@ -25,67 +26,68 @@ const Icon = ({ name, ...props }: { name: string; [key: string]: any }) => {
 const FEED_DATA = [
   {
     id: '1',
-    user: 'Alex_Dev',
+    user: 'ALEX_DEV',
     avatar: 'https://i.pravatar.cc/100?u=alex',
-    time: '20m ago',
+    time: '20M AGO',
     type: 'SHIPPING',
-    tag: 'Rust',
-    title: 'Integrated Vector Search @Collabsphere',
+    tag: 'RUST',
+    title: 'VECTOR SEARCH INTEGRATED',
     content: 'Finally moved to Qdrant for the matchmaking engine. Latency dropped from 450ms to 42ms. Absolute game changer for the discovery orbit! 🚀',
     repo: 'collabsphere/core-engine',
     boosts: '124',
     comments: '18',
-    color: '#10B981',
+    color: '#00E676',
     icon: 'Rocket'
   },
   {
     id: '2',
-    user: 'Sarah_Codes',
+    user: 'SARAH_CODES',
     avatar: 'https://i.pravatar.cc/100?u=sarah',
-    time: '2h ago',
+    time: '2H AGO',
     type: 'HELP_NEEDED',
-    tag: 'Next.js',
-    title: 'Hydration Error in Production 💀',
+    tag: 'NEXT.JS',
+    title: 'HYDRATION ERROR IN PROD',
     content: 'Getting a weird hydration mismatch only on the pricing page. It works fine locally. Anyone seen this with Framer Motion + Next 14?',
     repo: 'nexus-app/frontend',
     boosts: '42',
     comments: '56',
-    color: '#F43F5E',
+    color: '#FF1744',
     icon: 'HelpCircle'
   },
   {
     id: '3',
-    user: 'Marcus_AI',
+    user: 'MARCUS_AI',
     avatar: 'https://i.pravatar.cc/100?u=marcus',
-    time: '5h ago',
+    time: '5H AGO',
     type: 'SOLVED',
-    tag: 'Python',
-    title: 'Optimized LLM Inference',
+    tag: 'PYTHON',
+    title: 'OPTIMIZED LLM INFERENCE',
     content: 'Reduced memory footprint by 60% using 4-bit quantization with BitsAndBytes. Check the PR for benchmarks.',
     repo: 'quantum-ml/v3',
     boosts: '890',
     comments: '12',
-    color: '#8B5CF6',
+    color: '#2979FF',
     icon: 'CheckCircle'
   }
 ];
 
 export const SocialFeedScreen = () => {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: '#FFEB3B' }]}>
+      <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.safeArea}>
         {/* Builder Header */}
         <View style={styles.header}>
            <TouchableOpacity style={styles.typeSelector}>
-              <Typography variant="bodyBold" color="#FFFFFF" style={{ fontSize: 18 }}>The Feed</Typography>
-              <Icon name="ChevronDown" color="#FFFFFF" size={16} style={{ marginLeft: 4 }} />
+              <Typography style={styles.headerTitle}>THE FEED</Typography>
+              <Icon name="ChevronDown" color="#000" size={24} style={{ marginLeft: 8 }} />
            </TouchableOpacity>
            <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity style={styles.headerIcon}>
-                 <Icon name="Github" color="#FFFFFF" size={20} />
+                 <Icon name="Github" color="#000" size={24} />
               </TouchableOpacity>
               <TouchableOpacity style={styles.headerIcon}>
-                 <Icon name="Bell" color="#FFFFFF" size={20} />
+                 <Icon name="Bell" color="#000" size={24} />
               </TouchableOpacity>
            </View>
         </View>
@@ -94,10 +96,10 @@ export const SocialFeedScreen = () => {
            {/* Technical Creation Chips */}
            <View style={styles.creationBar}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipList}>
-                 <TechChip iconName="Code2" label="Snippet" color="#3B82F6" />
-                 <TechChip iconName="Rocket" label="Shipping" color="#10B981" />
-                 <TechChip iconName="HelpCircle" label="Help" color="#F43F5E" />
-                 <TechChip iconName="Terminal" label="Tool" color="#F59E0B" />
+                 <TechChip iconName="Code2" label="SNIPPET" color="#2979FF" />
+                 <TechChip iconName="Rocket" label="SHIPPING" color="#00E676" />
+                 <TechChip iconName="HelpCircle" label="HELP" color="#FF1744" />
+                 <TechChip iconName="Terminal" label="TOOL" color="#FFD600" />
               </ScrollView>
            </View>
 
@@ -109,38 +111,40 @@ export const SocialFeedScreen = () => {
                    {/* Card Top: User & Context */}
                    <View style={styles.postHeader}>
                       <View style={styles.userInfo}>
-                         <Image source={{ uri: post.avatar }} style={styles.avatar} />
-                         <View style={{ marginLeft: 12 }}>
+                         <View style={styles.avatarBorder}>
+                            <Image source={{ uri: post.avatar }} style={styles.avatar} />
+                         </View>
+                         <View style={{ marginLeft: 16 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                               <Typography variant="bodyBold" color="#FFFFFF">{post.user}</Typography>
-                               <View style={[styles.typeBadge, { borderColor: post.color }]}>
-                                  <Typography variant="caption" color={post.color} style={styles.typeLabel}>{post.type}</Typography>
+                               <Typography style={styles.userNameText}>{post.user}</Typography>
+                               <View style={[styles.typeBadge, { backgroundColor: post.color }]}>
+                                  <Typography style={styles.typeLabel}>{post.type}</Typography>
                                 </View>
                             </View>
-                            <Typography variant="caption" color="rgba(255,255,255,0.4)">{post.time} • {post.tag}</Typography>
+                            <Typography style={styles.metaText}>{post.time} • {post.tag}</Typography>
                          </View>
                       </View>
                       <TouchableOpacity>
-                         <Icon name="MoreHorizontal" color="rgba(255,255,255,0.4)" size={20} />
+                         <Icon name="MoreHorizontal" color="#000" size={24} />
                       </TouchableOpacity>
                    </View>
 
                    {/* Card Body: Technical Update */}
-                   <TouchableOpacity style={styles.contentBox} activeOpacity={0.95}>
+                   <TouchableOpacity style={styles.contentBox} activeOpacity={0.9}>
                       <View style={styles.contentHead}>
-                         <Typography variant="h3" color="#FFFFFF" style={styles.postTitle}>{post.title}</Typography>
-                         {post.type === 'SOLVED' && <Icon name="CheckCircle" size={18} color="#10B981" />}
+                         <Typography style={styles.postTitle}>{post.title}</Typography>
+                         {post.type === 'SOLVED' && <Icon name="CheckCircle" size={22} color="#00E676" />}
                       </View>
                       
-                      <Typography variant="body" color="rgba(255,255,255,0.7)" style={styles.contentText}>
+                      <Typography style={styles.contentText}>
                          {post.content}
                       </Typography>
 
                       {/* GitHub Link Injection */}
                       <View style={styles.repoLink}>
-                         <Icon name="Github" size={12} color="rgba(255,255,255,0.4)" />
-                         <Typography variant="caption" color="rgba(255,255,255,0.4)" style={{ marginLeft: 6, flex: 1 }}>{post.repo}</Typography>
-                         <Icon name="ExternalLink" size={12} color="rgba(255,255,255,0.4)" />
+                         <Icon name="Github" size={16} color="#000" />
+                         <Typography style={styles.repoText}>{post.repo}</Typography>
+                         <Icon name="ArrowRight" size={16} color="#000" />
                       </View>
                    </TouchableOpacity>
 
@@ -148,18 +152,18 @@ export const SocialFeedScreen = () => {
                    <View style={styles.postFooter}>
                       <View style={styles.engagement}>
                          <TouchableOpacity style={styles.boostBtn}>
-                            <Icon name="Zap" color="#EAB308" size={18} fill="#EAB308" />
-                            <Typography variant="caption" color="#FFFFFF" style={{ marginLeft: 6, fontWeight: '800' }}>{post.boosts}</Typography>
+                            <Icon name="Zap" color="#000" size={20} />
+                            <Typography style={styles.engagementCount}>{post.boosts}</Typography>
                          </TouchableOpacity>
                          
-                         <TouchableOpacity style={styles.simpleBtn}>
-                            <Icon name="MessageSquare" color="rgba(255,255,255,0.6)" size={18} />
-                            <Typography variant="caption" color="rgba(255,255,255,0.6)" style={{ marginLeft: 6 }}>{post.comments}</Typography>
+                         <TouchableOpacity style={styles.commentBtn}>
+                            <Icon name="MessageSquare" color="#000" size={20} />
+                            <Typography style={styles.engagementCount}>{post.comments}</Typography>
                          </TouchableOpacity>
                       </View>
                       
-                      <TouchableOpacity style={styles.simpleBtn}>
-                         <Icon name="Share2" color="rgba(255,255,255,0.6)" size={18} />
+                      <TouchableOpacity style={styles.shareBtn}>
+                         <Icon name="Share2" color="#000" size={20} />
                       </TouchableOpacity>
                    </View>
                 </Animated.View>
@@ -172,156 +176,148 @@ export const SocialFeedScreen = () => {
 };
 
 const TechChip = ({ iconName, label, color }: { iconName: string, label: string, color: string }) => (
-  <TouchableOpacity style={styles.chip}>
-     <Icon name={iconName} color={color} size={18} />
-     <Typography variant="caption" color="#FFFFFF" style={{ marginLeft: 8, fontWeight: '700' }}>{label}</Typography>
+  <TouchableOpacity style={[styles.chip, { backgroundColor: color }]}>
+     <Icon name={iconName} color="#000" size={20} />
+     <Typography style={styles.chipLabel}>{label}</Typography>
   </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-  safeArea: {
-    flex: 1,
-  },
+  container: { flex: 1 },
+  safeArea: { flex: 1 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 25,
+    paddingVertical: 20,
   },
-  typeSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  headerTitle: { fontSize: 32, fontWeight: '900', color: '#000', letterSpacing: -2 },
+  typeSelector: { flexDirection: 'row', alignItems: 'center' },
   headerIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    width: 54,
+    height: 54,
+    borderRadius: 15,
+    backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 3,
+    borderColor: '#000',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    shadowOffset: { width: 4, height: 4 }
   },
-  scrollContent: {
-    paddingBottom: 150,
-  },
-  creationBar: {
-    marginTop: 10,
-    paddingLeft: 20,
-  },
-  chipList: {
-    gap: 12,
-    paddingRight: 20,
-  },
+  scrollContent: { paddingBottom: 150 },
+  creationBar: { marginTop: 10, paddingLeft: 25 },
+  chipList: { gap: 15, paddingRight: 50 },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#111111',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 15,
+    borderWidth: 3,
+    borderColor: '#000',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    shadowOffset: { width: 4, height: 4 }
   },
-  feedWrapper: {
-    marginTop: 24,
-    paddingHorizontal: 16,
-  },
+  chipLabel: { marginLeft: 10, fontWeight: '900', color: '#000', fontSize: 13 },
+  feedWrapper: { marginTop: 30, paddingHorizontal: 25 },
   postCard: {
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: 24,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
-    paddingTop: 16,
+    backgroundColor: '#FFF',
+    borderRadius: 40,
+    marginBottom: 30,
+    borderWidth: 4,
+    borderColor: '#000',
+    paddingTop: 25,
+    elevation: 12,
+    shadowColor: '#000',
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    shadowOffset: { width: 8, height: 8 }
   },
   postHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    paddingHorizontal: 25,
+    marginBottom: 20,
   },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: '#1A1A1A',
-  },
-  typeBadge: {
-    marginLeft: 8,
-    borderWidth: 1,
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 6,
-  },
-  typeLabel: {
-    fontSize: 9,
-    fontWeight: '900',
-  },
-  contentBox: {
-    backgroundColor: 'rgba(255,255,255,0.02)',
-    marginHorizontal: 12,
-    padding: 20,
+  userInfo: { flexDirection: 'row', alignItems: 'center' },
+  avatarBorder: {
+    width: 60,
+    height: 60,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 3,
+    borderColor: '#000',
+    overflow: 'hidden'
+  },
+  avatar: { width: '100%', height: '100%' },
+  userNameText: { fontSize: 18, fontWeight: '900', color: '#000' },
+  typeBadge: {
+    marginLeft: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#000'
+  },
+  typeLabel: { fontSize: 9, fontWeight: '900', color: '#000' },
+  metaText: { fontSize: 11, color: 'rgba(0,0,0,0.4)', fontWeight: '900', marginTop: 2 },
+  contentBox: {
+    backgroundColor: '#F3F4F6',
+    marginHorizontal: 15,
+    padding: 25,
+    borderRadius: 30,
+    borderWidth: 3,
+    borderColor: '#000',
   },
   contentHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 15,
   },
-  postTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    flex: 1,
-    marginRight: 10,
-  },
-  contentText: {
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 16,
-  },
+  postTitle: { fontSize: 22, fontWeight: '900', color: '#000', flex: 1, marginRight: 15, letterSpacing: -1 },
+  contentText: { fontSize: 16, lineHeight: 24, color: '#333', fontWeight: '700', marginBottom: 20 },
   repoLink: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    padding: 10,
-    borderRadius: 10,
+    backgroundColor: '#FFF',
+    padding: 15,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: '#000'
   },
+  repoText: { fontSize: 13, color: '#000', fontWeight: '900', marginLeft: 10, flex: 1 },
   postFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: 25,
   },
-  engagement: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
+  engagement: { flexDirection: 'row', alignItems: 'center', gap: 20 },
   boostBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(234, 179, 8, 0.1)',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+    backgroundColor: '#FFEB3B',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: '#000'
   },
-  simpleBtn: {
+  commentBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 8,
-  }
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  engagementCount: { marginLeft: 8, fontWeight: '900', color: '#000', fontSize: 14 },
+  shareBtn: { padding: 10 }
 });

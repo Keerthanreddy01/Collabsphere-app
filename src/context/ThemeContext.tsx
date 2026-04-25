@@ -28,15 +28,15 @@ const DarkTheme: ThemeColors = {
 };
 
 const LightTheme: ThemeColors = {
-  background: '#F9FAFB',
+  background: '#FFEB3B', // High-impact yellow
   card: '#FFFFFF',
-  primary: '#7C3AED',
-  secondary: '#E5E7EB',
-  text: '#111827',
-  textSecondary: '#6B7280',
-  border: '#E5E7EB',
-  success: '#059669',
-  warning: '#D97706',
+  primary: '#000000', // Black primary for bold elements
+  secondary: '#FF1744', // Vibrant Red accent
+  text: '#000000',
+  textSecondary: 'rgba(0,0,0,0.5)',
+  border: '#000000',
+  success: '#00C853', // Green accent
+  warning: '#2979FF', // Blue accent
 };
 
 interface ThemeContextType {
@@ -49,7 +49,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const systemScheme = useColorScheme();
-  const [mode, setMode] = useState<ThemeMode>('dark');
+  const [mode, setMode] = useState<ThemeMode>('light');
 
   const toggleTheme = () => {
     setMode(prev => (prev === 'dark' ? 'light' : 'dark'));

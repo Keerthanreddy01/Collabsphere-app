@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import {
    StyleSheet,
    View,
@@ -7,226 +7,156 @@ import {
    Dimensions,
    Image,
    StatusBar,
-   Platform
+   InteractionManager,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-   Bell,
-   MoreVertical,
-   Mail,
-   Video,
-   Activity,
+   ArrowRight,
    Zap,
-   ChevronRight,
-   TrendingUp,
-   Target,
-   Users,
-   Server,
-   MoveUpRight
+   Activity,
+   Bell,
 } from 'lucide-react-native';
 import Animated, {
    FadeInDown,
-   useAnimatedStyle,
-   useSharedValue,
-   withSpring,
-   withTiming,
-   withDelay
+   FadeIn,
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
 
 import { Typography } from '../components/Typography';
 import { useTheme } from '../context/ThemeContext';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
-const RECENT_ACTIVITY = [
-   { id: 1, user: 'Josh', avatar: 'https://i.pravatar.cc/150?u=1', action: 'pushed to', target: 'Art-Team', time: '2m', color: '#6193F5' },
-   { id: 2, user: 'Sarah', avatar: 'https://i.pravatar.cc/150?u=2', action: 'reviewed', target: 'Seed V2', time: '15m', color: '#F59E0B' },
-   { id: 3, user: 'Sphere', avatar: 'https://i.pravatar.cc/150?u=sphere', action: 'synced', target: 'Global Stats', time: '1h', color: '#10B981' },
-];
+// ─── Memoized sub-components ────────────────────────────────────────
+const StatLine = memo(({ val, name }: { val: string; name: string }) => (
+  <View style={styles.statLine}>
+    <Typography style={styles.statVal}>{val}</Typography>
+    <Typography style={styles.statName}>{name}</Typography>
+  </View>
+));
 
+const TableRow = memo(({ title, val, highlight }: { title: string; val: string; highlight?: string }) => (
+  <View style={styles.tableRow}>
+    <Typography style={styles.rowTitle}>{title}</Typography>
+    <Typography style={[styles.rowVal, highlight ? { color: highlight } : {}]}>{val}</Typography>
+  </View>
+));
+
+// ─── Main Screen ────────────────────────────────────────────────────
 export const HomeScreen = ({ navigation }: any) => {
-   const peekerY = useSharedValue(100);
-
-   useEffect(() => {
-      // Pop up so legs stay hidden behind the metrics ledge
-      peekerY.value = withDelay(600, withSpring(-115, { damping: 15, stiffness: 80 }));
-   }, []);
-
-   const peekerStyle = useAnimatedStyle(() => ({
-      transform: [{ translateY: peekerY.value }]
-   }));
+   const { colors } = useTheme();
 
    return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
          <StatusBar barStyle="dark-content" />
          <SafeAreaView style={{ flex: 1 }}>
             <ScrollView
                showsVerticalScrollIndicator={false}
                contentContainerStyle={styles.scrollContent}
+               decelerationRate="fast"
+               scrollEventThrottle={16}
             >
-               {/* Fixed Branding Header */}
-               <View style={styles.header}>
-                  <View>
-                     <Typography style={styles.titleBlack}>CollabSphere</Typography>
-                     <Typography style={styles.titleGrey}>WORKSTATION</Typography>
+               {/* ── Yellow top section ─────────────────── */}
+               <View style={styles.topSection}>
+                  <View style={styles.header}>
+                     <Typography style={styles.brandingLogo}>COLLAB!</Typography>
+                     <View style={{ flexDirection: 'row', gap: 12 }}>
+                        <TouchableOpacity style={styles.iconBtn} activeOpacity={0.85}>
+                           <Bell size={22} color="#000" />
+                           <View style={styles.notifDot} />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.profileBtn} activeOpacity={0.85}>
+                           <Image
+                              source={{ uri: 'https://i.pravatar.cc/150?u=keerthan' }}
+                              style={styles.avatar}
+                           />
+                           <View style={styles.plusBadge}>
+                              <Typography style={styles.plusTxt}>+</Typography>
+                           </View>
+                        </TouchableOpacity>
+                     </View>
                   </View>
-                  <TouchableOpacity
-                     style={styles.bellBtn}
-                     onPress={() => navigation?.navigate('MessagesList')}
-                  >
-                     <Bell size={24} color="#3B82F6" />
-                     <View style={styles.bellNavDot} />
-                  </TouchableOpacity>
-               </View>
 
-               {/* CUSTOM 3D PEEKER (USER IMAGE) */}
-               <View style={styles.metricsWrapper}>
-                  <Animated.View style={[styles.sneakyPeeker, peekerStyle]}>
-                     <Image
-                        source={require('../assets/user_peeker.png')}
-                        style={styles.peekerImg}
-                        resizeMode="contain"
-                     />
+                  <Animated.View
+                     entering={FadeInDown.delay(150).springify().damping(20)}
+                     style={styles.heroTextContainer}
+                  >
+                     <Typography style={styles.mainTitle}>Team Insights &{'\n'}Project Flow</Typography>
+                     <TouchableOpacity style={styles.visitBtn} activeOpacity={0.85}>
+                        <Typography style={styles.visitTxt}>SYNC NOW</Typography>
+                        <ArrowRight size={18} color="#FFF" />
+                     </TouchableOpacity>
                   </Animated.View>
 
-                  <View style={styles.classicMetricsBar}>
-                     <View style={styles.metricItem}>
-                        <Typography style={styles.metricValue}>24.5k</Typography>
-                        <Typography style={styles.metricLabel}>Reach</Typography>
-                     </View>
-                     <View style={styles.metricDivider} />
-                     <View style={styles.metricItem}>
-                        <Typography style={styles.metricValue}>92%</Typography>
-                        <Typography style={styles.metricLabel}>Uptime</Typography>
-                     </View>
-                     <View style={styles.metricDivider} />
-                     <View style={styles.metricItem}>
-                        <Typography style={[styles.metricValue, { color: '#10B981' }]}>+12</Typography>
-                        <Typography style={styles.metricLabel}>Growth</Typography>
-                     </View>
-                  </View>
-               </View>
-
-               {/* Milestones / Pulse Row (REFINED) */}
-               <View style={styles.milestoneRowContent}>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 24 }}>
-                     <View style={styles.milestoneCard}>
-                        <View style={styles.milestoneHeader}>
-                           <Target size={14} color="#6193F5" />
-                           <Typography style={styles.milestoneTitle}>Project Intel</Typography>
-                        </View>
-                        <Typography style={styles.milestoneName}>Mainnet Launch</Typography>
-                        <Typography style={[styles.milestoneTime, { color: '#6193F5' }]}>4 Days Left</Typography>
-                     </View>
-                     <View style={styles.milestoneCard}>
-                        <View style={styles.milestoneHeader}>
-                           <Users size={14} color="#F59E0B" />
-                           <Typography style={styles.milestoneTitle}>Builder Status</Typography>
-                        </View>
-                        <Typography style={styles.milestoneName}>12 Active</Typography>
-                        <Typography style={[styles.milestoneTime, { color: '#F59E0B' }]}>Syncing Now</Typography>
-                     </View>
-                     <View style={styles.milestoneCard}>
-                        <View style={styles.milestoneHeader}>
-                           <Server size={14} color="#10B981" />
-                           <Typography style={styles.milestoneTitle}>Global Node</Typography>
-                        </View>
-                        <Typography style={styles.milestoneName}>88% Uptime</Typography>
-                        <Typography style={[styles.milestoneTime, { color: '#10B981' }]}>Optimized</Typography>
-                     </View>
-                  </ScrollView>
-               </View>
-
-               {/* Grid section */}
-               <View style={styles.gridRow}>
-                  <View style={styles.leftCol}>
-                     <TouchableOpacity onPress={() => navigation?.navigate('Chat')} style={styles.blueCard}>
-                        <View style={styles.cardHeaderSmall}>
-                           <Typography style={styles.cardBadge}>Art-Team</Typography>
-                           <MoreVertical size={16} color="#FFF" opacity={0.6} />
-                        </View>
-                        <Typography style={styles.cardSub}>Syncing Project</Typography>
-                        <Typography style={styles.cardMainVal}>09:45</Typography>
-                        <View style={styles.liveIndicator}>
+                  {/* Robot frame */}
+                  <Animated.View
+                     entering={FadeIn.delay(300).duration(600)}
+                     style={styles.heroImgContainer}
+                  >
+                     <Image
+                        source={require('../../assets/clay_robot.png')}
+                        style={styles.heroImg}
+                        resizeMode="cover"
+                     />
+                     <View style={styles.imageOverlay}>
+                        <View style={styles.statusPill}>
                            <View style={styles.liveDot} />
-                           <Typography style={styles.liveText}>LIVE NOW</Typography>
+                           <Typography style={styles.statusTxt}>ACTIVE</Typography>
                         </View>
-                     </TouchableOpacity>
-                  </View>
-                  <View style={styles.rightCol}>
-                     <View style={styles.actionRow}>
-                        <TouchableOpacity 
-                           style={styles.actionBtn}
-                           onPress={() => navigation?.navigate('MessagesList')}
-                        >
-                           <Mail size={22} color="#EF4444" />
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                           style={styles.actionBtn}
-                           onPress={() => navigation?.navigate('Feed')}
-                        >
-                           <Video size={22} color="#10B981" />
-                        </TouchableOpacity>
                      </View>
-                     <TouchableOpacity style={styles.teamCard}>
-                        <Typography style={styles.teamLabel}>THE SPHERE</Typography>
-                        <View style={styles.avatarRow}>
-                           <Image source={{ uri: 'https://i.pravatar.cc/150?u=a' }} style={styles.miniAvatar} />
-                           <Image source={{ uri: 'https://i.pravatar.cc/150?u=b' }} style={styles.miniAvatar} />
-                           <Image source={{ uri: 'https://i.pravatar.cc/150?u=c' }} style={styles.miniAvatar} />
-                           <View style={styles.moreAvatar}>
-                              <Typography style={styles.moreText}>+8</Typography>
-                           </View>
-                        </View>
-                        <View style={styles.activeDot} />
-                     </TouchableOpacity>
-                  </View>
+                  </Animated.View>
                </View>
 
-               <View style={styles.gridRow}>
-                  <View style={styles.statBox}>
-                     <View style={styles.statHeader}>
-                        <Typography style={styles.statVal}>98</Typography>
-                        <TrendingUp size={16} color="rgba(0,0,0,0.1)" />
-                     </View>
-                     <Typography style={styles.statLabel}>In Progress</Typography>
-                     <View style={styles.progressTrack}>
-                        <View style={[styles.progressBar, { width: '70%', backgroundColor: '#000' }]} />
-                     </View>
-                  </View>
-                  <View style={[styles.statBox, { backgroundColor: '#C8FF8C' }]}>
-                     <View style={styles.statHeader}>
-                        <Typography style={styles.statVal}>55</Typography>
-                        <Zap size={16} color="rgba(0,0,0,0.1)" />
-                     </View>
-                     <Typography style={styles.statLabel}>Complete</Typography>
-                     <View style={styles.progressTrack}>
-                        <View style={[styles.progressBar, { width: '45%', backgroundColor: '#000' }]} />
-                     </View>
-                  </View>
-               </View>
+               {/* ── White bottom panel ─────────────────── */}
+               <View style={styles.whitePanel}>
+                  <View style={styles.panelHandle} />
 
-               {/* Activity Feed */}
-               <View style={styles.feedSection}>
-                  <View style={styles.feedHeader}>
-                     <Typography style={styles.feedTitle}>Live Feed</Typography>
-                     <View style={styles.feedLiveDot} />
+                  <View style={styles.statsOverview}>
+                     <StatLine val="75%" name="Design Progress" />
+                     <StatLine val="15%" name="Dev Phase" />
+                     <StatLine val="10%" name="Testing" />
                   </View>
-                  {RECENT_ACTIVITY.map(item => (
-                     <View key={item.id} style={styles.feedItem}>
-                        <Image source={{ uri: item.avatar }} style={styles.feedAvatar} />
-                        <View style={styles.feedContent}>
-                           <View style={styles.feedTextRow}>
-                              <Typography style={styles.feedUser}>{item.user}</Typography>
-                              <Typography style={styles.feedAction}> {item.action} </Typography>
-                              <Typography style={[styles.feedTarget, { color: item.color }]}>{item.target}</Typography>
-                           </View>
-                           <Typography style={styles.feedTime}>{item.time} ago</Typography>
-                        </View>
-                        <ChevronRight size={16} color="rgba(0,0,0,0.1)" />
+
+                  <View style={styles.tableSection}>
+                     <View style={styles.tableHeader}>
+                        <Typography style={styles.colLabel}>Category</Typography>
+                        <Typography style={styles.colLabel}>Status</Typography>
                      </View>
-                  ))}
+                     <TableRow title="Art-Team" val="Reviewing" />
+                     <TableRow title="Backend" val="Synced" />
+                     <TableRow title="UI Logic" val="Highly Safe" highlight="#00C853" />
+                  </View>
+
+                  {/* Horizontal feature cards */}
+                  <View style={styles.featuresSection}>
+                     <Typography style={styles.sectionTitle}>Discover</Typography>
+                     <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.featureScroll}
+                        decelerationRate="fast"
+                     >
+                        <TouchableOpacity
+                           style={[styles.featCard, { backgroundColor: '#FF1744' }]}
+                           activeOpacity={0.85}
+                        >
+                           <Typography style={styles.featTitle}>THE UNIVERSE{'\n'}OF COLAB</Typography>
+                           <Typography style={styles.featSub}>Join the elite circle</Typography>
+                           <View style={styles.featIcon}>
+                              <Zap size={24} color="#FFF" />
+                           </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                           style={[styles.featCard, { backgroundColor: '#2979FF' }]}
+                           activeOpacity={0.85}
+                        >
+                           <Typography style={styles.featTitle}>COLLECTIVE{'\n'}GOALS</Typography>
+                           <Typography style={styles.featSub}>Achieve more together</Typography>
+                           <View style={styles.featIcon}>
+                              <Activity size={24} color="#FFF" />
+                           </View>
+                        </TouchableOpacity>
+                     </ScrollView>
+                  </View>
                </View>
             </ScrollView>
          </SafeAreaView>
@@ -235,121 +165,198 @@ export const HomeScreen = ({ navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
-   container: { flex: 1, backgroundColor: '#F7F6F2' },
-   scrollContent: { paddingHorizontal: 24, paddingBottom: 250 },
-   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 35, marginBottom: 25 },
-   titleBlack: { fontSize: 38, fontWeight: '900', color: '#000', lineHeight: 42, letterSpacing: -1 },
-   titleGrey: { 
-    fontSize: 22, 
-    fontWeight: '800', 
-    color: 'rgba(0,0,0,0.15)', 
-    lineHeight: 22, 
-    letterSpacing: 2, 
-    marginTop: 4,
-    textTransform: 'uppercase'
-  },
-   bellBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5 },
-   bellNavDot: { position: 'absolute', top: 14, right: 14, width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444', borderWidth: 2, borderColor: '#FFF' },
-   metricsWrapper: { marginBottom: 35, marginTop: 45, zIndex: 1 },
-   sneakyPeeker: { 
-      position: 'absolute', 
-      top: 0, 
-      right: 5, 
-      width: 220, 
-      height: 220, 
-      zIndex: 1, 
-   },
-   peekerImg: { 
-      width: '100%', 
-      height: '100%' 
-   },
-   classicMetricsBar: { 
-      flexDirection: 'row', 
-      backgroundColor: '#FFF', 
-      borderRadius: 28, 
-      padding: 22, 
-      elevation: 10, 
-      shadowColor: '#000', 
-      shadowOpacity: 0.1, 
-      shadowRadius: 20, 
+   container: { flex: 1 },
+   scrollContent: { paddingBottom: 100 },
+
+   topSection: { paddingHorizontal: 25, paddingBottom: 40, paddingTop: 10 },
+   header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
       alignItems: 'center',
-      zIndex: 10, 
+      marginTop: 8,
    },
-   metricItem: { flex: 1, alignItems: 'center' },
-   metricValue: { fontSize: 18, fontWeight: '900', color: '#000' },
-   metricLabel: { fontSize: 10, fontWeight: '800', color: 'rgba(0,0,0,0.15)', textTransform: 'uppercase', marginTop: 4 },
-   metricDivider: { width: 1, height: 26, backgroundColor: 'rgba(0,0,0,0.05)' },
-   milestoneRowContent: { 
-    marginBottom: 10, 
-    marginHorizontal: -24, 
-    paddingLeft: 24,
-    height: 140, 
-  },
-  milestoneCard: { 
-    width: 155, 
-    height: 110, 
-    borderRadius: 24, 
-    padding: 18, 
-    marginRight: 12,
-    marginTop: 5, 
-    marginBottom: 20, 
-    justifyContent: 'space-between',
-    backgroundColor: '#FFF',
-    elevation: 5, 
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 }
-  },
-  milestoneHeader: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  milestoneTitle: { fontSize: 10, fontWeight: '800', color: 'rgba(0,0,0,0.25)', textTransform: 'uppercase', letterSpacing: 0.5 },
-  milestoneName: { fontSize: 14, fontWeight: '900', color: '#000', lineHeight: 18 },
-  milestoneTime: { fontSize: 11, fontWeight: '800' },
-   gridRow: { flexDirection: 'row', gap: 14, marginBottom: 14 },
-   leftCol: { flex: 1.15 },
-   blueCard: { height: 215, borderRadius: 28, padding: 22, justifyContent: 'space-between', overflow: 'hidden', backgroundColor: '#6193F5' },
-   cardHeaderSmall: { flexDirection: 'row', justifyContent: 'space-between' },
-   cardBadge: { fontSize: 12, fontWeight: '800', color: '#FFF' },
-   cardSub: { fontSize: 13, fontWeight: '700', color: 'rgba(255,255,255,0.6)', marginTop: 4 },
-   cardMainVal: { 
-    fontSize: 42, 
-    fontWeight: '900', 
-    color: '#FFF', 
-    letterSpacing: 0, // Reset to natural spacing to avoid horizontal clipping
-    marginVertical: 12,
-    lineHeight: 50, // Higher than fontSize to prevent vertical clipping
-    textAlignVertical: 'center', // Android optimization
-    includeFontPadding: false,
-  },
-   liveIndicator: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-   liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#F59E0B' },
-   liveText: { fontSize: 10, fontWeight: '800', color: '#FFF', letterSpacing: 1 },
-   rightCol: { flex: 1 },
-   actionRow: { flexDirection: 'row', gap: 12, marginBottom: 14 },
-   actionBtn: { flex: 1, height: 75, borderRadius: 28, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10 },
-   teamCard: { flex: 1, height: 126, borderRadius: 28, backgroundColor: '#FFF', padding: 18, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10 },
-   teamLabel: { fontSize: 9, fontWeight: '800', color: 'rgba(0,0,0,0.15)', letterSpacing: 1, textTransform: 'uppercase' },
-   avatarRow: { flexDirection: 'row', marginTop: 14, alignItems: 'center' },
-   miniAvatar: { width: 28, height: 28, borderRadius: 14, borderSize: 2, borderColor: '#FFF', marginRight: -8 },
-   moreAvatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#C8FF8C', justifyContent: 'center', alignItems: 'center', borderSize: 2, borderColor: '#FFF' },
-   moreText: { fontSize: 10, fontWeight: '900', color: '#000' },
-   activeDot: { position: 'absolute', top: 18, right: 18, width: 6, height: 6, borderRadius: 3, backgroundColor: '#10B981' },
-   statBox: { flex: 1, height: 165, borderRadius: 28, backgroundColor: '#FFF', padding: 22, elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10 },
-   statHeader: { flexDirection: 'row', justifyContent: 'space-between' },
-   statVal: { fontSize: 32, fontWeight: '900', color: '#000', letterSpacing: -1 },
-   statLabel: { fontSize: 13, fontWeight: '800', color: 'rgba(0,0,0,0.25)', marginTop: 15 },
-   progressTrack: { height: 4, backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: 2, marginTop: 12, overflow: 'hidden' },
-   progressBar: { height: '100%', borderRadius: 2 },
-   feedSection: { marginTop: 25 },
-   feedHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 18 },
-   feedTitle: { fontSize: 18, fontWeight: '900', color: '#000' },
-   feedLiveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#EF4444' },
-   feedItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', padding: 16, borderRadius: 24, marginBottom: 12, elevation: 1, shadowColor: '#000', shadowOpacity: 0.02, shadowRadius: 5 },
-   feedAvatar: { width: 40, height: 40, borderRadius: 20, marginRight: 14 },
-   feedContent: { flex: 1 },
-   feedTextRow: { flexDirection: 'row', alignItems: 'center' },
-   feedUser: { fontSize: 14, fontWeight: '800', color: '#000' },
-   feedAction: { fontSize: 14, color: 'rgba(0,0,0,0.5)' },
-   feedTarget: { fontSize: 14, fontWeight: '800' },
-   feedTime: { fontSize: 12, color: 'rgba(0,0,0,0.2)', marginTop: 2 },
+   brandingLogo: {
+      fontSize: 46,
+      fontWeight: '900',
+      letterSpacing: -3,
+      color: '#000',
+      textTransform: 'uppercase',
+   },
+   iconBtn: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      borderWidth: 2,
+      borderColor: '#000',
+      backgroundColor: '#FFF',
+      justifyContent: 'center',
+      alignItems: 'center',
+   },
+   notifDot: {
+      position: 'absolute',
+      top: 10,
+      right: 10,
+      width: 9,
+      height: 9,
+      borderRadius: 5,
+      backgroundColor: '#FF1744',
+      borderWidth: 1.5,
+      borderColor: '#FFF',
+   },
+   profileBtn: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      borderWidth: 2,
+      borderColor: '#000',
+      backgroundColor: '#FFF',
+      justifyContent: 'center',
+      alignItems: 'center',
+   },
+   avatar: { width: 44, height: 44, borderRadius: 22 },
+   plusBadge: {
+      position: 'absolute',
+      top: -4,
+      right: -4,
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      backgroundColor: '#000',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: '#FFEB3B',
+   },
+   plusTxt: { color: '#FFF', fontSize: 11, fontWeight: '900' },
+
+   heroTextContainer: { marginTop: 22, zIndex: 10 },
+   mainTitle: {
+      fontSize: 34,
+      fontWeight: '900',
+      lineHeight: 36,
+      letterSpacing: -1,
+      color: '#000',
+   },
+   visitBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      marginTop: 18,
+      backgroundColor: '#000',
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: 30,
+      alignSelf: 'flex-start',
+      elevation: 10,
+      shadowColor: '#000',
+      shadowOpacity: 0.4,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 6 },
+   },
+   visitTxt: { fontSize: 14, fontWeight: '900', color: '#FFF', letterSpacing: 1 },
+
+   heroImgContainer: {
+      alignItems: 'center',
+      marginTop: 30,
+      backgroundColor: '#FFF',
+      borderRadius: 40,
+      borderWidth: 4,
+      borderColor: '#000',
+      overflow: 'hidden',
+      elevation: 15,
+      shadowColor: '#000',
+      shadowOpacity: 1,
+      shadowRadius: 0,
+      shadowOffset: { width: 10, height: 10 },
+   },
+   heroImg: { width: width * 0.75, height: width * 0.75 },
+   imageOverlay: { position: 'absolute', bottom: 20, right: 20 },
+   statusPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: '#000',
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      borderRadius: 20,
+   },
+   liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#00C853' },
+   statusTxt: { color: '#FFF', fontSize: 10, fontWeight: '900' },
+
+   whitePanel: {
+      backgroundColor: '#FFF',
+      borderTopLeftRadius: 50,
+      borderTopRightRadius: 50,
+      borderTopWidth: 4,
+      borderColor: '#000',
+      paddingTop: 15,
+      paddingHorizontal: 25,
+      minHeight: height * 0.6,
+      marginTop: -30,
+      paddingBottom: 160,
+   },
+   panelHandle: {
+      width: 50,
+      height: 6,
+      backgroundColor: '#000',
+      borderRadius: 3,
+      alignSelf: 'center',
+      marginBottom: 40,
+   },
+   statsOverview: { marginBottom: 40 },
+   statLine: { flexDirection: 'row', alignItems: 'baseline', gap: 14, marginBottom: 14 },
+   statVal: { fontSize: 46, fontWeight: '900', color: '#000', letterSpacing: -2 },
+   statName: {
+      fontSize: 12,
+      fontWeight: '900',
+      color: 'rgba(0,0,0,0.4)',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+   },
+
+   tableSection: { borderTopWidth: 3, borderColor: '#000', paddingTop: 25 },
+   tableHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
+   colLabel: {
+      fontSize: 11,
+      fontWeight: '900',
+      color: 'rgba(0,0,0,0.3)',
+      textTransform: 'uppercase',
+   },
+   tableRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 20,
+      borderBottomWidth: 1,
+      borderColor: 'rgba(0,0,0,0.05)',
+   },
+   rowTitle: { fontSize: 18, fontWeight: '900' },
+   rowVal: { fontSize: 16, fontWeight: '800', color: 'rgba(0,0,0,0.5)' },
+
+   featuresSection: { marginTop: 50 },
+   sectionTitle: { fontSize: 28, fontWeight: '900', marginBottom: 24, letterSpacing: -1 },
+   featureScroll: { gap: 20, paddingRight: 40 },
+   featCard: {
+      width: 240,
+      height: 220,
+      borderRadius: 40,
+      padding: 28,
+      justifyContent: 'space-between',
+      borderWidth: 4,
+      borderColor: '#000',
+      elevation: 12,
+      shadowColor: '#000',
+      shadowOpacity: 1,
+      shadowRadius: 0,
+      shadowOffset: { width: 10, height: 10 },
+   },
+   featTitle: { color: '#FFF', fontSize: 22, fontWeight: '900', lineHeight: 24 },
+   featSub: { color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: '800' },
+   featIcon: {
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      backgroundColor: 'rgba(255,255,255,0.25)',
+      justifyContent: 'center',
+      alignItems: 'center',
+   },
 });

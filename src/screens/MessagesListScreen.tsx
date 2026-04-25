@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { 
   StyleSheet, 
   View, 
-  ScrollView, 
+  FlatList, 
   TouchableOpacity, 
   Image, 
   Dimensions,
   StatusBar,
-  TextInput
+  TextInput,
+  Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Lucid from 'lucide-react-native';
@@ -17,124 +18,280 @@ import { Typography } from '../components/Typography';
 const { width } = Dimensions.get('window');
 
 const FRIENDS = [
-  { id: 1, name: 'Sarah Drasner', role: 'DevEx at Google', online: true, lastMsg: 'The architecture looks solid. I\’ll review the PR tonight.', time: '2m', avatar: 'https://i.pravatar.cc/150?u=sarah' },
-  { id: 2, name: 'Josh Comeau', role: 'Design Engineer', online: true, lastMsg: 'Did you see the new Inter weight? It\’s beautiful.', time: '15m', avatar: 'https://i.pravatar.cc/150?u=josh' },
-  { id: 3, name: 'Tobi Lütke', role: 'CEO, Shopify', online: false, lastMsg: 'Let\’s scale the Sphere infrastructure.', time: '1h', avatar: 'https://i.pravatar.cc/150?u=tobi' },
-  { id: 4, name: 'Naval Ravikant', role: 'Angel Philosopher', online: false, lastMsg: 'Specific knowledge is found by following your curiosity.', time: '3h', avatar: 'https://i.pravatar.cc/150?u=naval' },
-  { id: 5, name: 'Amjad Masad', role: 'CEO, Replit', online: true, lastMsg: 'The AI integration is blowing my mind.', time: '5h', avatar: 'https://i.pravatar.cc/150?u=amjad' },
+  { id: '1', name: 'Sarah Drasner', role: 'DevEx at Google', online: true, lastMsg: "The architecture looks solid. I'll review the PR tonight.", time: '2m', avatar: 'https://i.pravatar.cc/150?u=sarah' },
+  { id: '2', name: 'Josh Comeau', role: 'Design Engineer', online: true, lastMsg: "Did you see the new Inter weight? It's beautiful.", time: '15m', avatar: 'https://i.pravatar.cc/150?u=josh' },
+  { id: '3', name: 'Tobi Lütke', role: 'CEO, Shopify', online: false, lastMsg: "Let's scale the Sphere infrastructure.", time: '1h', avatar: 'https://i.pravatar.cc/150?u=tobi' },
+  { id: '4', name: 'Naval Ravikant', role: 'Angel Philosopher', online: false, lastMsg: 'Specific knowledge is found by following your curiosity.', time: '3h', avatar: 'https://i.pravatar.cc/150?u=naval' },
+  { id: '5', name: 'Amjad Masad', role: 'CEO, Replit', online: true, lastMsg: 'The AI integration is blowing my mind.', time: '5h', avatar: 'https://i.pravatar.cc/150?u=amjad' },
 ];
 
+const ONLINE_FRIENDS = FRIENDS.filter((f) => f.online);
+
+// ─── Memoized Online Bubble ────────────────────────────────────────
+const OnlineBubble = memo(({ item, index }: { item: any; index: number }) => (
+  <Animated.View
+    entering={FadeInRight.delay(index * 80).springify().damping(20)}
+    style={styles.onlineItem}
+  >
+    <View style={styles.avatarContainer}>
+      <Image source={{ uri: item.avatar }} style={styles.onlineAvatar} />
+      <View style={styles.greenStatus} />
+    </View>
+    <Typography style={styles.onlineName}>{item.name.split(' ')[0]}</Typography>
+  </Animated.View>
+));
+
+// ─── Memoized Chat Row ─────────────────────────────────────────────
+const ChatRow = memo(({ item, index, onPress }: { item: any; index: number; onPress: () => void }) => (
+  <Animated.View entering={FadeInDown.delay(index * 70).springify().damping(22)}>
+    <TouchableOpacity style={styles.chatRow} onPress={onPress} activeOpacity={0.85}>
+      <View style={styles.avatarWrapper}>
+        <Image source={{ uri: item.avatar }} style={styles.msgAvatar} />
+        {item.online && <View style={styles.onlineDot} />}
+      </View>
+      <View style={styles.msgContent}>
+        <View style={styles.nameRow}>
+          <Typography style={styles.chatName}>{item.name}</Typography>
+          <Typography style={styles.chatTime}>{item.time}</Typography>
+        </View>
+        <Typography style={styles.chatRole}>{item.role}</Typography>
+        <Typography style={styles.lastMsg} numberOfLines={1}>{item.lastMsg}</Typography>
+      </View>
+    </TouchableOpacity>
+  </Animated.View>
+));
+
+// ─── Main Screen ───────────────────────────────────────────────────
 export const MessagesListScreen = ({ navigation }: any) => {
+  const keyExtractor = useCallback((item: any) => item.id, []);
+
+  const renderChatRow = useCallback(
+    ({ item, index }: { item: any; index: number }) => (
+      <ChatRow
+        item={item}
+        index={index}
+        onPress={() => navigation.navigate('Chat', { name: item.name })}
+      />
+    ),
+    [navigation]
+  );
+
+  const ListHeader = useCallback(
+    () => (
+      <>
+        {/* Search */}
+        <View style={styles.searchSection}>
+          <View style={styles.searchBar}>
+            <Lucid.Search size={20} color="rgba(0,0,0,0.3)" />
+            <TextInput
+              placeholder="Search connections..."
+              placeholderTextColor="rgba(0,0,0,0.3)"
+              style={styles.input}
+            />
+          </View>
+        </View>
+
+        {/* Online builders */}
+        <Typography style={styles.sectionLabel}>ACTIVE BUILDERS</Typography>
+        <View style={styles.onlineRow}>
+          {ONLINE_FRIENDS.map((f, idx) => (
+            <OnlineBubble key={f.id} item={f} index={idx} />
+          ))}
+        </View>
+
+        <Typography style={styles.sectionLabel}>CONVERSATIONS</Typography>
+      </>
+    ),
+    []
+  );
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={{ flex: 1 }}>
+        {/* Header */}
         <View style={styles.header}>
-           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-              <Lucid.ChevronLeft size={28} color="#000" />
-           </TouchableOpacity>
-           <Typography style={styles.headerTitle}>Network</Typography>
-           <TouchableOpacity style={styles.actionBtn}>
-              <Lucid.UserPlus size={22} color="#000" />
-           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backBtn}
+            activeOpacity={0.85}
+          >
+            <Lucid.ChevronLeft size={26} color="#000" />
+          </TouchableOpacity>
+          <Typography style={styles.headerTitle}>Network</Typography>
+          <TouchableOpacity style={styles.actionBtn} activeOpacity={0.85}>
+            <Lucid.UserPlus size={22} color="#000" />
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.searchSection}>
-           <View style={styles.searchBar}>
-              <Lucid.Search size={20} color="rgba(0,0,0,0.2)" />
-              <TextInput 
-                placeholder="Search connections..." 
-                placeholderTextColor="rgba(0,0,0,0.2)"
-                style={styles.input}
-              />
-           </View>
-        </View>
-
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-           <Typography style={styles.sectionLabel}>ACTIVE BUILDERS</Typography>
-           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.onlineRow}>
-              {FRIENDS.filter(f => f.online).map((f, idx) => (
-                <Animated.View key={f.id} entering={FadeInRight.delay(idx * 100)} style={styles.onlineItem}>
-                   <View style={styles.avatarContainer}>
-                      <Image source={{ uri: f.avatar }} style={styles.onlineAvatar} />
-                      <View style={styles.greenStatus} />
-                   </View>
-                   <Typography style={styles.onlineName}>{f.name.split(' ')[0]}</Typography>
-                </Animated.View>
-              ))}
-           </ScrollView>
-
-           <Typography style={styles.sectionLabel}>CONVERSATIONS</Typography>
-           {FRIENDS.map((f, idx) => (
-             <Animated.View key={f.id} entering={FadeInDown.delay(200 + (idx * 100))}>
-                <TouchableOpacity 
-                  style={styles.chatRow}
-                  onPress={() => navigation.navigate('Chat')}
-                >
-                   <Image source={{ uri: f.avatar }} style={styles.msgAvatar} />
-                   <View style={styles.msgContent}>
-                      <View style={styles.nameRow}>
-                         <Typography style={styles.chatName}>{f.name}</Typography>
-                         <Typography style={styles.chatTime}>{f.time}</Typography>
-                      </View>
-                      <Typography style={styles.chatRole}>{f.role}</Typography>
-                      <Typography style={styles.lastMsg} numberOfLines={1}>{f.lastMsg}</Typography>
-                   </View>
-                </TouchableOpacity>
-             </Animated.View>
-           ))}
-        </ScrollView>
+        {/* Chat list — production tuned */}
+        <FlatList
+          data={FRIENDS}
+          keyExtractor={keyExtractor}
+          renderItem={renderChatRow}
+          ListHeaderComponent={ListHeader}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scroll}
+          removeClippedSubviews={Platform.OS === 'android'}
+          maxToRenderPerBatch={8}
+          windowSize={8}
+          initialNumToRender={5}
+          decelerationRate="fast"
+        />
       </SafeAreaView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F7F6F2' },
-  header: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    paddingHorizontal: 24, 
-    paddingVertical: 15 
+  container: { flex: 1, backgroundColor: '#FFEB3B' },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    backgroundColor: '#FFEB3B',
   },
-  backBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'flex-start' },
-  headerTitle: { fontSize: 20, fontWeight: '900', color: '#000', letterSpacing: -0.5 },
-  actionBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5 },
-  searchSection: { paddingHorizontal: 24, marginTop: 10 },
-  searchBar: { 
-    flexDirection: 'row', 
-    backgroundColor: '#FFF', 
-    borderRadius: 20, 
-    paddingHorizontal: 16, 
-    height: 54, 
-    alignItems: 'center', 
-    gap: 12,
-    elevation: 2,
+  backBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2.5,
+    borderColor: '#000',
+    elevation: 6,
     shadowColor: '#000',
-    shadowOpacity: 0.03,
-    shadowRadius: 10,
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    shadowOffset: { width: 4, height: 4 },
   },
-  input: { flex: 1, fontSize: 16, fontWeight: '600', color: '#000' },
-  scroll: { paddingBottom: 150 },
-  sectionLabel: { fontSize: 11, fontWeight: '800', color: 'rgba(0,0,0,0.2)', letterSpacing: 1, marginLeft: 24, marginTop: 30, marginBottom: 15 },
-  onlineRow: { paddingLeft: 24 },
-  onlineItem: { marginRight: 20, alignItems: 'center' },
+  headerTitle: { fontSize: 22, fontWeight: '900', color: '#000', letterSpacing: -0.5 },
+  actionBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2.5,
+    borderColor: '#000',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    shadowOffset: { width: 4, height: 4 },
+  },
+
+  searchSection: { paddingHorizontal: 24, marginTop: 8, marginBottom: 4 },
+  searchBar: {
+    flexDirection: 'row',
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    height: 54,
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 2.5,
+    borderColor: '#000',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    shadowOffset: { width: 4, height: 4 },
+  },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#000',
+  },
+
+  scroll: { paddingBottom: 160 },
+  sectionLabel: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: 'rgba(0,0,0,0.4)',
+    letterSpacing: 1.5,
+    marginLeft: 24,
+    marginTop: 28,
+    marginBottom: 14,
+    textTransform: 'uppercase',
+  },
+  onlineRow: {
+    flexDirection: 'row',
+    paddingLeft: 24,
+    gap: 18,
+  },
+  onlineItem: { alignItems: 'center' },
   avatarContainer: { position: 'relative' },
-  onlineAvatar: { width: 64, height: 64, borderRadius: 32, borderWidth: 3, borderColor: '#FFF' },
-  greenStatus: { position: 'absolute', bottom: 2, right: 2, width: 14, height: 14, borderRadius: 7, backgroundColor: '#10B981', borderWidth: 2.5, borderColor: '#FFF' },
-  onlineName: { fontSize: 12, fontWeight: '800', color: '#000', marginTop: 8 },
-  chatRow: { 
-    flexDirection: 'row', 
-    paddingHorizontal: 24, 
-    paddingVertical: 18, 
-    alignItems: 'center' 
+  onlineAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 3,
+    borderColor: '#000',
   },
-  msgAvatar: { width: 56, height: 56, borderRadius: 28 },
+  greenStatus: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#00E676',
+    borderWidth: 2.5,
+    borderColor: '#FFEB3B',
+  },
+  onlineName: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#000',
+    marginTop: 8,
+    textTransform: 'uppercase',
+  },
+
+  chatRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  avatarWrapper: { position: 'relative' },
+  msgAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 2.5,
+    borderColor: '#000',
+  },
+  onlineDot: {
+    position: 'absolute',
+    bottom: 1,
+    right: 1,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#00E676',
+    borderWidth: 2,
+    borderColor: '#FFEB3B',
+  },
   msgContent: { flex: 1, marginLeft: 16 },
-  nameRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  chatName: { fontSize: 16, fontWeight: '800', color: '#000' },
-  chatTime: { fontSize: 11, fontWeight: '700', color: 'rgba(0,0,0,0.2)' },
-  chatRole: { fontSize: 12, fontWeight: '700', color: '#6193F5', marginTop: 1 },
-  lastMsg: { fontSize: 14, color: 'rgba(0,0,0,0.4)', marginTop: 4, fontWeight: '600' }
+  nameRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  chatName: { fontSize: 16, fontWeight: '900', color: '#000' },
+  chatTime: { fontSize: 11, fontWeight: '700', color: 'rgba(0,0,0,0.3)' },
+  chatRole: { fontSize: 11, fontWeight: '800', color: '#2979FF', marginTop: 2 },
+  lastMsg: {
+    fontSize: 13,
+    color: 'rgba(0,0,0,0.45)',
+    marginTop: 3,
+    fontWeight: '600',
+  },
 });

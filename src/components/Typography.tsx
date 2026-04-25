@@ -19,7 +19,7 @@ export const Typography: React.FC<TypographyProps> = ({
   return (
     <Text 
       style={[
-        TYPOGRAPHY[builderVariant(variant)], 
+        TYPOGRAPHY[getTypographyVariant(variant)], 
         { 
           color, 
           textAlign: align,
@@ -34,8 +34,7 @@ export const Typography: React.FC<TypographyProps> = ({
   );
 };
 
-// Helper to ensure we don't break on unexpected variants
-const builderVariant = (v: string): keyof typeof TYPOGRAPHY => {
+function getTypographyVariant(v: string): keyof typeof TYPOGRAPHY {
     if (v in TYPOGRAPHY) return v as keyof typeof TYPOGRAPHY;
     return 'body';
 }

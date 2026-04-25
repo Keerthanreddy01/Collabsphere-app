@@ -1,37 +1,39 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { 
   StyleSheet, 
   View, 
-  Dimensions, 
+  FlatList, 
+  ScrollView, 
   TouchableOpacity, 
-  Image,
-  FlatList,
-  ScrollView,
-  StatusBar
+  Dimensions, 
+  Image, 
+  StatusBar,
+  InteractionManager,
+  Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as LucidIcons from 'lucide-react-native';
 import Animated, { 
-  useAnimatedStyle, 
   useSharedValue, 
-  withTiming, 
-  FadeInDown,
-  FadeInUp,
+  useAnimatedStyle, 
+  withSpring, 
   withDelay,
-  withSpring
+  FadeInUp,
+  FadeInDown
 } from 'react-native-reanimated';
-import * as Lucid from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-
 import { Typography } from '../components/Typography';
 import { useTheme } from '../context/ThemeContext';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-const Icon = ({ name, color, size, style }: any) => {
-  const Lucid = require('lucide-react-native');
-  const IconComponent = Lucid[name] || Lucid.Circle;
-  return <IconComponent color={color} size={size} style={style} />;
+const SafeIcon = ({ name, ...props }: { name: string; [key: string]: any }) => {
+  const IconComponent = (LucidIcons as any)[name];
+  if (!IconComponent) return null;
+  return <IconComponent {...props} />;
 };
+
+// ─── Spring config ──────────────────────────────────────────────────
+const SPRING = { damping: 22, stiffness: 300, mass: 0.9 };
 
 const MOCK_LEADERBOARD = [
   { id: '1', name: 'lilyonetw...', score: 146, avatar: 'https://i.pravatar.cc/150?u=lily', rank: 1 },
@@ -40,29 +42,51 @@ const MOCK_LEADERBOARD = [
   { id: '4', name: 'whitefish664', score: 96, avatar: 'https://i.pravatar.cc/150?u=wf', rank: 4 },
   { id: '5', name: 'sadpanda176', score: 88, avatar: 'https://i.pravatar.cc/150?u=sp', rank: 5 },
   { id: '6', name: 'silverduck204', score: 87, avatar: 'https://i.pravatar.cc/150?u=sd', rank: 6 },
-  { id: '7', name: 'beautifulmouse112', score: 85, avatar: 'https://i.pravatar.cc/150?u=bm', rank: 7 },
+  { id: '7', name: 'beautifo...', score: 85, avatar: 'https://i.pravatar.cc/150?u=bm', rank: 7 },
   { id: '8', name: 'cryptoking', score: 82, avatar: 'https://i.pravatar.cc/150?u=ck', rank: 8 },
 ];
 
+// Memoized rank row
+const RankRow = memo(({ item, index }: { item: any; index: number }) => (
+  <Animated.View
+    entering={FadeInDown.delay(index * 80).springify().damping(20)}
+    style={styles.rankRow}
+  >
+    <View style={styles.rankSide}>
+      <Typography style={styles.rankNumber}>{item?.rank || '-'}</Typography>
+      <Image
+        source={{ uri: item?.avatar || 'https://i.pravatar.cc/150' }}
+        style={styles.rowAvatar}
+      />
+    </View>
+    <Typography numberOfLines={1} style={styles.rowName}>{item?.name || 'Builder'}</Typography>
+    <View style={styles.rowScorePill}>
+      <Typography style={styles.rowScoreValue}>{item?.score || 0}</Typography>
+    </View>
+  </Animated.View>
+));
+
 export const DiscoveryScreen = ({ navigation }: any) => {
   const { colors } = useTheme();
-  
+  const [ready, setReady] = useState(false);
+
   const podiumHeight1 = useSharedValue(0);
   const podiumHeight2 = useSharedValue(0);
   const podiumHeight3 = useSharedValue(0);
-  const progressLine = useSharedValue(0);
 
   useEffect(() => {
-    podiumHeight1.value = withDelay(300, withSpring(140));
-    podiumHeight2.value = withDelay(100, withSpring(100));
-    podiumHeight3.value = withDelay(500, withSpring(80));
-    progressLine.value = withTiming(0.72, { duration: 3000 });
+    const task = InteractionManager.runAfterInteractions(() => {
+      setReady(true);
+      podiumHeight1.value = withDelay(300, withSpring(160, SPRING));
+      podiumHeight2.value = withDelay(100, withSpring(110, SPRING));
+      podiumHeight3.value = withDelay(500, withSpring(90, SPRING));
+    });
+    return () => task.cancel();
   }, []);
 
   const rPodium1 = useAnimatedStyle(() => ({ height: podiumHeight1.value }));
   const rPodium2 = useAnimatedStyle(() => ({ height: podiumHeight2.value }));
   const rPodium3 = useAnimatedStyle(() => ({ height: podiumHeight3.value }));
-  const rProgress = useAnimatedStyle(() => ({ width: `${progressLine.value * 100}%` }));
 
   const topThree = useMemo(() => MOCK_LEADERBOARD.slice(0, 3), []);
   const otherUsers = useMemo(() => MOCK_LEADERBOARD.slice(3), []);
@@ -70,229 +94,221 @@ export const DiscoveryScreen = ({ navigation }: any) => {
   const [activeTab, setActiveTab] = React.useState('Worldwide');
   const tabs = ['Worldwide', 'Local', 'Friends'];
 
+  const renderRankRow = useCallback(
+    ({ item, index }: { item: any; index: number }) => (
+      <RankRow item={item} index={index} />
+    ),
+    []
+  );
+
+  const keyExtractor = useCallback((item: any) => item.id, []);
+
   return (
-    <View style={[styles.container, { backgroundColor: '#F7F6F2' }]}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.safeArea}>
-        
+
         {/* Header */}
         <View style={styles.header}>
-           <TouchableOpacity onPress={() => navigation?.goBack()} style={styles.backBtn}>
-              <Icon name="ArrowLeft" size={24} color="#000" />
-           </TouchableOpacity>
-           <Typography style={styles.headerTitle}>Leaderboard</Typography>
-           <View style={{ width: 44 }} />
-        </View>
-
-        {/* Custom Progress Bar - Top */}
-        <View style={styles.globalProgressContainer}>
-           <Typography variant="caption" color="rgba(0,0,0,0.3)" style={{ marginBottom: 10, fontWeight: '800' }}>
-              COMMUNITY VELOCITY: <Typography variant="caption" color="#6193F5">72%</Typography>
-           </Typography>
-           <View style={styles.progressBg}>
-              <Animated.View style={[styles.progressFill, rProgress]} />
-           </View>
+          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.85}>
+            <SafeIcon name="Search" size={22} color="#000" />
+          </TouchableOpacity>
+          <Typography style={styles.headerTitle}>RANKING</Typography>
+          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.85}>
+            <SafeIcon name="Filter" size={22} color="#000" />
+          </TouchableOpacity>
         </View>
 
         {/* Filter Tabs */}
         <View style={styles.tabContainer}>
-           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScroll}>
-              {tabs.map(tab => (
-                <TouchableOpacity 
-                   key={tab} 
-                   onPress={() => setActiveTab(tab)}
-                   style={[styles.tabItem, activeTab === tab && styles.tabActive]}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tabScroll}
+            decelerationRate="fast"
+          >
+            {tabs.map((tab) => (
+              <TouchableOpacity
+                key={tab}
+                onPress={() => setActiveTab(tab)}
+                style={[styles.tabItem, activeTab === tab && styles.tabActive]}
+                activeOpacity={0.85}
+              >
+                <Typography
+                  style={[styles.tabText, activeTab === tab && styles.tabTextActive]}
                 >
-                   <Typography style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>{tab}</Typography>
-                </TouchableOpacity>
-              ))}
-           </ScrollView>
+                  {tab}
+                </Typography>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         {/* Podium Section */}
         <View style={styles.podiumWrapper}>
-           {/* Rank 2 */}
-           <View style={styles.podiumColumn}>
-              <Animated.View entering={FadeInUp.delay(200)} style={styles.podiumUser}>
-                 <View style={styles.avatarBorder}>
-                    <Image source={{ uri: topThree[1]?.avatar || 'https://i.pravatar.cc/150' }} style={styles.podiumAvatar} />
-                    <View style={[styles.rankBadge, { backgroundColor: '#C0C0C0' }]}>
-                       <Typography style={styles.rankBadgeText}>2</Typography>
-                    </View>
-                 </View>
-                 <Typography numberOfLines={1} style={styles.podiumName}>{topThree[1]?.name || 'Player'}</Typography>
-                 <View style={styles.scorePill}>
-                    <Icon name="Trophy" size={10} color="#6193F5" />
-                    <Typography style={styles.scoreText}>{topThree[1]?.score || 0}</Typography>
-                 </View>
-              </Animated.View>
-              <Animated.View style={[styles.podiumBase, styles.baseTwo, rPodium2]}>
-                 <Typography style={styles.podiumRankText}>2</Typography>
-              </Animated.View>
-           </View>
+          {/* Rank 2 */}
+          <View style={styles.podiumColumn}>
+            <Animated.View entering={FadeInUp.delay(200).springify()} style={styles.podiumUser}>
+              <View style={styles.avatarBorder}>
+                <Image source={{ uri: topThree[1]?.avatar }} style={styles.podiumAvatar} />
+                <View style={[styles.rankBadge, { backgroundColor: '#FFEB3B' }]}>
+                  <Typography style={styles.rankBadgeText}>2</Typography>
+                </View>
+              </View>
+              <Typography numberOfLines={1} style={styles.podiumName}>{topThree[1]?.name}</Typography>
+              <View style={styles.scorePill}>
+                <SafeIcon name="Trophy" size={10} color="#000" />
+                <Typography style={styles.scoreText}>{topThree[1]?.score}</Typography>
+              </View>
+            </Animated.View>
+            <Animated.View style={[styles.podiumBase, styles.baseTwo, rPodium2]}>
+              <Typography style={styles.podiumRankText}>2</Typography>
+            </Animated.View>
+          </View>
 
-           {/* Rank 1 */}
-           <View style={styles.podiumColumn}>
-              <Animated.View entering={FadeInUp} style={styles.podiumUser}>
-                 <View style={[styles.avatarBorder, { width: 84, height: 84, borderRadius: 42, borderColor: '#FFD700' }]}>
-                    <Image source={{ uri: topThree[0]?.avatar || 'https://i.pravatar.cc/150' }} style={[styles.podiumAvatar, { width: 78, height: 78, borderRadius: 39 }]} />
-                    <View style={[styles.rankBadge, { backgroundColor: '#FFD700', width: 24, height: 24, borderRadius: 12 }]}>
-                       <Typography style={styles.rankBadgeText}>1</Typography>
-                    </View>
-                 </View>
-                 <Typography numberOfLines={1} style={[styles.podiumName, { fontWeight: '900' }]}>{topThree[0]?.name || 'Champion'}</Typography>
-                 <View style={[styles.scorePill, { backgroundColor: 'rgba(255, 215, 0, 0.1)' }]}>
-                    <Icon name="Trophy" size={10} color="#FFD700" />
-                    <Typography style={[styles.scoreText, { color: '#FFD700' }]}>{topThree[0]?.score || 0}</Typography>
-                 </View>
-              </Animated.View>
-              <Animated.View style={[styles.podiumBase, styles.baseOne, rPodium1]}>
-                 <Typography style={[styles.podiumRankText, { fontSize: 48 }]}>1</Typography>
-              </Animated.View>
-           </View>
+          {/* Rank 1 */}
+          <View style={styles.podiumColumn}>
+            <Animated.View entering={FadeInUp.springify()} style={styles.podiumUser}>
+              <View style={[styles.avatarBorder, styles.crownBorder]}>
+                <Image source={{ uri: topThree[0]?.avatar }} style={[styles.podiumAvatar, styles.largeAvatar]} />
+                <View style={[styles.rankBadge, styles.crownBadge]}>
+                  <Typography style={styles.rankBadgeText}>1</Typography>
+                </View>
+              </View>
+              <Typography numberOfLines={1} style={[styles.podiumName, { fontWeight: '900' }]}>{topThree[0]?.name}</Typography>
+              <View style={[styles.scorePill, styles.goldPill]}>
+                <SafeIcon name="Trophy" size={12} color="#000" />
+                <Typography style={styles.scoreText}>{topThree[0]?.score}</Typography>
+              </View>
+            </Animated.View>
+            <Animated.View style={[styles.podiumBase, styles.baseOne, rPodium1]}>
+              <Typography style={[styles.podiumRankText, { fontSize: 48 }]}>1</Typography>
+            </Animated.View>
+          </View>
 
-           {/* Rank 3 */}
-           <View style={styles.podiumColumn}>
-              <Animated.View entering={FadeInUp.delay(400)} style={styles.podiumUser}>
-                 <View style={styles.avatarBorder}>
-                    <Image source={{ uri: topThree[2]?.avatar || 'https://i.pravatar.cc/150' }} style={styles.podiumAvatar} />
-                    <View style={[styles.rankBadge, { backgroundColor: '#CD7F32' }]}>
-                       <Typography style={styles.rankBadgeText}>3</Typography>
-                    </View>
-                 </View>
-                 <Typography numberOfLines={1} style={styles.podiumName}>{topThree[2]?.name || 'Player'}</Typography>
-                 <View style={styles.scorePill}>
-                    <Icon name="Trophy" size={10} color="#6193F5" />
-                    <Typography style={styles.scoreText}>{topThree[2]?.score || 0}</Typography>
-                 </View>
-              </Animated.View>
-              <Animated.View style={[styles.podiumBase, styles.baseThree, rPodium3]}>
-                 <Typography style={styles.podiumRankText}>3</Typography>
-              </Animated.View>
-           </View>
+          {/* Rank 3 */}
+          <View style={styles.podiumColumn}>
+            <Animated.View entering={FadeInUp.delay(400).springify()} style={styles.podiumUser}>
+              <View style={styles.avatarBorder}>
+                <Image source={{ uri: topThree[2]?.avatar }} style={styles.podiumAvatar} />
+                <View style={[styles.rankBadge, { backgroundColor: '#FFEB3B' }]}>
+                  <Typography style={styles.rankBadgeText}>3</Typography>
+                </View>
+              </View>
+              <Typography numberOfLines={1} style={styles.podiumName}>{topThree[2]?.name}</Typography>
+              <View style={styles.scorePill}>
+                <SafeIcon name="Trophy" size={10} color="#000" />
+                <Typography style={styles.scoreText}>{topThree[2]?.score}</Typography>
+              </View>
+            </Animated.View>
+            <Animated.View style={[styles.podiumBase, styles.baseThree, rPodium3]}>
+              <Typography style={styles.podiumRankText}>3</Typography>
+            </Animated.View>
+          </View>
         </View>
 
-        {/* List Section */}
+        {/* Leaderboard List — production tuned */}
         <View style={styles.listSection}>
-           <FlatList 
-             data={otherUsers}
-             keyExtractor={item => item.id}
-             showsVerticalScrollIndicator={false}
-             contentContainerStyle={{ paddingBottom: 150 }}
-             renderItem={({ item, index }) => (
-               <Animated.View entering={FadeInDown.delay(index * 100)} style={styles.rankRow}>
-                  <Typography style={styles.rankNumber}>{item.rank}</Typography>
-                  <Image source={{ uri: item.avatar || 'https://i.pravatar.cc/150' }} style={styles.rowAvatar} />
-                  <Typography numberOfLines={1} style={styles.rowName}>{item.name}</Typography>
-                  <View style={styles.rowScorePill}>
-                     <Icon name="Trophy" size={10} color="rgba(0,0,0,0.2)" />
-                     <Typography style={styles.rowScoreValue}>{item.score}</Typography>
-                  </View>
-               </Animated.View>
-             )}
-           />
+          <View style={styles.panelHandle} />
+          <FlatList
+            data={otherUsers}
+            keyExtractor={keyExtractor}
+            renderItem={renderRankRow}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 160 }}
+            removeClippedSubviews={Platform.OS === 'android'}
+            maxToRenderPerBatch={8}
+            windowSize={10}
+            initialNumToRender={4}
+            decelerationRate="fast"
+          />
         </View>
-
       </SafeAreaView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#FFEB3B' },
   safeArea: { flex: 1 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 25,
+    paddingVertical: 18,
   },
-  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center' },
-  headerTitle: { fontSize: 18, fontWeight: '800', color: '#000' },
-  globalProgressContainer: {
-    paddingHorizontal: 24,
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  progressBg: {
-    height: 8,
+  iconBtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: '#FFF',
-    borderRadius: 4,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#6193F5',
-    borderRadius: 4,
-  },
-  tabContainer: {
-    paddingVertical: 10,
-  },
-  tabScroll: { paddingHorizontal: 24, gap: 12 },
-  tabItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#FFF',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
-  },
-  tabActive: {
-    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
     borderColor: '#000',
   },
-  tabText: { fontSize: 13, fontWeight: '700', color: 'rgba(0,0,0,0.4)' },
+  headerTitle: { fontSize: 24, fontWeight: '900', color: '#000', letterSpacing: -1 },
+
+  tabContainer: { paddingVertical: 8 },
+  tabScroll: { paddingHorizontal: 25, gap: 12 },
+  tabItem: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
+    backgroundColor: '#FFF',
+    borderWidth: 2,
+    borderColor: '#000',
+  },
+  tabActive: { backgroundColor: '#000' },
+  tabText: { fontSize: 13, fontWeight: '900', color: '#000', textTransform: 'uppercase' },
   tabTextActive: { color: '#FFF' },
+
   podiumWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'center',
-    height: 300,
+    height: 310,
     paddingHorizontal: 20,
+    marginTop: 15,
   },
-  podiumColumn: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  podiumUser: {
-    alignItems: 'center',
-    marginBottom: 10,
-    zIndex: 10,
-  },
+  podiumColumn: { flex: 1, alignItems: 'center' },
+  podiumUser: { alignItems: 'center', marginBottom: 12, zIndex: 10 },
   avatarBorder: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    borderWidth: 2,
-    borderColor: '#FFF',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 3,
+    borderColor: '#000',
     backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
-    elevation: 4,
+    elevation: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
   },
+  crownBorder: { width: 86, height: 86, borderRadius: 43, borderWidth: 4 },
   podiumAvatar: { width: 62, height: 62, borderRadius: 31 },
+  largeAvatar: { width: 76, height: 76, borderRadius: 38 },
   rankBadge: {
     position: 'absolute',
-    top: 0,
-    right: -4,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    top: -5,
+    right: -5,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#FFF',
+    borderColor: '#000',
+    backgroundColor: '#FFF',
   },
-  rankBadgeText: { fontSize: 10, fontWeight: '900', color: '#000' },
-  podiumName: { fontSize: 12, color: '#000', fontWeight: '700' },
+  crownBadge: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#FFD700' },
+  rankBadgeText: { fontSize: 11, fontWeight: '900', color: '#000' },
+  podiumName: { fontSize: 12, color: '#000', fontWeight: '800', marginTop: 4 },
   scorePill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -301,34 +317,47 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 12,
     marginTop: 6,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    gap: 5,
+    borderWidth: 2,
+    borderColor: '#000',
   },
-  scoreText: { fontSize: 12, fontWeight: '800', color: '#6193F5' },
+  goldPill: { backgroundColor: '#FFD700' },
+  scoreText: { fontSize: 12, fontWeight: '900', color: '#000' },
   podiumBase: {
     width: '90%',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     backgroundColor: '#FFF',
+    borderWidth: 3,
+    borderBottomWidth: 0,
+    borderColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 2,
   },
-  baseOne: { backgroundColor: '#6193F5', borderWidth: 0 },
-  baseTwo: { backgroundColor: '#FFF' },
-  baseThree: { backgroundColor: '#FFF' },
-  podiumRankText: { fontSize: 32, fontWeight: '900', color: 'rgba(0,0,0,0.05)' },
+  baseOne: { backgroundColor: '#FF1744' },
+  baseTwo: { backgroundColor: '#2979FF' },
+  baseThree: { backgroundColor: '#00E676' },
+  podiumRankText: { fontSize: 30, fontWeight: '900', color: 'rgba(0,0,0,0.12)' },
+
   listSection: {
     flex: 1,
     backgroundColor: '#FFF',
-    borderTopLeftRadius: 36,
-    borderTopRightRadius: 36,
-    paddingTop: 24,
-    paddingHorizontal: 24,
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    borderTopWidth: 4,
+    borderColor: '#000',
+    paddingTop: 15,
+    paddingHorizontal: 25,
     marginTop: -20,
     zIndex: 20,
-    elevation: 8,
+  },
+  panelHandle: {
+    width: 50,
+    height: 6,
+    backgroundColor: '#000',
+    borderRadius: 3,
+    alignSelf: 'center',
+    marginBottom: 20,
   },
   rankRow: {
     flexDirection: 'row',
@@ -337,17 +366,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.05)',
   },
-  rankNumber: { width: 30, fontSize: 15, fontWeight: '700', color: 'rgba(0,0,0,0.3)' },
-  rowAvatar: { width: 44, height: 44, borderRadius: 22, marginRight: 16 },
-  rowName: { flex: 1, fontSize: 15, fontWeight: '700', color: '#000' },
+  rankSide: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  rankNumber: { fontSize: 15, fontWeight: '900', color: 'rgba(0,0,0,0.2)', width: 24 },
+  rowAvatar: { width: 48, height: 48, borderRadius: 24, borderWidth: 2, borderColor: '#000' },
+  rowName: { flex: 1, fontSize: 15, fontWeight: '900', color: '#000', marginLeft: 14 },
   rowScorePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    backgroundColor: '#F7F6F2',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 18,
+    backgroundColor: '#FFEB3B',
+    borderWidth: 2,
+    borderColor: '#000',
   },
-  rowScoreValue: { fontSize: 14, fontWeight: '900', color: '#000' }
+  rowScoreValue: { fontSize: 13, fontWeight: '900', color: '#000' },
 });

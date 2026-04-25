@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, Dimensions, Image } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Dimensions, Image, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Sparkles, MessageSquare, User, Zap, Rocket } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { 
   FadeInDown, 
   useAnimatedStyle, 
@@ -14,9 +13,8 @@ import Animated, {
   interpolate
 } from 'react-native-reanimated';
 import { Typography } from '../components/Typography';
-import { COLORS } from '../theme/theme';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const AVATARS = [
   'https://i.pravatar.cc/150?u=1',
@@ -35,14 +33,14 @@ export const MatchingScreen = () => {
 
   useEffect(() => {
     rotation.value = withRepeat(
-      withTiming(360, { duration: 25000, easing: Easing.linear }),
+      withTiming(360, { duration: 15000, easing: Easing.linear }),
       -1,
       false
     );
     pulse.value = withRepeat(
       withSequence(
-        withTiming(1.2, { duration: 2000, easing: Easing.out(Easing.ease) }),
-        withTiming(1, { duration: 2000, easing: Easing.in(Easing.ease) })
+        withTiming(1.1, { duration: 1500, easing: Easing.out(Easing.ease) }),
+        withTiming(1, { duration: 1500, easing: Easing.in(Easing.ease) })
       ),
       -1,
       true
@@ -55,29 +53,29 @@ export const MatchingScreen = () => {
 
   const centerPulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulse.value }],
-    opacity: interpolate(pulse.value, [1, 1.2], [0.3, 0])
   }));
 
   return (
-    <View style={styles.container}>
-      {/* Background Mesh */}
-      <View style={StyleSheet.absoluteFill}>
-        <View style={{ flex: 1, backgroundColor: '#000000' }} />
-        <LinearGradient 
-          colors={['rgba(139, 92, 246, 0.1)', 'transparent']} 
-          style={{ position: 'absolute', width: width, height: height, top: -width/2 }} 
-        />
-      </View>
+    <View style={[styles.container, { backgroundColor: '#FFEB3B' }]}>
+      <StatusBar barStyle="dark-content" />
       
+      {/* Background Pattern */}
+      <View style={styles.gridOverlay}>
+        {Array.from({ length: 10 }).map((_, i) => (
+          <View key={`v-${i}`} style={[styles.gridLineV, { left: i * 50 }]} />
+        ))}
+        {Array.from({ length: 20 }).map((_, i) => (
+          <View key={`h-${i}`} style={[styles.gridLineH, { top: i * 40 }]} />
+        ))}
+      </View>
+
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.discoveryContainer}>
           <View style={styles.orbitStage}>
              
-             {/* Background Pulse Rings */}
-             <Animated.View style={[styles.pulseRing, centerPulseStyle, { width: width * 0.7, height: width * 0.7, borderRadius: width * 0.35 }]} />
-             <Animated.View style={[styles.pulseRing, centerPulseStyle, { width: width * 0.5, height: width * 0.5, borderRadius: width * 0.25 }]} />
-             
-             <View style={styles.staticRing} />
+             {/* Large Static Rings */}
+             <View style={[styles.staticRing, { width: width * 0.75, height: width * 0.75, borderRadius: (width * 0.75)/2 }]} />
+             <View style={[styles.staticRing, { width: width * 0.55, height: width * 0.55, borderRadius: (width * 0.55)/2 }]} />
              
              <Animated.View style={[styles.avatarOrbit, orbitStyle]}>
                 {AVATARS.map((uri, i) => {
@@ -91,45 +89,42 @@ export const MatchingScreen = () => {
                       key={i}
                       style={[
                         styles.avatarPod, 
-                        { left: width / 2 + x - 32, top: width / 2 + y - 32 }
+                        { left: width / 2 + x - 35, top: width / 2 + y - 35 }
                       ]}
                     >
                        <Image 
                          source={{ uri }} 
                          style={styles.orbitImg} 
                        />
-                       <View style={styles.avatarGlow} />
+                       <View style={styles.badgeWrapper}>
+                          <Zap size={10} color="#000" fill="#FFD600" />
+                       </View>
                     </View>
                   );
                 })}
              </Animated.View>
 
-             <View style={styles.logoAnchor}>
-                <View style={styles.logoGlass}>
-                   <Typography variant="h1" color="#000" style={{ fontSize: 44, fontWeight: '800' }}>h</Typography>
+             <Animated.View style={[styles.logoAnchor, centerPulseStyle]}>
+                <View style={styles.logoBox}>
+                   <Typography style={styles.logoChar}>H</Typography>
                 </View>
-                <View style={styles.logoBorderInner} />
-             </View>
+             </Animated.View>
           </View>
 
-          <Animated.View entering={FadeInDown.delay(700).springify()} style={styles.footerContent}>
+          <Animated.View entering={FadeInDown.delay(700)} style={styles.footerContent}>
              <View style={styles.aiBadge}>
-                <Sparkles size={12} color="#A855F7" fill="#A855F7" />
-                <Typography variant="caption" color="#A855F7" style={{ marginLeft: 8, fontWeight: '900' }}>AI MATCHMAKING LIVE</Typography>
+                <Sparkles size={14} color="#000" fill="#2979FF" />
+                <Typography style={styles.aiBadgeText}>DECIDED BY COLLAB-AI</Typography>
              </View>
              
-             <Typography variant="h1" color="#FFFFFF" align="center" style={styles.heroTitle}>
-                Friend's Contact
-             </Typography>
-             <Typography variant="body" color="rgba(255,255,255,0.5)" align="center" style={styles.heroSub}>
-                Connecting the next generation of builders through decentralized intelligence.
+             <Typography style={styles.heroTitle}>BUILDER DISCOVERY</Typography>
+             <Typography style={styles.heroSub}>
+                CONNECTING THE NEXT GENERATION OF BUILDERS THROUGH DECENTRALIZED INTELLIGENCE.
              </Typography>
 
              <TouchableOpacity style={styles.ctaButton} activeOpacity={0.9}>
-                <LinearGradient colors={['#FFF', '#DDD']} style={styles.ctaInner}>
-                   <Typography variant="bodyBold" color="#000">Enter Discovery</Typography>
-                   <Rocket size={18} color="#000" style={{ marginLeft: 10 }} />
-                </LinearGradient>
+                <Typography style={styles.ctaText}>START SCANNING</Typography>
+                <Rocket size={24} color="#000" style={{ marginLeft: 15 }} />
              </TouchableOpacity>
           </Animated.View>
         </View>
@@ -139,128 +134,109 @@ export const MatchingScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-  safeArea: {
-    flex: 1,
-  },
-  discoveryContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  orbitStage: {
-     width: width,
-     height: width,
-     justifyContent: 'center',
-     alignItems: 'center',
-  },
-  pulseRing: {
-    position: 'absolute',
-    borderWidth: 1.5,
-    borderColor: '#8B5CF6',
-  },
+  container: { flex: 1 },
+  gridOverlay: { ...StyleSheet.absoluteFillObject, opacity: 0.1 },
+  gridLineV: { position: 'absolute', width: 2, height: '100%', backgroundColor: '#000' },
+  gridLineH: { position: 'absolute', height: 2, width: '100%', backgroundColor: '#000' },
+  safeArea: { flex: 1 },
+  discoveryContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  orbitStage: { width: width, height: width, justifyContent: 'center', alignItems: 'center' },
   staticRing: {
     position: 'absolute',
-    width: width * 0.76,
-    height: width * 0.76,
-    borderRadius: (width * 0.76) / 2,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 2,
+    borderColor: 'rgba(0,0,0,0.1)',
+    borderStyle: 'dashed',
   },
-  avatarOrbit: {
-    width: width,
-    height: width,
-    position: 'absolute',
-  },
+  avatarOrbit: { width: width, height: width, position: 'absolute' },
   avatarPod: {
     position: 'absolute',
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    padding: 2,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    width: 70,
+    height: 70,
+    borderRadius: 20,
+    backgroundColor: '#FFF',
+    borderWidth: 3,
+    borderColor: '#000',
+    padding: 3,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    shadowOffset: { width: 4, height: 4 }
   },
-  orbitImg: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  orbitImg: { width: '100%', height: '100%', borderRadius: 15 },
+  badgeWrapper: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#FFF',
     borderWidth: 2,
     borderColor: '#000',
-  },
-  avatarGlow: {
-     position: 'absolute',
-     width: '100%',
-     height: '100%',
-     borderRadius: 32,
-     backgroundColor: '#8B5CF6',
-     opacity: 0.1,
-     zIndex: -1,
-  },
-  logoAnchor: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255,255,255,0.05)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
   },
-  logoGlass: {
-     width: 100,
-     height: 100,
-     borderRadius: 50,
-     backgroundColor: '#FFF',
-     justifyContent: 'center',
-     alignItems: 'center',
+  logoAnchor: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  logoBorderInner: {
-     position: 'absolute',
+  logoBox: {
      width: 110,
      height: 110,
-     borderRadius: 55,
-     borderWidth: 1,
-     borderColor: 'rgba(255,255,255,0.1)',
+     backgroundColor: '#FFF',
+     borderWidth: 4,
+     borderColor: '#000',
+     borderRadius: 30,
+     justifyContent: 'center',
+     alignItems: 'center',
+     elevation: 20,
+     shadowColor: '#000',
+     shadowOpacity: 1,
+     shadowRadius: 0,
+     shadowOffset: { width: 10, height: 10 }
   },
+  logoChar: { fontSize: 64, fontWeight: '900', color: '#000' },
   footerContent: {
-    marginTop: 30,
-    paddingHorizontal: 40,
+    marginTop: 40,
+    paddingHorizontal: 25,
     alignItems: 'center',
-    paddingBottom: 160, // Ensure content is clear of the nav bar
+    paddingBottom: 160,
   },
   aiBadge: {
      flexDirection: 'row',
      alignItems: 'center',
-     backgroundColor: 'rgba(139, 92, 246, 0.1)',
-     paddingHorizontal: 12,
-     paddingVertical: 6,
-     borderRadius: 12,
-     marginBottom: 24,
+     backgroundColor: '#FFF',
+     paddingHorizontal: 15,
+     paddingVertical: 8,
+     borderRadius: 10,
+     borderWidth: 2,
+     borderColor: '#000',
+     marginBottom: 30,
   },
-  heroTitle: {
-    fontSize: 44,
-    fontWeight: '900',
-    letterSpacing: -1,
-  },
-  heroSub: {
-    marginTop: 16,
-    fontSize: 16,
-    lineHeight: 22,
-  },
+  aiBadgeText: { fontSize: 11, fontWeight: '900', color: '#000', marginLeft: 10 },
+  heroTitle: { fontSize: 44, fontWeight: '900', color: '#000', letterSpacing: -2, textAlign: 'center' },
+  heroSub: { marginTop: 20, fontSize: 13, fontWeight: '900', color: '#000', opacity: 0.5, textAlign: 'center', letterSpacing: 0.5, lineHeight: 20 },
   ctaButton: {
-    marginTop: 48,
+    marginTop: 50,
     width: '100%',
-    height: 64,
-    borderRadius: 32,
-    overflow: 'hidden',
+    height: 74,
+    backgroundColor: '#FFF',
+    borderWidth: 4,
+    borderColor: '#000',
+    borderRadius: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 15,
+    shadowColor: '#000',
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    shadowOffset: { width: 8, height: 8 }
   },
-  ctaInner: {
-     flex: 1,
-     flexDirection: 'row',
-     justifyContent: 'center',
-     alignItems: 'center',
-  }
+  ctaText: { fontSize: 20, fontWeight: '900', color: '#000' }
 });
