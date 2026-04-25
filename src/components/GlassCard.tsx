@@ -1,48 +1,43 @@
 import React from 'react';
 import { StyleSheet, View, ViewProps, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { COLORS, BORDER_RADIUS } from '../theme/theme';
 
 interface GlassCardProps extends ViewProps {
   intensity?: number;
   tint?: 'light' | 'dark' | 'default';
   children: React.ReactNode;
+  borderColor?: string;
 }
 
+/**
+ * GlassCard — PLOP! Neo-Brutalist floating card.
+ * iOS: real BlurView glass. Android: solid white fallback.
+ */
 export const GlassCard: React.FC<GlassCardProps> = ({ 
-  intensity = 20, 
+  intensity = 85, 
   tint = 'light', 
   children, 
   style,
+  borderColor = '#000',
   ...rest 
 }) => {
-  const { ...props } = rest as any;
-  // Explicitly remove custom props from spreading to native View
-  delete props.intensity;
-  delete props.tint;
-
   if (Platform.OS === 'ios') {
     return (
-      <BlurView 
+      <BlurView
         intensity={intensity} 
         tint={tint} 
-        style={[styles.container, style]}
-        {...props}
+        style={[styles.container, { borderColor }, style]}
+        {...rest}
       >
         {children}
       </BlurView>
     );
   }
 
-  // Fallback for Android where blur can be inconsistent.
   return (
     <View 
-      style={[
-        styles.container, 
-        styles.androidFallback,
-        style
-      ]}
-      {...props}
+      style={[styles.container, styles.androidSolid, { borderColor }, style]}
+      {...rest}
     >
       {children}
     </View>
@@ -51,13 +46,17 @@ export const GlassCard: React.FC<GlassCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: BORDER_RADIUS.xl,
+    borderRadius: 32,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.glassBorder,
-    backgroundColor: COLORS.glassBackground,
+    borderWidth: 3,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    shadowOffset: { width: 6, height: 6 },
   },
-  androidFallback: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+  androidSolid: {
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
   },
 });

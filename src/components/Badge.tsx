@@ -1,50 +1,46 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 import { Typography } from './Typography';
-import { COLORS, BORDER_RADIUS } from '../theme/theme';
 
 interface BadgeProps {
   label: string;
   color?: string;
+  textColor?: string;
   variant?: 'solid' | 'outline' | 'ghost';
   style?: ViewStyle;
 }
 
+/**
+ * Badge — PLOP! Neo-Brutalist pill badge.
+ * Always has a hard 2px black border for maximum punch.
+ */
 export const Badge: React.FC<BadgeProps> = ({ 
   label, 
-  color = COLORS.primary, 
+  color = '#FFEB3B',
+  textColor,
   variant = 'solid',
-  style 
+  style,
 }) => {
-  const getStyles = () => {
+  const getBgStyle = () => {
     switch (variant) {
       case 'outline':
-        return {
-          backgroundColor: 'transparent',
-          borderColor: color,
-          borderWidth: 1,
-        };
+        return { backgroundColor: 'transparent', borderColor: color };
       case 'ghost':
-        return {
-          backgroundColor: `${color}20`, // 20 opacity
-          borderColor: 'transparent',
-        };
+        return { backgroundColor: `${color}22`, borderColor: color };
       default:
-        return {
-          backgroundColor: color,
-          borderColor: 'transparent',
-        };
+        return { backgroundColor: color, borderColor: '#000' };
     }
   };
 
-  const getTextColor = () => {
-    if (variant === 'solid') return '#FFF';
-    return color;
-  };
+  const resolvedTextColor = textColor ?? (variant === 'solid' ? '#000' : color);
 
   return (
-    <View style={[styles.container, getStyles(), style]}>
-      <Typography variant="caption" color={getTextColor()} style={{ fontWeight: '700', textTransform: 'uppercase' }}>
+    <View style={[styles.container, getBgStyle(), style]}>
+      <Typography
+        variant="caption"
+        color={resolvedTextColor}
+        style={styles.label}
+      >
         {label}
       </Typography>
     </View>
@@ -53,9 +49,16 @@ export const Badge: React.FC<BadgeProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: BORDER_RADIUS.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 10,
+    borderWidth: 2,
     alignSelf: 'flex-start',
+  },
+  label: {
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    fontSize: 10,
   },
 });

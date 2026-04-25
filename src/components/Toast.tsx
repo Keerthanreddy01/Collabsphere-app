@@ -1,11 +1,17 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
-import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { StyleSheet, View, Dimensions, Platform } from 'react-native';
+import Animated, { 
+  FadeInDown, 
+  FadeOutUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 import { Typography } from './Typography';
-import { useTheme } from '../context/ThemeContext';
-import { CheckCircle2, AlertCircle, Info } from 'lucide-react-native';
+import { CheckCircle2, AlertCircle, Info, Zap } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-type ToastType = 'success' | 'error' | 'info';
+type ToastType = 'success' | 'error' | 'info' | 'boost';
 
 interface ToastContextType {
   showToast: (message: string, type?: ToastType) => void;
@@ -13,35 +19,67 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
-  const { colors } = useTheme();
+const TOAST_BG: Record<ToastType, string> = {
+  success: '#00E676',
+  error: '#FF1744',
+  info: '#2979FF',
+  boost: '#FFEB3B',
+};
 
-  const showToast = useCallback((message: string, type: ToastType = 'info') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  }, []);
+const ToastItem = ({ message, type }: { message: string; type: ToastType }) => {
+  const insets = useSafeAreaInsets();
 
-  const getIcon = (type: ToastType) => {
+  const getIcon = () => {
     switch (type) {
-      case 'success': return <CheckCircle2 color={colors.success} size={20} />;
-      case 'error': return <AlertCircle color="#EF4444" size={20} />;
-      default: return <Info color={colors.primary} size={20} />;
+      case 'success': return <CheckCircle2 color="#000" size={20} strokeWidth={2.5} />;
+      case 'error': return <AlertCircle color="#FFF" size={20} strokeWidth={2.5} />;
+      case 'boost': return <Zap color="#000" size={20} strokeWidth={2.5} fill="#000" />;
+      default: return <Info color="#FFF" size={20} strokeWidth={2.5} />;
     }
   };
+
+  const isDark = type === 'error' || type === 'info';
+
+  return (
+    <Animated.View
+      entering={FadeInDown.springify().damping(20).stiffness(300)}
+      exiting={FadeOutUp.springify().damping(22)}
+      style={[
+        styles.toast,
+        {
+          backgroundColor: TOAST_BG[type],
+          top: (insets.top || 44) + 12,
+        },
+      ]}
+    >
+      {getIcon()}
+      <Typography
+        style={[
+          styles.toastText,
+          { color: isDark ? '#FFF' : '#000' },
+        ]}
+      >
+        {message}
+      </Typography>
+    </Animated.View>
+  );
+};
+
+export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [toast, setToast] = useState<{ message: string; type: ToastType; key: number } | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = useCallback((message: string, type: ToastType = 'info') => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setToast({ message, type, key: Date.now() });
+    timerRef.current = setTimeout(() => setToast(null), 3200);
+  }, []);
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
       {toast && (
-        <Animated.View 
-          entering={FadeInUp} 
-          exiting={FadeOutUp} 
-          style={[styles.toast, { backgroundColor: colors.card, borderColor: colors.border }]}
-        >
-          {getIcon(toast.type)}
-          <Typography variant="body" color={colors.text} style={{ marginLeft: 12 }}>{toast.message}</Typography>
-        </Animated.View>
+        <ToastItem key={toast.key} message={toast.message} type={toast.type} />
       )}
     </ToastContext.Provider>
   );
@@ -56,18 +94,27 @@ export const useToast = () => {
 const styles = StyleSheet.create({
   toast: {
     position: 'absolute',
-    top: 60,
     left: 20,
     right: 20,
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 22,
+    borderWidth: 3,
+    borderColor: '#000',
     flexDirection: 'row',
     alignItems: 'center',
-    zIndex: 9999,
+    gap: 12,
+    zIndex: 99999,
+    elevation: 20,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-  }
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    shadowOffset: { width: 6, height: 6 },
+  },
+  toastText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 0.2,
+  },
 });
