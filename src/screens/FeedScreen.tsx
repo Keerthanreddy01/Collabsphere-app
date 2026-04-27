@@ -60,7 +60,7 @@ const StoryAvatar = memo(({ item }: { item: any }) => (
 ));
 
 // ─── Post Card (memoized to prevent re-renders) ─────────────────────
-const PostCard = memo(({ post, index, onBoost }: any) => {
+const PostCard = memo(({ post, index, onBoost, navigation }: any) => {
   const boostScale = useSharedValue(1);
 
   const handleBoost = useCallback(() => {
@@ -204,9 +204,9 @@ export const FeedScreen = ({ navigation }: any) => {
 
   const renderPost = useCallback(
     ({ item, index }: { item: Post; index: number }) => (
-      <PostCard post={item} index={index} onBoost={() => boostPost(item?.id)} />
+      <PostCard post={item} index={index} onBoost={() => boostPost(item?.id)} navigation={navigation} />
     ),
-    [boostPost]
+    [boostPost, navigation]
   );
 
   const keyExtractor = useCallback(
