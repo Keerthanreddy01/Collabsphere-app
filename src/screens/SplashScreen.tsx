@@ -1,16 +1,16 @@
-import React, { useEffect, useCallback, memo } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   View,
-  Image,
   Dimensions,
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Lucid from 'lucide-react-native';
 import Animated, {
   FadeInDown,
-  FadeIn,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
@@ -24,29 +24,41 @@ import { Typography } from '../components/Typography';
 
 const { width, height } = Dimensions.get('window');
 
+const Icon = ({ name, ...props }: { name: string;[key: string]: any }) => {
+  const IconComponent = (Lucid as any)[name];
+  if (!IconComponent) return null;
+  return <IconComponent {...props} />;
+};
+
 const SPRING = { damping: 20, stiffness: 280, mass: 0.85 };
 
 export const SplashScreen = ({ navigation }: any) => {
   const btnScale = useSharedValue(1);
+  const floatY = useSharedValue(0);
+  const logoOpacity = useSharedValue(0);
+  const logoScale = useSharedValue(0.8);
 
-  // Subtle floating hero animation
-  const heroY = useSharedValue(0);
   useEffect(() => {
-    heroY.value = withDelay(
-      800,
-      withRepeat(
-        withSequence(
-          withTiming(-10, { duration: 1800 }),
-          withTiming(0, { duration: 1800 })
-        ),
-        -1,
-        true
-      )
+    floatY.value = withRepeat(
+      withSequence(
+        withTiming(-15, { duration: 2500 }),
+        withTiming(0, { duration: 2500 })
+      ),
+      -1,
+      true
     );
+    
+    logoOpacity.value = withDelay(200, withTiming(1, { duration: 1000 }));
+    logoScale.value = withDelay(200, withSpring(1, SPRING));
   }, []);
 
-  const heroStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: heroY.value }],
+  const floatStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: floatY.value }],
+  }));
+
+  const logoStyle = useAnimatedStyle(() => ({
+    opacity: logoOpacity.value,
+    transform: [{ scale: logoScale.value }],
   }));
 
   const btnAnimStyle = useAnimatedStyle(() => ({
@@ -68,50 +80,64 @@ export const SplashScreen = ({ navigation }: any) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
+      
+      {/* Mesh Gradient Background */}
+      <LinearGradient
+        colors={['#FFFFFF', '#F0F4FF', '#E0E7FF']}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+      
+      {/* Decorative Orbs */}
+      <Animated.View style={[styles.orb, styles.orb1, floatStyle]} />
+      <Animated.View style={[styles.orb, styles.orb2, floatStyle]} />
+      <Animated.View style={[styles.orb, styles.orb3, floatStyle]} />
+
       <SafeAreaView style={styles.content}>
-
-        {/* Logo */}
-        <Animated.View entering={FadeIn.duration(700)} style={styles.logoContainer}>
-          <Typography style={styles.logoTextMain}>THE UNIVERSE OF COLLAB</Typography>
-          <Typography style={styles.logoTitle}>COLLAB!</Typography>
-        </Animated.View>
-
-        {/* Hero character — floating */}
-        <Animated.View
-          entering={FadeInDown.delay(350).duration(700).springify()}
-          style={[styles.heroContainer, heroStyle]}
-        >
-          <Image
-            source={require('../../assets/clay_hero.png')}
-            style={styles.heroImg}
-            resizeMode="contain"
-          />
-        </Animated.View>
-
-        {/* Bottom CTA */}
-        <View style={styles.bottomArea}>
-          <Animated.View entering={FadeInDown.delay(550).springify().damping(18)}>
-            <Typography style={styles.heroSub}>
-              Diverse and Colorful Teams{'\n'}for Your Projects
-            </Typography>
-            <Typography style={styles.heroTagline}>Only the best talent</Typography>
+        <View style={styles.mainArea}>
+          {/* Logo Section */}
+          <Animated.View style={[styles.logoContainer, logoStyle]}>
+            <View style={styles.logoBadge}>
+               <Typography style={styles.logoBadgeText}>V1.0</Typography>
+            </View>
+            <Typography style={styles.logoTextMain}>COLLABSPHERE</Typography>
+            <View style={styles.collabBox}>
+              <Typography style={[styles.logoTitle, { color: '#6366F1' }]}>BUILD</Typography>
+              <Typography style={[styles.logoTitle, styles.sphereText]}>BEYOND</Typography>
+            </View>
           </Animated.View>
 
+          {/* Value Prop */}
+          <Animated.View 
+            entering={FadeInDown.delay(400).springify().damping(20)}
+            style={styles.heroTextContainer}
+          >
+            <Typography style={styles.heroSub}>
+              Where Elite{'\n'}Architects{'\n'}Converge.
+            </Typography>
+            <View style={styles.taglineBox}>
+              <View style={styles.accentLine} />
+              <Typography style={styles.heroTagline}>THE HUB FOR NEXT-GEN DEVS</Typography>
+            </View>
+          </Animated.View>
+        </View>
+
+        {/* Footer Area */}
+        <View style={styles.bottomArea}>
           <Animated.View
-            entering={FadeInDown.delay(750).springify().damping(18)}
+            entering={FadeInDown.delay(700).springify().damping(18)}
             style={styles.footerRow}
           >
-            {/* Social icons */}
             <View style={styles.socialIcons}>
-              <View style={styles.circleIcon}>
-                <Typography style={styles.iconTxt}>G</Typography>
-              </View>
-              <View style={styles.circleIcon}>
-                <Typography style={styles.iconTxt}>in</Typography>
-              </View>
+              <TouchableOpacity style={styles.circleIcon}>
+                <Icon name="Github" size={20} color="#1E293B" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.circleIcon}>
+                <Icon name="Linkedin" size={20} color="#1E293B" />
+              </TouchableOpacity>
             </View>
 
-            {/* CTA Button */}
             <Animated.View style={btnAnimStyle}>
               <TouchableOpacity
                 style={styles.getStartedBtn}
@@ -120,15 +146,14 @@ export const SplashScreen = ({ navigation }: any) => {
                 onPressOut={handlePressOut}
                 activeOpacity={1}
               >
-                <Typography style={styles.btnText}>Get Started</Typography>
+                <Typography style={styles.btnText}>Enter Arena</Typography>
                 <View style={styles.arrowCircle}>
-                  <ChevronRight size={20} color="#000" />
+                  <ChevronRight size={20} color="#6366F1" />
                 </View>
               </TouchableOpacity>
             </Animated.View>
           </Animated.View>
         </View>
-
       </SafeAreaView>
     </View>
   );
@@ -137,111 +162,164 @@ export const SplashScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFEB3B',
+    backgroundColor: '#F8F9FE',
+  },
+  orb: {
+    position: 'absolute',
+    borderRadius: 999,
+    backgroundColor: '#6366F1',
+    opacity: 0.05,
+  },
+  orb1: {
+    width: 300,
+    height: 300,
+    top: -50,
+    right: -50,
+  },
+  orb2: {
+    width: 200,
+    height: 200,
+    bottom: 100,
+    left: -50,
+  },
+  orb3: {
+    width: 150,
+    height: 150,
+    top: height * 0.4,
+    right: -20,
+    backgroundColor: '#818CF8',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 25,
+    paddingHorizontal: 30,
   },
-  logoContainer: {
-    marginTop: 20,
-  },
-  logoTextMain: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#000',
-    letterSpacing: -0.5,
-  },
-  logoTitle: {
-    fontSize: 118,
-    fontWeight: '900',
-    color: '#000',
-    marginTop: -15,
-    letterSpacing: -8,
-    textTransform: 'uppercase',
-  },
-  heroContainer: {
+  mainArea: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
   },
-  heroImg: {
-    width: width * 1.05,
-    height: width * 1.05,
+  logoContainer: {
+    marginBottom: 40,
   },
-  bottomArea: {
-    paddingBottom: 55,
+  logoBadge: {
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.2)',
+  },
+  logoBadgeText: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#6366F1',
+    letterSpacing: 1,
+  },
+  logoTextMain: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#64748B',
+    letterSpacing: 4,
+    textTransform: 'uppercase',
+    marginBottom: 10,
+  },
+  collabBox: {
+    height: 140, 
+    justifyContent: 'center',
+  },
+  logoTitle: {
+    fontSize: 72,
+    fontWeight: '900',
+    letterSpacing: -4,
+    textTransform: 'uppercase',
+    lineHeight: 70,
+  },
+  sphereText: {
+    fontSize: 48,
+    marginTop: -10,
+    color: '#1E293B',
+    opacity: 0.1,
+  },
+  heroTextContainer: {
+    marginTop: 20,
   },
   heroSub: {
-    fontSize: 32,
+    fontSize: 44,
     fontWeight: '900',
-    color: '#000',
-    lineHeight: 34,
-    maxWidth: '90%',
-    letterSpacing: -1,
+    color: '#111827',
+    lineHeight: 46,
+    letterSpacing: -2,
+  },
+  taglineBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 24,
+  },
+  accentLine: {
+    width: 40,
+    height: 2,
+    backgroundColor: '#6366F1',
   },
   heroTagline: {
-    fontSize: 15,
+    fontSize: 12,
     fontWeight: '800',
-    color: 'rgba(0,0,0,0.4)',
-    marginTop: 10,
+    color: '#94A3B8',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 2,
+  },
+  bottomArea: {
+    paddingBottom: 40,
   },
   footerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 40,
   },
   socialIcons: {
     flexDirection: 'row',
-    gap: 14,
+    gap: 12,
   },
   circleIcon: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    borderWidth: 3,
-    borderColor: '#000',
+    width: 52,
+    height: 52,
+    borderRadius: 16,
     backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8,
     shadowColor: '#000',
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    shadowOffset: { width: 5, height: 5 },
-  },
-  iconTxt: {
-    fontSize: 20,
-    fontWeight: '900',
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
   },
   getStartedBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#000',
-    paddingVertical: 18,
-    paddingLeft: 30,
-    paddingRight: 10,
-    borderRadius: 45,
-    gap: 20,
-    elevation: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 8 },
+    backgroundColor: '#6366F1',
+    paddingVertical: 14,
+    paddingLeft: 24,
+    paddingRight: 8,
+    borderRadius: 18,
+    gap: 16,
+    shadowColor: '#6366F1',
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
   btnText: {
     color: '#FFF',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '900',
-    letterSpacing: 0.5,
   },
   arrowCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
