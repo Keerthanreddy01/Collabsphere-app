@@ -5,72 +5,60 @@ import {
   Dimensions,
   TouchableOpacity,
   StatusBar,
+  Image,
+  Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as Lucid from 'lucide-react-native';
 import Animated, {
+  FadeIn,
   FadeInDown,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withDelay,
   withRepeat,
   withSequence,
   withTiming,
+  interpolate,
+  Extrapolation,
 } from 'react-native-reanimated';
-import { ChevronRight } from 'lucide-react-native';
+import Svg, { Path } from 'react-native-svg';
 import { Typography } from '../components/Typography';
 
 const { width, height } = Dimensions.get('window');
 
-const Icon = ({ name, ...props }: { name: string;[key: string]: any }) => {
-  const IconComponent = (Lucid as any)[name];
-  if (!IconComponent) return null;
-  return <IconComponent {...props} />;
-};
+const FLOATING_IMAGES = [
+  { uri: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400', top: '5%', left: '5%', rotate: '-15deg', size: 140 },
+  { uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400', top: '10%', right: '5%', rotate: '12deg', size: 160 },
+  { uri: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400', top: '35%', left: '-10%', rotate: '8deg', size: 120 },
+  { uri: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400', top: '45%', right: '-15%', rotate: '-10deg', size: 150 },
+  { uri: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400', bottom: '15%', left: '5%', rotate: '-12deg', size: 180 },
+  { uri: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400', bottom: '5%', right: '10%', rotate: '15deg', size: 160 },
+];
 
-const SPRING = { damping: 20, stiffness: 280, mass: 0.85 };
+const StarBackground = () => (
+  <View style={styles.starContainer}>
+    <Svg height="100%" width="100%" viewBox="0 0 100 100">
+      <Path
+        d="M50 0 L61 35 L98 35 L68 57 L79 91 L50 70 L21 91 L32 57 L2 35 L39 35 Z"
+        fill="#1A1AFF"
+        transform="scale(2) translate(-25, -25)"
+      />
+    </Svg>
+  </View>
+);
 
 export const SplashScreen = ({ navigation }: any) => {
-  const btnScale = useSharedValue(1);
-  const floatY = useSharedValue(0);
-  const logoOpacity = useSharedValue(0);
-  const logoScale = useSharedValue(0.8);
+  const floatAnim = useSharedValue(0);
 
   useEffect(() => {
-    floatY.value = withRepeat(
+    floatAnim.value = withRepeat(
       withSequence(
-        withTiming(-15, { duration: 2500 }),
-        withTiming(0, { duration: 2500 })
+        withTiming(1, { duration: 3000 }),
+        withTiming(0, { duration: 3000 })
       ),
       -1,
       true
     );
-    
-    logoOpacity.value = withDelay(200, withTiming(1, { duration: 1000 }));
-    logoScale.value = withDelay(200, withSpring(1, SPRING));
-  }, []);
-
-  const floatStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: floatY.value }],
-  }));
-
-  const logoStyle = useAnimatedStyle(() => ({
-    opacity: logoOpacity.value,
-    transform: [{ scale: logoScale.value }],
-  }));
-
-  const btnAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: btnScale.value }],
-  }));
-
-  const handlePressIn = useCallback(() => {
-    btnScale.value = withSpring(0.94, { damping: 20, stiffness: 500 });
-  }, []);
-
-  const handlePressOut = useCallback(() => {
-    btnScale.value = withSpring(1, SPRING);
   }, []);
 
   const handlePress = useCallback(() => {
@@ -79,79 +67,89 @@ export const SplashScreen = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" />
       
-      {/* Mesh Gradient Background */}
-      <LinearGradient
-        colors={['#FFFFFF', '#F0F4FF', '#E0E7FF']}
-        style={StyleSheet.absoluteFill}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
-      
-      {/* Decorative Orbs */}
-      <Animated.View style={[styles.orb, styles.orb1, floatStyle]} />
-      <Animated.View style={[styles.orb, styles.orb2, floatStyle]} />
-      <Animated.View style={[styles.orb, styles.orb3, floatStyle]} />
+      {/* Background Star Shape */}
+      <View style={styles.backgroundShape}>
+         <StarBackground />
+      </View>
+
+      {/* Floating Images */}
+      {FLOATING_IMAGES.map((img, idx) => {
+        const translateY = useSharedValue(0);
+        
+        useEffect(() => {
+          translateY.value = withRepeat(
+            withSequence(
+              withTiming(Math.random() * 20 - 10, { duration: 2000 + Math.random() * 2000 }),
+              withTiming(0, { duration: 2000 + Math.random() * 2000 })
+            ),
+            -1,
+            true
+          );
+        }, []);
+
+        const animatedStyle = useAnimatedStyle(() => ({
+          transform: [
+            { translateY: translateY.value },
+            { rotate: img.rotate }
+          ]
+        }));
+
+        return (
+          <Animated.View
+            key={idx}
+            entering={FadeIn.delay(idx * 200).duration(1000)}
+            style={[
+              styles.floatingImgContainer,
+              { 
+                top: img.top, 
+                left: img.left, 
+                right: img.right, 
+                bottom: img.bottom,
+                width: img.size,
+                height: img.size * 1.2,
+              },
+              animatedStyle
+            ]}
+          >
+            <Image source={{ uri: img.uri }} style={styles.floatingImg} />
+          </Animated.View>
+        );
+      })}
 
       <SafeAreaView style={styles.content}>
         <View style={styles.mainArea}>
-          {/* Logo Section */}
-          <Animated.View style={[styles.logoContainer, logoStyle]}>
-            <View style={styles.logoBadge}>
-               <Typography style={styles.logoBadgeText}>V1.0</Typography>
-            </View>
-            <Typography style={styles.logoTextMain}>COLLABSPHERE</Typography>
-            <View style={styles.collabBox}>
-              <Typography style={[styles.logoTitle, { color: '#6366F1' }]}>BUILD</Typography>
-              <Typography style={[styles.logoTitle, styles.sphereText]}>BEYOND</Typography>
-            </View>
-          </Animated.View>
-
-          {/* Value Prop */}
+          {/* Central Logo */}
           <Animated.View 
-            entering={FadeInDown.delay(400).springify().damping(20)}
-            style={styles.heroTextContainer}
+            entering={FadeIn.delay(800).duration(1000)}
+            style={styles.logoWrapper}
           >
-            <Typography style={styles.heroSub}>
-              Where Elite{'\n'}Architects{'\n'}Converge.
-            </Typography>
-            <View style={styles.taglineBox}>
-              <View style={styles.accentLine} />
-              <Typography style={styles.heroTagline}>THE HUB FOR NEXT-GEN DEVS</Typography>
-            </View>
+            <Image 
+              source={require('../../assets/friends_logo_3d.png')}
+              style={styles.logoImg}
+              resizeMode="contain"
+            />
           </Animated.View>
         </View>
 
         {/* Footer Area */}
         <View style={styles.bottomArea}>
           <Animated.View
-            entering={FadeInDown.delay(700).springify().damping(18)}
-            style={styles.footerRow}
+            entering={FadeInDown.delay(1200).springify()}
+            style={styles.footerContainer}
           >
-            <View style={styles.socialIcons}>
-              <TouchableOpacity style={styles.circleIcon}>
-                <Icon name="Github" size={20} color="#1E293B" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.circleIcon}>
-                <Icon name="Linkedin" size={20} color="#1E293B" />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={styles.getMeInBtn}
+              onPress={handlePress}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.btnText}>Get me in</Text>
+            </TouchableOpacity>
 
-            <Animated.View style={btnAnimStyle}>
-              <TouchableOpacity
-                style={styles.getStartedBtn}
-                onPress={handlePress}
-                onPressIn={handlePressIn}
-                onPressOut={handlePressOut}
-                activeOpacity={1}
-              >
-                <Typography style={styles.btnText}>Enter Arena</Typography>
-                <View style={styles.arrowCircle}>
-                  <ChevronRight size={20} color="#6366F1" />
-                </View>
-              </TouchableOpacity>
-            </Animated.View>
+            <Typography style={styles.termsText}>
+              By tapping 'Get me in' you're accepting the <Text style={styles.underline}>terms</Text>
+            </Typography>
           </Animated.View>
         </View>
       </SafeAreaView>
@@ -162,166 +160,83 @@ export const SplashScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FE',
+    backgroundColor: '#0000FF', // Vivid Blue
   },
-  orb: {
-    position: 'absolute',
-    borderRadius: 999,
-    backgroundColor: '#6366F1',
-    opacity: 0.05,
+  backgroundShape: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    opacity: 0.6,
   },
-  orb1: {
-    width: 300,
-    height: 300,
-    top: -50,
-    right: -50,
-  },
-  orb2: {
-    width: 200,
-    height: 200,
-    bottom: 100,
-    left: -50,
-  },
-  orb3: {
-    width: 150,
-    height: 150,
-    top: height * 0.4,
-    right: -20,
-    backgroundColor: '#818CF8',
+  starContainer: {
+    width: width * 2,
+    height: width * 2,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 30,
   },
   mainArea: {
     flex: 1,
     justifyContent: 'center',
-  },
-  logoContainer: {
-    marginBottom: 40,
-  },
-  logoBadge: {
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.2)',
-  },
-  logoBadgeText: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#6366F1',
-    letterSpacing: 1,
-  },
-  logoTextMain: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: '#64748B',
-    letterSpacing: 4,
-    textTransform: 'uppercase',
-    marginBottom: 10,
-  },
-  collabBox: {
-    height: 140, 
-    justifyContent: 'center',
-  },
-  logoTitle: {
-    fontSize: 72,
-    fontWeight: '900',
-    letterSpacing: -4,
-    textTransform: 'uppercase',
-    lineHeight: 70,
-  },
-  sphereText: {
-    fontSize: 48,
-    marginTop: -10,
-    color: '#1E293B',
-    opacity: 0.1,
-  },
-  heroTextContainer: {
-    marginTop: 20,
-  },
-  heroSub: {
-    fontSize: 44,
-    fontWeight: '900',
-    color: '#111827',
-    lineHeight: 46,
-    letterSpacing: -2,
-  },
-  taglineBox: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginTop: 24,
   },
-  accentLine: {
-    width: 40,
-    height: 2,
-    backgroundColor: '#6366F1',
+  logoWrapper: {
+    width: width * 0.9,
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  heroTagline: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#94A3B8',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
+  logoImg: {
+    width: '100%',
+    height: '100%',
+  },
+  floatingImgContainer: {
+    position: 'absolute',
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 6,
+    borderColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: '#333',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+  },
+  floatingImg: {
+    width: '100%',
+    height: '100%',
   },
   bottomArea: {
+    paddingHorizontal: 30,
     paddingBottom: 40,
   },
-  footerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  footerContainer: {
     alignItems: 'center',
+    gap: 20,
   },
-  socialIcons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  circleIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    backgroundColor: '#FFF',
+  getMeInBtn: {
+    width: '100%',
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#4D4DFF', // Lighter blue for button
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
-  },
-  getStartedBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#6366F1',
-    paddingVertical: 14,
-    paddingLeft: 24,
-    paddingRight: 8,
-    borderRadius: 18,
-    gap: 16,
-    shadowColor: '#6366F1',
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 8 },
   },
   btnText: {
     color: '#FFF',
-    fontSize: 16,
-    fontWeight: '900',
+    fontSize: 18,
+    fontWeight: '700',
   },
-  arrowCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: '#FFF',
-    justifyContent: 'center',
-    alignItems: 'center',
+  termsText: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  underline: {
+    textDecorationLine: 'underline',
   },
 });
