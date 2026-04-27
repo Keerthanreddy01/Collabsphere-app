@@ -6,12 +6,22 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  ImageBackground,
   StatusBar,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Lucid from 'lucide-react-native';
-import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import Animated, { 
+  FadeInDown, 
+  FadeInRight,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  Layout
+} from 'react-native-reanimated';
 import { Typography } from '../components/Typography';
 
 const { width, height } = Dimensions.get('window');
@@ -23,129 +33,155 @@ const Icon = ({ name, ...props }: { name: string; [key: string]: any }) => {
 };
 
 const APP_STACK = [
-  { name: 'React Native', level: 90, icon: 'Layout' },
-  { name: 'Rust', level: 75, icon: 'Cpu' },
-  { name: 'TypeScript', level: 95, icon: 'Code2' },
+  { name: 'React Native', level: 90, icon: 'Layout', color: '#6193F5' },
+  { name: 'Rust', level: 75, icon: 'Cpu', color: '#F59E0B' },
+  { name: 'TypeScript', level: 95, icon: 'Code2', color: '#3178C6' },
+];
+
+const ACHIEVEMENTS = [
+  { id: 1, title: 'Elite Architect', icon: 'Trophy', color: '#FACC15' },
+  { id: 2, title: 'Code Vanguard', icon: 'Shield', color: '#10B981' },
+  { id: 3, title: 'System Pulse', icon: 'Zap', color: '#6366F1' },
 ];
 
 // ─── Memoized Stat Item ─────────────────────────────────────────────
 const StatText = memo(({ count, label }: { count: string; label: string }) => (
   <View style={{ alignItems: 'center' }}>
-    <Typography style={styles.statCountText}>{count}</Typography>
-    <Typography style={styles.statLabelText}>{label}</Typography>
+    <Typography style={styles.statCount}>{count}</Typography>
+    <Typography style={styles.statLabel}>{label}</Typography>
   </View>
-));
-
-// ─── Memoized Arsenal Item ─────────────────────────────────────────
-const ArsenalItem = memo(({ item, index }: { item: any; index: number }) => (
-  <Animated.View
-    entering={FadeInDown.delay(index * 100 + 400).springify().damping(20)}
-    style={styles.arsenalItem}
-  >
-    <View style={[styles.skillIcon, { backgroundColor: '#FFF' }]}>
-      <Icon name={item.icon} size={22} color="#000" />
-    </View>
-    <View style={{ flex: 1, marginLeft: 20 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Typography style={styles.skillName}>{item.name.toUpperCase()}</Typography>
-        <Typography style={styles.skillLevel}>{item.level}%</Typography>
-      </View>
-      <View style={styles.progressTrack}>
-        <View style={[styles.progressBlade, { width: `${item.level}%` }]} />
-      </View>
-    </View>
-  </Animated.View>
 ));
 
 // ─── Main Screen ────────────────────────────────────────────────────
 export const ProfileScreen = () => {
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
+    <View style={[styles.container, { backgroundColor: '#F8F9FF' }]}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      <ScrollView 
+        showsVerticalScrollIndicator={false} 
         contentContainerStyle={styles.scrollContent}
-        decelerationRate="fast"
-        scrollEventThrottle={16}
       >
-        {/* ── Hero Section ─────────────────────────── */}
-        <View style={styles.heroSection}>
-          <SafeAreaView style={styles.headerNav}>
-            <TouchableOpacity style={styles.headerSquareBtn} activeOpacity={0.85}>
-              <Icon name="Settings2" color="#000" size={22} />
-            </TouchableOpacity>
-            <Typography style={styles.handleText}>@KEERTHAN_REDDY</Typography>
-            <TouchableOpacity style={styles.headerSquareBtn} activeOpacity={0.85}>
-              <Icon name="MoreHorizontal" color="#000" size={22} />
-            </TouchableOpacity>
-          </SafeAreaView>
+        <ImageBackground
+          source={{ uri: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800' }}
+          style={styles.coverArea}
+        >
+          <LinearGradient
+            colors={['rgba(0,0,0,0.8)', 'transparent', 'rgba(248,249,255,1)']}
+            style={StyleSheet.absoluteFill}
+          />
 
-          <Animated.View
-            entering={FadeIn.delay(100).duration(600)}
-            style={styles.avatarContainer}
-          >
-            <View style={styles.avatarBorder}>
-              <Image
-                source={{ uri: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400' }}
-                style={styles.avatar}
-              />
-              <View style={styles.activePill}>
-                <View style={styles.activeDot} />
-                <Typography style={styles.activeText}>ONLINE</Typography>
+          <SafeAreaView style={styles.headerNav}>
+            <View style={styles.headerTitleContainer}>
+               <Typography variant="bodyBold" color="rgba(255,255,255,0.9)" style={{ letterSpacing: 1 }}>
+                @keerthan
+              </Typography>
+              <View style={styles.verifiedBadge}>
+                <Icon name="CheckCircle2" size={12} color="#6366F1" />
               </View>
             </View>
-          </Animated.View>
-        </View>
+            <TouchableOpacity style={styles.headerCircleBtn}>
+               <Icon name="Settings" color="#FFFFFF" size={24} />
+            </TouchableOpacity>
+          </SafeAreaView>
+        </ImageBackground>
 
-        {/* ── Profile Info ──────────────────────────── */}
-        <View style={styles.contentBody}>
-          <Animated.View
-            entering={FadeInDown.delay(200).springify().damping(20)}
-            style={styles.titleBlock}
+        {/* PROFILE CONTENT */}
+        <View style={styles.detailsContainer}>
+          <Animated.View 
+            entering={FadeInDown.delay(200).springify()}
+            style={styles.avatarWrapper}
           >
-            <Typography style={styles.nameText}>KEERTHAN REDDY</Typography>
-            <Typography style={styles.roleText}>FULLSTACK ARCHITECT</Typography>
-          </Animated.View>
-
-          <Animated.View
-            entering={FadeInDown.delay(280).springify().damping(20)}
-            style={styles.statsCard}
-          >
-            <StatText count="4.9K" label="BUILDERS" />
-            <View style={styles.statLine} />
-            <StatText count="1.2K" label="VOUCHED" />
-            <View style={styles.statLine} />
-            <StatText count="21" label="LAUNCHES" />
+            <View style={styles.avatarGlow} />
+            <Image
+              source={{ uri: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400' }}
+              style={styles.avatar}
+            />
+            <View style={styles.activeDot} />
           </Animated.View>
 
-          <Animated.View
-            entering={FadeInDown.delay(360).springify().damping(20)}
-            style={styles.bioCard}
+          <Animated.View 
+            entering={FadeInDown.delay(300).springify()}
+            style={styles.titleSection}
           >
-            <Typography style={styles.bioTitle}>TRANSCRIPT</Typography>
-            <Typography style={styles.bioBody}>
-              Engineering the future of collaborative tech.{'\n'}
-              Building CollabSphere with absolute precision. High speed, high impact.
+            <Typography style={styles.nameText}>
+              Keerthan Reddy
+            </Typography>
+            <Typography style={styles.roleText}>
+              Principal Engineering Architect
+            </Typography>
+            
+            <View style={styles.statsRow}>
+              <StatText count="4.9k" label="Builders" />
+              <View style={styles.statDivider} />
+              <StatText count="1.2k" label="Vouched" />
+              <View style={styles.statDivider} />
+              <StatText count="21" label="Launch" />
+            </View>
+            
+            <Typography style={styles.bio}>
+              Engineering the future of collaborative tech. {"\n"}Building CollabSphere with absolute precision.
             </Typography>
           </Animated.View>
 
-          {/* Arsenal */}
-          <View style={styles.arsenalSection}>
-            <Typography style={styles.sectionHeading}>THE ARSENAL</Typography>
-            {APP_STACK.map((item, idx) => (
-              <ArsenalItem key={idx} item={item} index={idx} />
-            ))}
+          {/* ACHIEVEMENTS */}
+          <View style={styles.sectionHeader}>
+            <Typography style={styles.sectionLabel}>Achievements</Typography>
+            <TouchableOpacity><Typography style={styles.viewAll}>View All</Typography></TouchableOpacity>
           </View>
-
-          <Animated.View
-            entering={FadeInDown.delay(700).springify().damping(20)}
+          
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={styles.achievementList}
           >
-            <TouchableOpacity style={styles.primaryBtn} activeOpacity={0.88}>
-              <Typography style={styles.btnText}>INITIATE COLLAB</Typography>
-              <Icon name="Zap" size={20} color="#000" style={{ marginLeft: 12 }} />
+            {ACHIEVEMENTS.map((item, idx) => (
+              <Animated.View 
+                key={item.id}
+                entering={FadeInRight.delay(400 + (idx * 100)).springify()}
+                style={styles.achievementCard}
+              >
+                <BlurView intensity={20} style={StyleSheet.absoluteFill} />
+                <View style={[styles.achievementIconBox, { backgroundColor: `${item.color}20` }]}>
+                  <Icon name={item.icon} size={24} color={item.color} />
+                </View>
+                <Typography style={styles.achievementTitle}>{item.title}</Typography>
+              </Animated.View>
+            ))}
+          </ScrollView>
+
+          {/* THE ARSENAL */}
+          <Animated.View 
+            entering={FadeInDown.delay(600).springify()}
+            style={[styles.card, { marginTop: 32 }]}
+          >
+            <Typography style={styles.cardLabel}>The Arsenal</Typography>
+            <View style={styles.stackList}>
+              {APP_STACK.map((item, idx) => (
+                <View key={idx} style={styles.stackItemCard}>
+                  <View style={[styles.stackIconOuter, { backgroundColor: `${item.color}10` }]}>
+                    <Icon name={item.icon} size={20} color={item.color} />
+                  </View>
+                  <View style={{ flex: 1, marginLeft: 16 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <Typography style={styles.stackName}>{item.name}</Typography>
+                       <Typography style={[styles.stackLevel, { color: item.color }]}>{item.level}%</Typography>
+                    </View>
+                    <View style={styles.progressPath}>
+                       <View style={[styles.progressFill, { width: `${item.level}%`, backgroundColor: item.color }]} />
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(800).springify()}>
+            <TouchableOpacity style={styles.primaryAction}>
+               <Typography style={styles.btnText}>Collaborate Now</Typography>
+               <Icon name="ArrowUpRight" color="#FFF" size={20} style={{ marginLeft: 8 }} />
             </TouchableOpacity>
           </Animated.View>
+
         </View>
       </ScrollView>
     </View>
@@ -153,16 +189,9 @@ export const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFEB3B' },
-  scrollContent: { paddingBottom: 160 },
-
-  heroSection: {
-    height: 390,
-    backgroundColor: '#FFEB3B',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 40,
-  },
+  container: { flex: 1 },
+  scrollContent: { paddingBottom: 150 },
+  coverArea: { width: width, height: 420, justifyContent: 'flex-start' },
   headerNav: {
     position: 'absolute',
     top: 0,
@@ -173,166 +202,144 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     paddingTop: Platform.OS === 'ios' ? 0 : 38,
   },
-  headerSquareBtn: {
-    width: 48,
-    height: 48,
-    backgroundColor: '#FFF',
-    borderWidth: 3,
-    borderColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    shadowOffset: { width: 4, height: 4 },
-  },
-  handleText: { fontSize: 12, fontWeight: '900', color: '#000', letterSpacing: 1 },
-
-  avatarContainer: { marginTop: 40 },
-  avatarBorder: {
-    width: 180,
-    height: 180,
-    backgroundColor: '#FFF',
-    borderWidth: 4,
-    borderColor: '#000',
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 20,
-    shadowColor: '#000',
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    shadowOffset: { width: 12, height: 12 },
-  },
-  avatar: { width: 162, height: 162, borderRadius: 12 },
-  activePill: {
-    position: 'absolute',
-    bottom: -16,
+  headerTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#00E676',
-    paddingHorizontal: 15,
-    paddingVertical: 5,
-    borderWidth: 3,
-    borderColor: '#000',
-    borderRadius: 10,
   },
-  activeDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#000' },
-  activeText: { fontSize: 10, fontWeight: '900', color: '#000' },
-
-  contentBody: { paddingHorizontal: 25, marginTop: 25 },
-  titleBlock: { alignItems: 'center', marginBottom: 28 },
-  nameText: { fontSize: 35, fontWeight: '900', color: '#000', letterSpacing: -2 },
-  roleText: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#000',
-    opacity: 0.5,
-    letterSpacing: 1,
-    marginTop: 4,
-  },
-
-  statsCard: {
-    flexDirection: 'row',
+  verifiedBadge: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerCircleBtn: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  detailsContainer: {
+    backgroundColor: '#F8F9FF',
+    marginTop: -100,
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    paddingHorizontal: 24,
+  },
+  avatarWrapper: {
+    alignSelf: 'center',
+    top: -60,
+  },
+  avatarGlow: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: '#6366F1',
+    opacity: 0.2,
+    top: -10,
+    left: -10,
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     borderWidth: 4,
-    borderColor: '#000',
-    paddingVertical: 24,
-    borderRadius: 28,
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    shadowOffset: { width: 8, height: 8 },
+    borderColor: '#F8F9FF',
   },
-  statLine: { width: 3, height: 28, backgroundColor: '#000' },
-  statCountText: { fontSize: 24, fontWeight: '900', color: '#000' },
-  statLabelText: {
-    fontSize: 9,
-    fontWeight: '900',
-    color: 'rgba(0,0,0,0.4)',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-
-  bioCard: {
-    backgroundColor: '#000',
-    padding: 24,
-    borderRadius: 28,
-    marginTop: 32,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    shadowOffset: { width: 8, height: 8 },
-  },
-  bioTitle: {
-    color: '#FFEB3B',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 2,
-    marginBottom: 14,
-  },
-  bioBody: { color: '#FFF', fontSize: 15, lineHeight: 22, fontWeight: '700' },
-
-  arsenalSection: { marginTop: 38 },
-  sectionHeading: { fontSize: 22, fontWeight: '900', color: '#000', marginBottom: 22, letterSpacing: -0.5 },
-  arsenalItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 18,
-    backgroundColor: '#FFF',
-    padding: 18,
-    borderRadius: 24,
-    borderWidth: 3,
-    borderColor: '#000',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    shadowOffset: { width: 6, height: 6 },
-  },
-  skillIcon: {
-    width: 48,
-    height: 48,
+  activeDot: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    width: 24,
+    height: 24,
     borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#000',
+    backgroundColor: '#10B981',
+    borderWidth: 4,
+    borderColor: '#F8F9FF',
+  },
+  titleSection: { marginTop: -40, alignItems: 'center' },
+  nameText: { fontSize: 32, fontWeight: '900', color: '#000', letterSpacing: -1 },
+  roleText: { fontSize: 14, fontWeight: '700', color: '#6366F1', marginTop: 4, textTransform: 'uppercase', letterSpacing: 1 },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 24,
+    backgroundColor: '#FFF',
+    paddingVertical: 18,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    elevation: 10,
+    shadowColor: '#6366F1',
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+  },
+  statDivider: { width: 1, height: 20, backgroundColor: 'rgba(0,0,0,0.05)', marginHorizontal: 20 },
+  statCount: { fontSize: 18, fontWeight: '800', color: '#000' },
+  statLabel: { fontSize: 10, color: 'rgba(0,0,0,0.3)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  bio: { marginTop: 24, textAlign: 'center', color: '#475569', lineHeight: 22, fontWeight: '600', fontSize: 15 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 32, marginBottom: 16 },
+  sectionLabel: { fontSize: 18, fontWeight: '900', color: '#1E293B' },
+  viewAll: { fontSize: 12, fontWeight: '800', color: '#6366F1' },
+  achievementList: { gap: 12, paddingRight: 24 },
+  achievementCard: {
+    width: 140,
+    height: 160,
+    borderRadius: 32,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    padding: 16,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  skillName: { fontSize: 14, fontWeight: '900', color: '#000' },
-  skillLevel: { fontSize: 12, fontWeight: '900', color: '#2979FF' },
-  progressTrack: {
-    height: 10,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 5,
-    marginTop: 10,
-    borderWidth: 2,
-    borderColor: '#000',
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
   },
-  progressBlade: { height: '100%', backgroundColor: '#2979FF', borderRadius: 5 },
-
-  primaryBtn: {
-    height: 68,
-    backgroundColor: '#FFF',
-    borderWidth: 4,
-    borderColor: '#000',
-    borderRadius: 34,
-    marginTop: 38,
+  achievementIconBox: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  achievementTitle: { fontSize: 13, fontWeight: '800', color: '#1E293B', textAlign: 'center' },
+  card: { 
+    backgroundColor: '#FFF', 
+    borderRadius: 40, 
+    padding: 24, 
+    elevation: 4, 
+    shadowColor: '#000', 
+    shadowOpacity: 0.05, 
+    shadowRadius: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.02)',
+  },
+  cardLabel: { fontSize: 11, fontWeight: '800', color: 'rgba(0,0,0,0.2)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 20 },
+  stackList: { gap: 16 },
+  stackItemCard: { flexDirection: 'row', alignItems: 'center' },
+  stackIconOuter: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  stackName: { fontSize: 15, fontWeight: '800', color: '#000' },
+  stackLevel: { fontSize: 12, fontWeight: '700' },
+  progressPath: { height: 6, backgroundColor: '#F1F5F9', borderRadius: 3, marginTop: 10, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 3 },
+  primaryAction: {
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#1E293B',
+    marginTop: 32,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    shadowOffset: { width: 8, height: 8 },
+    elevation: 8,
+    shadowColor: '#1E293B',
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 8 },
   },
-  btnText: { fontSize: 17, fontWeight: '900', color: '#000' },
+  btnText: { color: '#FFF', fontSize: 17, fontWeight: '900' }
 });
