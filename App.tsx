@@ -12,14 +12,6 @@ import {
   Inter_700Bold, 
   Inter_800ExtraBold 
 } from '@expo-google-fonts/inter';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-  interpolate,
-  Extrapolation,
-} from 'react-native-reanimated';
 
 import { TabNavigator } from './src/navigation/TabNavigator';
 import { ChatScreen } from './src/screens/ChatScreen';
@@ -28,11 +20,10 @@ import { SplashScreen } from './src/screens/SplashScreen';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { ToastProvider } from './src/components/Toast';
 
-// Forced refresh — production build v2.0.0
 const Stack = createStackNavigator();
 
-// 60fps-tuned slide transition
-const forSlide = {
+// 60fps-tuned slide transition with explicit any to satisfy TS
+const forSlide: any = {
   cardStyleInterpolator: ({ current, layouts }: any) => {
     const translateX = current.progress.interpolate({
       inputRange: [0, 1],
@@ -62,7 +53,7 @@ const forSlide = {
         restDisplacementThreshold: 0.01,
         restSpeedThreshold: 0.01,
       },
-    },
+    } as any,
     close: {
       animation: 'spring',
       config: {
@@ -73,7 +64,7 @@ const forSlide = {
         restDisplacementThreshold: 0.01,
         restSpeedThreshold: 0.01,
       },
-    },
+    } as any,
   },
 };
 
@@ -97,8 +88,10 @@ export default function App() {
     return null;
   }
 
+  const THEME_COLOR = '#F8F9FF'; // Premium grey-white instead of Neo-Brutalist yellow
+
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#FFEB3B' }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: THEME_COLOR }}>
       <ThemeProvider>
         <ToastProvider>
            <SafeAreaProvider>
@@ -111,19 +104,19 @@ export default function App() {
                theme={{
                  dark: false,
                  colors: {
-                   primary: '#000',
-                   background: '#FFEB3B',
-                   card: '#FFEB3B',
-                   text: '#000',
+                   primary: '#6366F1',
+                   background: THEME_COLOR,
+                   card: THEME_COLOR,
+                   text: '#1E293B',
                    border: 'transparent',
-                   notification: '#FF1744',
+                   notification: '#6366F1',
                  },
                }}
              >
                 <Stack.Navigator
                   screenOptions={{
                     headerShown: false,
-                    cardStyle: { backgroundColor: '#FFEB3B' },
+                    cardStyle: { backgroundColor: THEME_COLOR },
                     gestureEnabled: true,
                     gestureDirection: 'horizontal',
                     ...forSlide,
