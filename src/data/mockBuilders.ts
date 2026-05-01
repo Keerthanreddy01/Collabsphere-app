@@ -30,5 +30,45 @@ export const MOCK_BUILDERS: Builder[] = [
     compatibility: 89,
     isOpenToCollab: false,
     githubStats: { commits: 1200, repos: 18, streak: 4 }
+  },
+  {
+    id: 'b4',
+    name: 'Maya Patel',
+    role: 'Frontend Engineer',
+    avatar: 'https://i.pravatar.cc/150?u=maya',
+    stack: ['React Native', 'TypeScript', 'GraphQL'],
+    compatibility: 91,
+    isOpenToCollab: true,
+    githubStats: { commits: 730, repos: 15, streak: 22 }
+  },
+  {
+    id: 'b5',
+    name: 'Samira Ali',
+    role: 'UX Researcher',
+    avatar: 'https://i.pravatar.cc/150?u=samira',
+    stack: ['Figma', 'Miro', 'Notion'],
+    compatibility: 78,
+    isOpenToCollab: true,
+    githubStats: { commits: 120, repos: 3, streak: 2 }
+  },
+  {
+    id: 'b6',
+    name: 'David Kim',
+    role: 'DevOps Engineer',
+    avatar: 'https://i.pravatar.cc/150?u=david',
+    stack: ['AWS', 'Terraform', 'Kubernetes'],
+    compatibility: 85,
+    isOpenToCollab: false,
+    githubStats: { commits: 2100, repos: 34, streak: 45 }
+  },
+  {
+    id: 'b7',
+    name: 'Sarah Connor',
+    role: 'AI Researcher',
+    avatar: 'https://i.pravatar.cc/150?u=sarah',
+    stack: ['PyTorch', 'Python', 'CUDA'],
+    compatibility: 96,
+    isOpenToCollab: true,
+    githubStats: { commits: 540, repos: 8, streak: 12 }
   }
 ];
