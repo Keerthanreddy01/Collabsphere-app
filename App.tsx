@@ -89,7 +89,13 @@ export default function App() {
     return null;
   }
 
-  const THEME_COLOR = '#F8F9FF'; // Premium grey-white instead of Neo-Brutalist yellow
+  /**
+   * Premium App Theme Configuration
+   * This color defines the global background for the entire application,
+   * ensuring a seamless, flicker-free experience during navigation transitions.
+   * It replaces the old Neo-Brutalist aesthetic with a sleek, modern look.
+   */
+  const THEME_COLOR = '#F8F9FF'; 
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: THEME_COLOR }}>
@@ -133,7 +139,10 @@ export default function App() {
                   component={OnboardingScreen}
                   options={{ gestureEnabled: false }}
                 />
+                {/* Core Application Flow */}
                 <Stack.Screen name="Main" component={TabNavigator} />
+                
+                {/* Messaging & Communication Flow */}
                 <Stack.Screen name="Chat" component={ChatScreen} />
                 <Stack.Screen name="MessagesList" component={MessagesListScreen} />
               </Stack.Navigator>
