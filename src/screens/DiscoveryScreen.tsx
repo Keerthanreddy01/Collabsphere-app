@@ -66,6 +66,11 @@ const RankRow = memo(({ item, index }: { item: any; index: number }) => (
   </Animated.View>
 ));
 
+/**
+ * DiscoveryScreen Component
+ * Renders the global leaderboard with a top 3 podium and a scrolling list of other builders.
+ * Integrates smooth layout animations for the podium bars entering the screen.
+ */
 export const DiscoveryScreen = ({ navigation }: any) => {
   const { colors } = useTheme();
   const [ready, setReady] = useState(false);
