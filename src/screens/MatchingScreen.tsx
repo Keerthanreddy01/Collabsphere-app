@@ -27,6 +27,11 @@ const AVATARS = [
   'https://i.pravatar.cc/150?u=8',
 ];
 
+/**
+ * MatchingScreen Component
+ * Displays an animated discovery UI where builder avatars orbit around a central logo.
+ * Uses Reanimated for smooth continuous rotation and pulsing effects.
+ */
 export const MatchingScreen = () => {
   const rotation = useSharedValue(0);
   const pulse = useSharedValue(1);
