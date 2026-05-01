@@ -74,6 +74,26 @@ I'm a **Full Stack Software Engineer** who loves building products from the grou
 
 ---
 
+## 🏆 Hackathons & Achievements
+
+<div align="center">
+
+| 🥇 Global AI Hackathon | 🥈 ETHGlobal Waterloo | 🏅 DevPost Spotlight |
+| :---: | :---: | :---: |
+| **1st Place Overall**<br/>Built a real-time multilingual translation agent. | **Finalist & Sponsor Prize**<br/>Developed a zero-knowledge proof identity system. | **Featured Project**<br/>CollabSphere recognized for exceptional UI/UX. |
+
+</div>
+
+---
+
+## 📚 What I'm Currently Learning
+
+- **WebAssembly (Wasm)** for high-performance browser computing
+- **Golang** for writing scalable and concurrent backend services
+- **Agentic Workflows** using LangChain and AutoGen for autonomous AI
+
+---
+
 ## 📊 Developer Insight
 
 <div align="center">
