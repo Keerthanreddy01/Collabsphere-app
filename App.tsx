@@ -6,17 +6,18 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar, Platform, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Font from 'expo-font';
-import { 
-  Inter_400Regular, 
-  Inter_600SemiBold, 
-  Inter_700Bold, 
-  Inter_800ExtraBold 
+import {
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Inter_800ExtraBold
 } from '@expo-google-fonts/inter';
 
 import { TabNavigator } from './src/navigation/TabNavigator';
 import { ChatScreen } from './src/screens/ChatScreen';
 import { MessagesListScreen } from './src/screens/MessagesListScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
+import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { ToastProvider } from './src/components/Toast';
 
@@ -94,45 +95,50 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: THEME_COLOR }}>
       <ThemeProvider>
         <ToastProvider>
-           <SafeAreaProvider>
-             <StatusBar
-               barStyle="dark-content"
-               backgroundColor="transparent"
-               translucent={true}
-             />
-             <NavigationContainer
-               theme={{
-                 dark: false,
-                 colors: {
-                   primary: '#6366F1',
-                   background: THEME_COLOR,
-                   card: THEME_COLOR,
-                   text: '#1E293B',
-                   border: 'transparent',
-                   notification: '#6366F1',
-                 },
-               }}
-             >
-                <Stack.Navigator
-                  screenOptions={{
-                    headerShown: false,
-                    cardStyle: { backgroundColor: THEME_COLOR },
-                    gestureEnabled: true,
-                    gestureDirection: 'horizontal',
-                    ...forSlide,
-                  }}
-                >
-                   <Stack.Screen
-                     name="Splash"
-                     component={SplashScreen}
-                     options={{ gestureEnabled: false }}
-                   />
-                   <Stack.Screen name="Main" component={TabNavigator} />
-                   <Stack.Screen name="Chat" component={ChatScreen} />
-                   <Stack.Screen name="MessagesList" component={MessagesListScreen} />
-                </Stack.Navigator>
-             </NavigationContainer>
-           </SafeAreaProvider>
+          <SafeAreaProvider>
+            <StatusBar
+              barStyle="dark-content"
+              backgroundColor="transparent"
+              translucent={true}
+            />
+            <NavigationContainer
+              theme={{
+                dark: false,
+                colors: {
+                  primary: '#6366F1',
+                  background: THEME_COLOR,
+                  card: THEME_COLOR,
+                  text: '#1E293B',
+                  border: 'transparent',
+                  notification: '#6366F1',
+                },
+              }}
+            >
+              <Stack.Navigator
+                screenOptions={{
+                  headerShown: false,
+                  cardStyle: { backgroundColor: THEME_COLOR },
+                  gestureEnabled: true,
+                  gestureDirection: 'horizontal',
+                  ...forSlide,
+                }}
+              >
+                <Stack.Screen
+                  name="Splash"
+                  component={SplashScreen}
+                  options={{ gestureEnabled: false }}
+                />
+                <Stack.Screen
+                  name="Onboarding"
+                  component={OnboardingScreen}
+                  options={{ gestureEnabled: false }}
+                />
+                <Stack.Screen name="Main" component={TabNavigator} />
+                <Stack.Screen name="Chat" component={ChatScreen} />
+                <Stack.Screen name="MessagesList" component={MessagesListScreen} />
+              </Stack.Navigator>
+            </NavigationContainer>
+          </SafeAreaProvider>
         </ToastProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
