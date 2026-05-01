@@ -26,6 +26,11 @@ const TOAST_BG: Record<ToastType, string> = {
   boost: '#FFEB3B',
 };
 
+/**
+ * ToastItem Component
+ * Renders individual toast notifications with smooth entering and exiting animations.
+ * Provides different visual cues depending on the toast type (success, error, info, boost).
+ */
 const ToastItem = ({ message, type }: { message: string; type: ToastType }) => {
   const insets = useSafeAreaInsets();
 
