@@ -129,6 +129,21 @@ const TeamChatWidget = memo(() => (
    </Animated.View>
 ));
 
+const ActivityFeedWidget = memo(() => (
+   <Animated.View entering={FadeInDown.delay(700).springify()} style={[styles.card, styles.activityFeedCard]}>
+      <TouchableOpacity style={{ flex: 1, justifyContent: 'space-between' }} activeOpacity={0.8}>
+         <View>
+            <Typography style={styles.cardTitle}>Activity Feed</Typography>
+            <Typography style={styles.cardSubtitle}>12 New Updates</Typography>
+         </View>
+         
+         <View style={styles.activityGraph}>
+            <Activity size={32} color="#5C44FF" />
+         </View>
+      </TouchableOpacity>
+   </Animated.View>
+));
+
 export const HomeScreen = ({ navigation }: any) => {
    return (
       <View style={styles.container}>
@@ -167,18 +182,7 @@ export const HomeScreen = ({ navigation }: any) => {
                      <TeamChatWidget />
 
                      {/* Activity Feed Widget */}
-                     <Animated.View entering={FadeInDown.delay(700).springify()} style={[styles.card, styles.activityFeedCard]}>
-                        <TouchableOpacity style={{ flex: 1, justifyContent: 'space-between' }} activeOpacity={0.8}>
-                           <View>
-                              <Typography style={styles.cardTitle}>Activity Feed</Typography>
-                              <Typography style={styles.cardSubtitle}>12 New Updates</Typography>
-                           </View>
-                           
-                           <View style={styles.activityGraph}>
-                              <Activity size={32} color="#5C44FF" />
-                           </View>
-                        </TouchableOpacity>
-                     </Animated.View>
+                     <ActivityFeedWidget />
 
                      {/* My Profile Widget */}
                      <Animated.View entering={FadeInDown.delay(900).springify()} style={[styles.card, styles.myProfileCard]}>
