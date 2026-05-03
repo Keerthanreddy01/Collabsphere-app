@@ -144,6 +144,19 @@ const ActivityFeedWidget = memo(() => (
    </Animated.View>
 ));
 
+const MyProfileWidget = memo(() => (
+   <Animated.View entering={FadeInDown.delay(900).springify()} style={[styles.card, styles.myProfileCard]}>
+      <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
+         <Typography style={styles.cardTitle}>My Profile</Typography>
+         <Typography style={styles.cardSubtitle}>View and edit</Typography>
+         
+         <View style={styles.profileBottomRight}>
+            <Image source={{ uri: 'https://i.pravatar.cc/150?u=keerthan' }} style={styles.profileSmallAvatar} />
+         </View>
+      </TouchableOpacity>
+   </Animated.View>
+));
+
 export const HomeScreen = ({ navigation }: any) => {
    return (
       <View style={styles.container}>
@@ -185,16 +198,7 @@ export const HomeScreen = ({ navigation }: any) => {
                      <ActivityFeedWidget />
 
                      {/* My Profile Widget */}
-                     <Animated.View entering={FadeInDown.delay(900).springify()} style={[styles.card, styles.myProfileCard]}>
-                        <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
-                           <Typography style={styles.cardTitle}>My Profile</Typography>
-                           <Typography style={styles.cardSubtitle}>View and edit</Typography>
-                           
-                           <View style={styles.profileBottomRight}>
-                              <Image source={{ uri: 'https://i.pravatar.cc/150?u=keerthan' }} style={styles.profileSmallAvatar} />
-                           </View>
-                        </TouchableOpacity>
-                     </Animated.View>
+                     <MyProfileWidget />
                   </View>
                </View>
 
