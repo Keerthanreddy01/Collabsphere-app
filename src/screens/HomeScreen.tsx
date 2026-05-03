@@ -9,7 +9,7 @@ import {
    StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Grid } from 'lucide-react-native';
+import { Grid, Plus } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Typography } from '../components/Typography';
@@ -44,7 +44,23 @@ export const HomeScreen = ({ navigation }: any) => {
 
                {/* Main Grid Content */}
                <View style={styles.gridContainer}>
-                  {/* Grid layout container */}
+                  {/* Left Column */}
+                  <View style={styles.column}>
+                     {/* Create New Project Widget */}
+                     <Animated.View entering={FadeInDown.delay(200).springify()} style={[styles.card, styles.createProjectCard]}>
+                        <TouchableOpacity style={{ flex: 1, justifyContent: 'space-between' }} activeOpacity={0.8}>
+                           <Typography style={styles.cardTitle}>Create{'\n'}New Project</Typography>
+                           <View style={styles.plusContainer}>
+                              <Plus size={28} color="#FFF" />
+                           </View>
+                        </TouchableOpacity>
+                     </Animated.View>
+                  </View>
+
+                  {/* Right Column */}
+                  <View style={styles.column}>
+                     
+                  </View>
                </View>
 
             </ScrollView>
@@ -83,8 +99,33 @@ const styles = StyleSheet.create({
    
    gridContainer: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
       justifyContent: 'space-between',
+   },
+   column: {
+      width: '47.5%',
       gap: 16,
+   },
+   
+   card: {
+      backgroundColor: '#15161E',
+      borderRadius: 28,
+      padding: 20,
+      overflow: 'hidden',
+   },
+   cardTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: '#FFF',
+      lineHeight: 22,
+   },
+   createProjectCard: {
+      height: 200,
+      borderStyle: 'dashed',
+      borderWidth: 1.5,
+      borderColor: '#2A2B36',
+   },
+   plusContainer: {
+      alignSelf: 'center',
+      marginBottom: 20,
    },
 });
