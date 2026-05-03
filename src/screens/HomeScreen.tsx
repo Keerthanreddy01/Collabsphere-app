@@ -9,7 +9,7 @@ import {
    StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Grid, Plus, Users, Sparkles } from 'lucide-react-native';
+import { Grid, Plus, Users, Sparkles, MessageSquare } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Typography } from '../components/Typography';
@@ -95,6 +95,18 @@ export const HomeScreen = ({ navigation }: any) => {
                            
                            <View style={styles.largeIconContainer}>
                               <Sparkles size={32} color="#9C88FF" />
+                           </View>
+                        </TouchableOpacity>
+                     </Animated.View>
+
+                     {/* Team Chat Widget */}
+                     <Animated.View entering={FadeInDown.delay(500).springify()} style={[styles.card, styles.teamChatCard]}>
+                        <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
+                           <Typography style={styles.cardTitle}>Team Chat</Typography>
+                           <Typography style={styles.cardSubtitle}>4 Unread</Typography>
+                           
+                           <View style={styles.chatIconContainer}>
+                              <MessageSquare size={36} color="#9C88FF" fill="#9C88FF" />
                            </View>
                         </TouchableOpacity>
                      </Animated.View>
@@ -240,5 +252,20 @@ const styles = StyleSheet.create({
       fontWeight: '600',
       color: '#8A8A93',
       marginLeft: 8,
+   },
+   teamChatCard: {
+      height: 140,
+   },
+   chatIconContainer: {
+      position: 'absolute',
+      bottom: -10,
+      left: 10,
+      width: 70,
+      height: 70,
+      borderRadius: 35,
+      backgroundColor: 'rgba(92, 68, 255, 0.1)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      transform: [{ rotate: '-10deg' }],
    },
 });
