@@ -34,6 +34,17 @@ const Header = memo(() => (
    </Animated.View>
 ));
 
+const CreateProjectWidget = memo(() => (
+   <Animated.View entering={FadeInDown.delay(200).springify()} style={[styles.card, styles.createProjectCard]}>
+      <TouchableOpacity style={{ flex: 1, justifyContent: 'space-between' }} activeOpacity={0.8}>
+         <Typography style={styles.cardTitle}>Create{'\n'}New Project</Typography>
+         <View style={styles.plusContainer}>
+            <Plus size={28} color="#FFF" />
+         </View>
+      </TouchableOpacity>
+   </Animated.View>
+));
+
 export const HomeScreen = ({ navigation }: any) => {
    return (
       <View style={styles.container}>
@@ -51,14 +62,7 @@ export const HomeScreen = ({ navigation }: any) => {
                   {/* Left Column */}
                   <View style={styles.column}>
                      {/* Create New Project Widget */}
-                     <Animated.View entering={FadeInDown.delay(200).springify()} style={[styles.card, styles.createProjectCard]}>
-                        <TouchableOpacity style={{ flex: 1, justifyContent: 'space-between' }} activeOpacity={0.8}>
-                           <Typography style={styles.cardTitle}>Create{'\n'}New Project</Typography>
-                           <View style={styles.plusContainer}>
-                              <Plus size={28} color="#FFF" />
-                           </View>
-                        </TouchableOpacity>
-                     </Animated.View>
+                     <CreateProjectWidget />
 
                      {/* My Projects Widget */}
                      <Animated.View entering={FadeInDown.delay(400).springify()} style={[styles.card, styles.myProjectsCard]}>
