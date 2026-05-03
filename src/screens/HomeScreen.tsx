@@ -16,6 +16,24 @@ import { Typography } from '../components/Typography';
 
 const { width } = Dimensions.get('window');
 
+const Header = memo(() => (
+   <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+      <View style={styles.headerLeft}>
+         <Image
+            source={{ uri: 'https://i.pravatar.cc/150?u=keerthan' }}
+            style={styles.avatar}
+         />
+         <View>
+            <Typography style={styles.greeting}>Hi, Developer</Typography>
+            <Typography style={styles.subtitle}>Let's build something amazing</Typography>
+         </View>
+      </View>
+      <TouchableOpacity style={styles.menuBtn} activeOpacity={0.8}>
+         <Grid size={20} color="#FFF" />
+      </TouchableOpacity>
+   </Animated.View>
+));
+
 export const HomeScreen = ({ navigation }: any) => {
    return (
       <View style={styles.container}>
@@ -26,21 +44,7 @@ export const HomeScreen = ({ navigation }: any) => {
                contentContainerStyle={styles.scrollContent}
             >
                {/* Header Section */}
-               <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
-                  <View style={styles.headerLeft}>
-                     <Image
-                        source={{ uri: 'https://i.pravatar.cc/150?u=keerthan' }}
-                        style={styles.avatar}
-                     />
-                     <View>
-                        <Typography style={styles.greeting}>Hi, Developer</Typography>
-                        <Typography style={styles.subtitle}>Let's build something amazing</Typography>
-                     </View>
-                  </View>
-                  <TouchableOpacity style={styles.menuBtn} activeOpacity={0.8}>
-                     <Grid size={20} color="#FFF" />
-                  </TouchableOpacity>
-               </Animated.View>
+               <Header />
 
                {/* Main Grid Content */}
                <View style={styles.gridContainer}>
