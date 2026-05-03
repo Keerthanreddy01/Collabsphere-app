@@ -55,6 +55,26 @@ export const HomeScreen = ({ navigation }: any) => {
                            </View>
                         </TouchableOpacity>
                      </Animated.View>
+
+                     {/* My Projects Widget */}
+                     <Animated.View entering={FadeInDown.delay(400).springify()} style={[styles.card, styles.myProjectsCard]}>
+                        <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
+                           <Typography style={styles.cardTitle}>My Projects</Typography>
+                           <Typography style={styles.cardSubtitle}>3 Active</Typography>
+                           
+                           <View style={styles.progressContainer}>
+                              <View style={[styles.progressBar, { width: '70%' }]} />
+                              <Typography style={styles.progressText}>70%</Typography>
+                           </View>
+                           
+                           <View style={styles.avatarRow}>
+                              <Image source={{ uri: 'https://i.pravatar.cc/150?u=1' }} style={[styles.miniAvatar, { zIndex: 3 }]} />
+                              <Image source={{ uri: 'https://i.pravatar.cc/150?u=2' }} style={[styles.miniAvatar, { zIndex: 2, marginLeft: -12 }]} />
+                              <Image source={{ uri: 'https://i.pravatar.cc/150?u=3' }} style={[styles.miniAvatar, { zIndex: 1, marginLeft: -12 }]} />
+                              <Typography style={styles.plusCount}>+2</Typography>
+                           </View>
+                        </TouchableOpacity>
+                     </Animated.View>
                   </View>
 
                   {/* Right Column */}
@@ -182,5 +202,43 @@ const styles = StyleSheet.create({
       height: 120,
       borderRadius: 60,
       backgroundColor: 'rgba(92, 68, 255, 0.05)',
+   },
+   myProjectsCard: {
+      height: 160,
+   },
+   progressContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginTop: 20,
+   },
+   progressBar: {
+      flex: 1,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: '#5C44FF',
+   },
+   progressText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: '#5C44FF',
+   },
+   avatarRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 20,
+   },
+   miniAvatar: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      borderWidth: 2,
+      borderColor: '#15161E',
+   },
+   plusCount: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: '#8A8A93',
+      marginLeft: 8,
    },
 });
