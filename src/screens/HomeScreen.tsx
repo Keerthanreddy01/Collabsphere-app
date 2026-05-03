@@ -87,6 +87,21 @@ export const HomeScreen = ({ navigation }: any) => {
                            </View>
                         </TouchableOpacity>
                      </Animated.View>
+
+                     {/* My Tasks Widget */}
+                     <Animated.View entering={FadeInDown.delay(800).springify()} style={[styles.card, styles.myTasksCard]}>
+                        <TouchableOpacity style={{ flex: 1, justifyContent: 'space-between' }} activeOpacity={0.8}>
+                           <View>
+                              <Typography style={styles.cardTitle}>My Tasks</Typography>
+                              <Typography style={styles.cardSubtitle}>8 Pending</Typography>
+                           </View>
+                           
+                           <View style={styles.progressContainer}>
+                              <View style={[styles.progressBar, { width: '60%' }]} />
+                              <Typography style={styles.progressText}>60%</Typography>
+                           </View>
+                        </TouchableOpacity>
+                     </Animated.View>
                   </View>
 
                   {/* Right Column */}
@@ -315,5 +330,8 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       marginTop: 'auto',
       marginBottom: 10,
+   },
+   myTasksCard: {
+      height: 130,
    },
 });
