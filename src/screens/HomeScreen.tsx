@@ -9,7 +9,7 @@ import {
    StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Grid, Plus, Users, Sparkles, MessageSquare } from 'lucide-react-native';
+import { Grid, Plus, Users, Sparkles, MessageSquare, Clock } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Typography } from '../components/Typography';
@@ -72,6 +72,18 @@ export const HomeScreen = ({ navigation }: any) => {
                               <Image source={{ uri: 'https://i.pravatar.cc/150?u=2' }} style={[styles.miniAvatar, { zIndex: 2, marginLeft: -12 }]} />
                               <Image source={{ uri: 'https://i.pravatar.cc/150?u=3' }} style={[styles.miniAvatar, { zIndex: 1, marginLeft: -12 }]} />
                               <Typography style={styles.plusCount}>+2</Typography>
+                           </View>
+                        </TouchableOpacity>
+                     </Animated.View>
+
+                     {/* Upcoming Deadlines Widget */}
+                     <Animated.View entering={FadeInDown.delay(600).springify()} style={[styles.card, styles.deadlinesCard]}>
+                        <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
+                           <Typography style={styles.cardTitle}>Upcoming{'\n'}Deadlines</Typography>
+                           <Typography style={styles.cardSubtitle}>2 Due Soon</Typography>
+                           
+                           <View style={styles.clockIconContainer}>
+                              <Clock size={20} color="#FFF" />
                            </View>
                         </TouchableOpacity>
                      </Animated.View>
@@ -267,5 +279,19 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center',
       transform: [{ rotate: '-10deg' }],
+   },
+   deadlinesCard: {
+      height: 140,
+   },
+   clockIconContainer: {
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: '#5C44FF',
+      justifyContent: 'center',
+      alignItems: 'center',
    },
 });
