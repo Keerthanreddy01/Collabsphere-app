@@ -38,7 +38,7 @@ const panTransition = {
   },
   transitionSpec: {
     open: {
-      animation: 'spring',
+      animation: 'spring' as const,
       config: {
         stiffness: 450,
         damping: 40,
@@ -49,7 +49,7 @@ const panTransition = {
       },
     },
     close: {
-      animation: 'spring',
+      animation: 'spring' as const,
       config: {
         stiffness: 450,
         damping: 40,
