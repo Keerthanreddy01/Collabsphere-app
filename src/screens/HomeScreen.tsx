@@ -45,6 +45,27 @@ const CreateProjectWidget = memo(() => (
    </Animated.View>
 ));
 
+const MyProjectsWidget = memo(() => (
+   <Animated.View entering={FadeInDown.delay(400).springify()} style={[styles.card, styles.myProjectsCard]}>
+      <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
+         <Typography style={styles.cardTitle}>My Projects</Typography>
+         <Typography style={styles.cardSubtitle}>3 Active</Typography>
+         
+         <View style={styles.progressContainer}>
+            <View style={[styles.progressBar, { width: '70%' }]} />
+            <Typography style={styles.progressText}>70%</Typography>
+         </View>
+         
+         <View style={styles.avatarRow}>
+            <Image source={{ uri: 'https://i.pravatar.cc/150?u=1' }} style={[styles.miniAvatar, { zIndex: 3 }]} />
+            <Image source={{ uri: 'https://i.pravatar.cc/150?u=2' }} style={[styles.miniAvatar, { zIndex: 2, marginLeft: -12 }]} />
+            <Image source={{ uri: 'https://i.pravatar.cc/150?u=3' }} style={[styles.miniAvatar, { zIndex: 1, marginLeft: -12 }]} />
+            <Typography style={styles.plusCount}>+2</Typography>
+         </View>
+      </TouchableOpacity>
+   </Animated.View>
+));
+
 export const HomeScreen = ({ navigation }: any) => {
    return (
       <View style={styles.container}>
@@ -65,24 +86,7 @@ export const HomeScreen = ({ navigation }: any) => {
                      <CreateProjectWidget />
 
                      {/* My Projects Widget */}
-                     <Animated.View entering={FadeInDown.delay(400).springify()} style={[styles.card, styles.myProjectsCard]}>
-                        <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
-                           <Typography style={styles.cardTitle}>My Projects</Typography>
-                           <Typography style={styles.cardSubtitle}>3 Active</Typography>
-                           
-                           <View style={styles.progressContainer}>
-                              <View style={[styles.progressBar, { width: '70%' }]} />
-                              <Typography style={styles.progressText}>70%</Typography>
-                           </View>
-                           
-                           <View style={styles.avatarRow}>
-                              <Image source={{ uri: 'https://i.pravatar.cc/150?u=1' }} style={[styles.miniAvatar, { zIndex: 3 }]} />
-                              <Image source={{ uri: 'https://i.pravatar.cc/150?u=2' }} style={[styles.miniAvatar, { zIndex: 2, marginLeft: -12 }]} />
-                              <Image source={{ uri: 'https://i.pravatar.cc/150?u=3' }} style={[styles.miniAvatar, { zIndex: 1, marginLeft: -12 }]} />
-                              <Typography style={styles.plusCount}>+2</Typography>
-                           </View>
-                        </TouchableOpacity>
-                     </Animated.View>
+                     <MyProjectsWidget />
 
                      {/* Upcoming Deadlines Widget */}
                      <Animated.View entering={FadeInDown.delay(600).springify()} style={[styles.card, styles.deadlinesCard]}>
