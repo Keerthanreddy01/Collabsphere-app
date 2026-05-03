@@ -116,6 +116,19 @@ const AIMatchWidget = memo(() => (
    </Animated.View>
 ));
 
+const TeamChatWidget = memo(() => (
+   <Animated.View entering={FadeInDown.delay(500).springify()} style={[styles.card, styles.teamChatCard]}>
+      <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
+         <Typography style={styles.cardTitle}>Team Chat</Typography>
+         <Typography style={styles.cardSubtitle}>4 Unread</Typography>
+         
+         <View style={styles.chatIconContainer}>
+            <MessageSquare size={36} color="#9C88FF" fill="#9C88FF" />
+         </View>
+      </TouchableOpacity>
+   </Animated.View>
+));
+
 export const HomeScreen = ({ navigation }: any) => {
    return (
       <View style={styles.container}>
@@ -151,16 +164,7 @@ export const HomeScreen = ({ navigation }: any) => {
                      <AIMatchWidget />
 
                      {/* Team Chat Widget */}
-                     <Animated.View entering={FadeInDown.delay(500).springify()} style={[styles.card, styles.teamChatCard]}>
-                        <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
-                           <Typography style={styles.cardTitle}>Team Chat</Typography>
-                           <Typography style={styles.cardSubtitle}>4 Unread</Typography>
-                           
-                           <View style={styles.chatIconContainer}>
-                              <MessageSquare size={36} color="#9C88FF" fill="#9C88FF" />
-                           </View>
-                        </TouchableOpacity>
-                     </Animated.View>
+                     <TeamChatWidget />
 
                      {/* Activity Feed Widget */}
                      <Animated.View entering={FadeInDown.delay(700).springify()} style={[styles.card, styles.activityFeedCard]}>
