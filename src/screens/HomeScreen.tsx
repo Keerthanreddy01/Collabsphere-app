@@ -9,7 +9,7 @@ import {
    StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Grid, Plus, Users, Sparkles, MessageSquare, Clock } from 'lucide-react-native';
+import { Grid, Plus, Users, Sparkles, MessageSquare, Clock, Activity } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Typography } from '../components/Typography';
@@ -119,6 +119,20 @@ export const HomeScreen = ({ navigation }: any) => {
                            
                            <View style={styles.chatIconContainer}>
                               <MessageSquare size={36} color="#9C88FF" fill="#9C88FF" />
+                           </View>
+                        </TouchableOpacity>
+                     </Animated.View>
+
+                     {/* Activity Feed Widget */}
+                     <Animated.View entering={FadeInDown.delay(700).springify()} style={[styles.card, styles.activityFeedCard]}>
+                        <TouchableOpacity style={{ flex: 1, justifyContent: 'space-between' }} activeOpacity={0.8}>
+                           <View>
+                              <Typography style={styles.cardTitle}>Activity Feed</Typography>
+                              <Typography style={styles.cardSubtitle}>12 New Updates</Typography>
+                           </View>
+                           
+                           <View style={styles.activityGraph}>
+                              <Activity size={32} color="#5C44FF" />
                            </View>
                         </TouchableOpacity>
                      </Animated.View>
@@ -293,5 +307,13 @@ const styles = StyleSheet.create({
       backgroundColor: '#5C44FF',
       justifyContent: 'center',
       alignItems: 'center',
+   },
+   activityFeedCard: {
+      height: 160,
+   },
+   activityGraph: {
+      alignItems: 'center',
+      marginTop: 'auto',
+      marginBottom: 10,
    },
 });
