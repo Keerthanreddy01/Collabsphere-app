@@ -4,7 +4,6 @@ import {
    View,
    ScrollView,
    TouchableOpacity,
-   Dimensions,
    Image,
    StatusBar,
 } from 'react-native';
@@ -13,8 +12,6 @@ import { Grid, Plus, Users, Sparkles, MessageSquare, Clock, Activity } from 'luc
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Typography } from '../components/Typography';
-
-const { width } = Dimensions.get('window');
 
 const Header = memo(() => (
    <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
