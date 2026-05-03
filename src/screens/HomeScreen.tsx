@@ -151,6 +151,18 @@ export const HomeScreen = ({ navigation }: any) => {
                            </View>
                         </TouchableOpacity>
                      </Animated.View>
+
+                     {/* My Profile Widget */}
+                     <Animated.View entering={FadeInDown.delay(900).springify()} style={[styles.card, styles.myProfileCard]}>
+                        <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
+                           <Typography style={styles.cardTitle}>My Profile</Typography>
+                           <Typography style={styles.cardSubtitle}>View and edit</Typography>
+                           
+                           <View style={styles.profileBottomRight}>
+                              <Image source={{ uri: 'https://i.pravatar.cc/150?u=keerthan' }} style={styles.profileSmallAvatar} />
+                           </View>
+                        </TouchableOpacity>
+                     </Animated.View>
                   </View>
                </View>
 
@@ -333,5 +345,18 @@ const styles = StyleSheet.create({
    },
    myTasksCard: {
       height: 130,
+   },
+   myProfileCard: {
+      height: 130,
+   },
+   profileBottomRight: {
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
+   },
+   profileSmallAvatar: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
    },
 });
