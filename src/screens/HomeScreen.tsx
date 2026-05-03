@@ -9,7 +9,7 @@ import {
    StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Grid, Plus } from 'lucide-react-native';
+import { Grid, Plus, Users, Sparkles } from 'lucide-react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Typography } from '../components/Typography';
@@ -59,7 +59,25 @@ export const HomeScreen = ({ navigation }: any) => {
 
                   {/* Right Column */}
                   <View style={styles.column}>
-                     
+                     {/* AI Match Widget */}
+                     <Animated.View entering={FadeInDown.delay(300).springify()} style={[styles.card, styles.aiMatchCard]}>
+                        <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
+                           <View style={styles.cardBgDecoration} />
+                           
+                           <View style={styles.badgeContainer}>
+                              <Users size={16} color="#FFF" />
+                           </View>
+                           
+                           <View style={{ marginTop: 20 }}>
+                              <Typography style={styles.cardTitle}>AI Match</Typography>
+                              <Typography style={styles.cardSubtitle}>Find perfect{'\n'}squad</Typography>
+                           </View>
+                           
+                           <View style={styles.largeIconContainer}>
+                              <Sparkles size={32} color="#9C88FF" />
+                           </View>
+                        </TouchableOpacity>
+                     </Animated.View>
                   </View>
                </View>
 
@@ -127,5 +145,42 @@ const styles = StyleSheet.create({
    plusContainer: {
       alignSelf: 'center',
       marginBottom: 20,
+   },
+   aiMatchCard: {
+      height: 190,
+      backgroundColor: '#15161E',
+   },
+   badgeContainer: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: '#5C44FF',
+      justifyContent: 'center',
+      alignItems: 'center',
+   },
+   cardSubtitle: {
+      fontSize: 12,
+      color: '#8A8A93',
+      marginTop: 4,
+   },
+   largeIconContainer: {
+      position: 'absolute',
+      bottom: -10,
+      right: -10,
+      width: 70,
+      height: 70,
+      borderRadius: 35,
+      backgroundColor: 'rgba(92, 68, 255, 0.15)',
+      justifyContent: 'center',
+      alignItems: 'center',
+   },
+   cardBgDecoration: {
+      position: 'absolute',
+      top: '10%',
+      right: '-20%',
+      width: 120,
+      height: 120,
+      borderRadius: 60,
+      backgroundColor: 'rgba(92, 68, 255, 0.05)',
    },
 });
