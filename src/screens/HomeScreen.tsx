@@ -66,6 +66,19 @@ const MyProjectsWidget = memo(() => (
    </Animated.View>
 ));
 
+const UpcomingDeadlinesWidget = memo(() => (
+   <Animated.View entering={FadeInDown.delay(600).springify()} style={[styles.card, styles.deadlinesCard]}>
+      <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
+         <Typography style={styles.cardTitle}>Upcoming{'\n'}Deadlines</Typography>
+         <Typography style={styles.cardSubtitle}>2 Due Soon</Typography>
+         
+         <View style={styles.clockIconContainer}>
+            <Clock size={20} color="#FFF" />
+         </View>
+      </TouchableOpacity>
+   </Animated.View>
+));
+
 export const HomeScreen = ({ navigation }: any) => {
    return (
       <View style={styles.container}>
@@ -89,16 +102,7 @@ export const HomeScreen = ({ navigation }: any) => {
                      <MyProjectsWidget />
 
                      {/* Upcoming Deadlines Widget */}
-                     <Animated.View entering={FadeInDown.delay(600).springify()} style={[styles.card, styles.deadlinesCard]}>
-                        <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
-                           <Typography style={styles.cardTitle}>Upcoming{'\n'}Deadlines</Typography>
-                           <Typography style={styles.cardSubtitle}>2 Due Soon</Typography>
-                           
-                           <View style={styles.clockIconContainer}>
-                              <Clock size={20} color="#FFF" />
-                           </View>
-                        </TouchableOpacity>
-                     </Animated.View>
+                     <UpcomingDeadlinesWidget />
 
                      {/* My Tasks Widget */}
                      <Animated.View entering={FadeInDown.delay(800).springify()} style={[styles.card, styles.myTasksCard]}>
