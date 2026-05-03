@@ -95,6 +95,27 @@ const MyTasksWidget = memo(() => (
    </Animated.View>
 ));
 
+const AIMatchWidget = memo(() => (
+   <Animated.View entering={FadeInDown.delay(300).springify()} style={[styles.card, styles.aiMatchCard]}>
+      <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
+         <View style={styles.cardBgDecoration} />
+         
+         <View style={styles.badgeContainer}>
+            <Users size={16} color="#FFF" />
+         </View>
+         
+         <View style={{ marginTop: 20 }}>
+            <Typography style={styles.cardTitle}>AI Match</Typography>
+            <Typography style={styles.cardSubtitle}>Find perfect{'\n'}squad</Typography>
+         </View>
+         
+         <View style={styles.largeIconContainer}>
+            <Sparkles size={32} color="#9C88FF" />
+         </View>
+      </TouchableOpacity>
+   </Animated.View>
+));
+
 export const HomeScreen = ({ navigation }: any) => {
    return (
       <View style={styles.container}>
@@ -127,24 +148,7 @@ export const HomeScreen = ({ navigation }: any) => {
                   {/* Right Column */}
                   <View style={styles.column}>
                      {/* AI Match Widget */}
-                     <Animated.View entering={FadeInDown.delay(300).springify()} style={[styles.card, styles.aiMatchCard]}>
-                        <TouchableOpacity style={{ flex: 1 }} activeOpacity={0.8}>
-                           <View style={styles.cardBgDecoration} />
-                           
-                           <View style={styles.badgeContainer}>
-                              <Users size={16} color="#FFF" />
-                           </View>
-                           
-                           <View style={{ marginTop: 20 }}>
-                              <Typography style={styles.cardTitle}>AI Match</Typography>
-                              <Typography style={styles.cardSubtitle}>Find perfect{'\n'}squad</Typography>
-                           </View>
-                           
-                           <View style={styles.largeIconContainer}>
-                              <Sparkles size={32} color="#9C88FF" />
-                           </View>
-                        </TouchableOpacity>
-                     </Animated.View>
+                     <AIMatchWidget />
 
                      {/* Team Chat Widget */}
                      <Animated.View entering={FadeInDown.delay(500).springify()} style={[styles.card, styles.teamChatCard]}>
