@@ -6,20 +6,23 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  Dimensions,
+  Platform,
 } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
-import { LogOut, Pencil, Link } from 'lucide-react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import { Plus, Search, LayoutGrid, Copy, Check, Info, EyeOff } from 'lucide-react-native';
 
 import { supabase } from '../../lib/supabase';
-import { colors, radius, spacing, typography } from '../../theme/colors';
+import { colors } from '../../theme/colors';
 import { Typography } from '../../components/Typography';
 import { Profile } from '../../types';
+
+const { width, height } = Dimensions.get('window');
 
 export const ProfileScreen = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const projects = ['Orbit Studio', 'Signalboard', 'CollabCare'];
 
   useEffect(() => {
     let mounted = true;
@@ -48,16 +51,9 @@ export const ProfileScreen = () => {
 
       if (!mounted) return;
 
-      if (profileError) {
-        // If row is missing or table is missing, don't show a red error, just leave profile as null
-        // so the user sees the 'Complete your profile' state
-        if (profileError.code !== 'PGRST116' && profileError.code !== '42P01') {
-          setError(profileError.message);
-        }
-      } else {
+      if (!profileError) {
         setProfile(data as Profile);
       }
-
       setLoading(false);
     };
 
@@ -68,249 +64,232 @@ export const ProfileScreen = () => {
     };
   }, []);
 
-  const handleLogout = async () => {
-    const { error: signOutError } = await supabase.auth.signOut();
-    if (signOutError) {
-      setError(signOutError.message);
-    }
-  };
+  const InfoRow = ({ label, value, showCopy = false, showCheck = false, showInfo = false, isPassword = false }: any) => (
+    <View style={styles.infoRow}>
+      <View style={styles.labelContainer}>
+        <Typography style={styles.infoLabel}>{label}</Typography>
+        {showInfo && <Info size={12} color="#AAA" style={{ marginLeft: 4 }} />}
+      </View>
+      <View style={styles.valueContainer}>
+        <Typography style={styles.infoValue} numberOfLines={1} ellipsizeMode="tail">
+          {value}
+        </Typography>
+        {isPassword && <EyeOff size={14} color="#000" style={{ marginLeft: 6 }} />}
+        {showCopy && <Copy size={14} color="#000" style={{ marginLeft: 6 }} />}
+        {showCheck && <Check size={14} color="#000" style={{ marginLeft: 6 }} />}
+      </View>
+    </View>
+  );
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Animated.View entering={FadeIn.duration(300)}>
-        <Typography style={styles.headerTitle}>Profile</Typography>
-        <Typography style={styles.headerSubtitle}>
-          Your CollabSphere identity
-        </Typography>
+    <View style={styles.container}>
+      {/* Grid Background Simulation */}
+      <View style={styles.gridBg}>
+        {[...Array(10)].map((_, i) => (
+          <View key={`h-${i}`} style={[styles.gridLineH, { top: (height / 10) * i }]} />
+        ))}
+        {[...Array(6)].map((_, i) => (
+          <View key={`v-${i}`} style={[styles.gridLineV, { left: (width / 6) * i }]} />
+        ))}
+      </View>
 
-        {loading ? (
-          <View style={styles.loadingArea}>
-            <ActivityIndicator color={colors.terracotta} />
-          </View>
-        ) : !profile && !error ? (
-          <View style={styles.card}>
-            <View style={[styles.avatarImage, { backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' }]}>
-              <Typography style={styles.avatarInitials}>
-                ??
-              </Typography>
-            </View>
-            <Typography style={styles.name}>New Builder</Typography>
-            <Typography style={styles.bio}>
-              Welcome to CollabSphere! Please set up your profile to connect with others.
-            </Typography>
-            <Pressable style={[styles.secondaryButton, { marginTop: spacing.lg }]}>
-              <Pencil size={16} color={colors.textPrimary} />
-              <Typography style={styles.secondaryText}>Complete your profile</Typography>
-            </Pressable>
-            <Pressable style={[styles.logoutButton, { marginTop: spacing.md }]} onPress={handleLogout}>
-              <LogOut size={16} color={colors.white} />
-              <Typography style={styles.logoutText}>Log out</Typography>
-            </Pressable>
-          </View>
-        ) : (
-          <View style={styles.card}>
-            {profile?.avatar_url ? (
-              <Image source={{ uri: profile.avatar_url }} style={styles.avatarImage} />
-            ) : (
-              <View style={[styles.avatarImage, { backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' }]}>
-                <Typography style={styles.avatarInitials}>
-                  {profile?.full_name ? profile.full_name.substring(0, 2).toUpperCase() : '??'}
-                </Typography>
-              </View>
-            )}
-            <Typography style={styles.name}>
-              {profile?.full_name || 'New Builder'}
-            </Typography>
-            <Typography style={styles.username}>
-              @{profile?.username || 'username'}
-            </Typography>
-            <Typography style={styles.bio}>
-              {profile?.bio || 'Add a bio to introduce your focus.'}
-            </Typography>
+      <View style={styles.navHeader}>
+        <View style={styles.leftIcons}>
+          <Plus size={26} color="#FFF" strokeWidth={2.5} />
+          <Search size={24} color="#FFF" strokeWidth={2.5} style={{ marginLeft: 20 }} />
+        </View>
+        <LayoutGrid size={26} color="#FFF" strokeWidth={2.5} />
+      </View>
 
-            <View style={styles.tagsRow}>
-              {(profile?.skills || ['React Native', 'Supabase', 'Design']).map(
-                (skill) => (
-                  <View key={skill} style={styles.tag}>
-                    <Typography style={styles.tagText}>{skill}</Typography>
-                  </View>
-                )
-              )}
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <Animated.View entering={FadeIn.duration(600)}>
+          <Typography style={styles.mainTitle}>
+            Edit{"\n"}Account
+          </Typography>
+
+          <Animated.View entering={FadeInUp.delay(200).duration(800)} style={styles.profileCard}>
+            <View style={styles.cardTop}>
+              <Image 
+                source={{ uri: profile?.avatar_url || 'https://i.pravatar.cc/150?u=me' }} 
+                style={styles.cardAvatar} 
+              />
+              <Typography style={styles.cardHeaderTitle}>Keerthan</Typography>
             </View>
 
-            <Pressable style={styles.linkRow}>
-              <Link size={16} color={colors.textSecondary} />
-              <Typography style={styles.linkText}>
-                {profile?.github_url || 'github.com/your-handle'}
-              </Typography>
-            </Pressable>
-
-            <View style={styles.projectsSection}>
-              <Typography style={styles.projectsTitle}>Projects</Typography>
-              {projects.map((project) => (
-                <Typography key={project} style={styles.projectItem}>
-                  {project}
-                </Typography>
-              ))}
+            <View style={styles.cardBody}>
+              <InfoRow label="Username" value={`@${profile?.username || 'keerthan_reddy'}`} />
+              <InfoRow label="Email" value={profile?.email || 'keerthan@mail.com'} />
+              <InfoRow label="Password" value="••••••••" isPassword />
+              <InfoRow label="Phone" value="+91 9876543210" />
             </View>
 
-            <View style={styles.buttonRow}>
-              <Pressable style={styles.secondaryButton}>
-                <Pencil size={16} color={colors.textPrimary} />
-                <Typography style={styles.secondaryText}>Edit profile</Typography>
+            <View style={styles.cardActions}>
+              <Pressable style={styles.darkButton}>
+                <Typography style={styles.darkButtonText}>Save</Typography>
               </Pressable>
-              <Pressable style={styles.logoutButton} onPress={handleLogout}>
-                <LogOut size={16} color={colors.black} />
-                <Typography style={styles.logoutText}>Log out</Typography>
+              <Pressable style={styles.lightButton}>
+                <Typography style={styles.lightButtonText}>Deactivate</Typography>
               </Pressable>
             </View>
-          </View>
-        )}
 
-        {error ? <Typography style={styles.error}>{error}</Typography> : null}
-      </Animated.View>
-    </ScrollView>
+            <Typography style={styles.footerText}>
+              SECURE ACCOUNT
+            </Typography>
+          </Animated.View>
+        </Animated.View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.black,
+    backgroundColor: '#000',
   },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xxl,
+  gridBg: {
+    ...StyleSheet.absoluteFillObject,
+    opacity: 0.08,
   },
-  headerTitle: {
-    ...typography.title,
-    color: colors.textPrimary,
+  gridLineH: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: '#FFF',
   },
-  headerSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-    marginBottom: spacing.lg,
+  gridLineV: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 1,
+    backgroundColor: '#FFF',
   },
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    padding: spacing.lg,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+  navHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingHorizontal: 32,
+    zIndex: 10,
   },
-  avatarImage: {
-    width: 72,
-    height: 72,
+  leftIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  scrollContent: {
+    paddingHorizontal: 32, // Reduced side space for a slightly narrower card
+    paddingTop: 20,
+    paddingBottom: 120,
+  },
+  mainTitle: {
+    color: '#FFF',
+    fontSize: 56,
+    fontWeight: '900',
+    lineHeight: 52,
+    letterSpacing: -2,
+    marginBottom: 24,
+  },
+  profileCard: {
+    backgroundColor: '#FFF',
     borderRadius: 36,
-    marginBottom: spacing.md,
+    padding: 24, // Reduced internal padding
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.3,
+    shadowRadius: 30,
+    elevation: 15,
   },
-  avatarInitials: {
-    color: colors.white,
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-  name: {
-    ...typography.subtitle,
-    color: colors.textCard,
-  },
-  username: {
-    ...typography.caption,
-    color: colors.textMuted,
-    marginTop: spacing.xs,
-  },
-  bio: {
-    ...typography.body,
-    color: colors.textCard,
-    marginTop: spacing.md,
-  },
-  tagsRow: {
+  cardTop: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-    marginTop: spacing.md,
+    alignItems: 'center',
+    marginBottom: 24, // Reduced from 32
   },
-  tag: {
-    backgroundColor: colors.panel,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
+  cardAvatar: {
+    width: 56, // Reduced from 64
+    height: 56,
+    borderRadius: 28,
+    marginRight: 14,
+    backgroundColor: '#F5F5F5',
+  },
+  cardHeaderTitle: {
+    fontSize: 36, // Reduced from 42
+    fontWeight: '900',
+    color: '#000',
+    letterSpacing: -1.5,
+  },
+  cardBody: {
+    marginBottom: 24, // Reduced from 32
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12, // Reduced from 14
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  infoLabel: {
+    fontSize: 14, // Reduced from 15
+    color: '#999',
+    fontWeight: '700',
+  },
+  valueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingLeft: 16,
+  },
+  infoValue: {
+    fontSize: 14, // Reduced from 15
+    color: '#000',
+    fontWeight: '800',
+    textAlign: 'right',
+  },
+  cardActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 20,
+  },
+  darkButton: {
+    flex: 1.2, // "Save" button slightly wider
+    height: 52, // Reduced from 64
+    backgroundColor: '#111',
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  darkButtonText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  lightButton: {
+    flex: 1,
+    height: 52, // Reduced from 64
+    backgroundColor: '#F5F5F5',
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: colors.glassBorder,
+    borderColor: '#EEE',
   },
-  tagText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+  lightButtonText: {
+    color: '#000',
+    fontSize: 15,
+    fontWeight: '800',
   },
-  linkRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    marginTop: spacing.md,
-  },
-  linkText: {
-    ...typography.caption,
-    color: colors.textCard,
-  },
-  projectsSection: {
-    marginTop: spacing.lg,
-    gap: spacing.xs,
-  },
-  projectsTitle: {
-    ...typography.caption,
-    color: colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
-  projectItem: {
-    ...typography.body,
-    color: colors.textCard,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.lg,
-  },
-  secondaryButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    backgroundColor: colors.panel,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    justifyContent: 'center',
-  },
-  secondaryText: {
-    ...typography.caption,
-    color: colors.textPrimary,
-  },
-  logoutButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    backgroundColor: colors.accent,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    justifyContent: 'center',
-  },
-  logoutText: {
-    ...typography.caption,
-    color: colors.white,
-  },
-  loadingArea: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.xl,
-  },
-  error: {
-    ...typography.caption,
-    color: colors.danger,
-    marginTop: spacing.md,
+  footerText: {
+    textAlign: 'center',
+    fontSize: 9,
+    color: '#BBB',
+    fontWeight: '900',
+    letterSpacing: 1.5,
   },
 });

@@ -65,6 +65,8 @@ export type Profile = {
   id: string;
   full_name: string | null;
   username: string | null;
+  email?: string | null;
+  phone?: string | null;
   bio: string | null;
   skills: string[] | null;
   github_url: string | null;
