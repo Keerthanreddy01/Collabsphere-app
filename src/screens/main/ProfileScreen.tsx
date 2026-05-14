@@ -74,9 +74,9 @@ export const ProfileScreen = () => {
         <Typography style={styles.infoValue} numberOfLines={1} ellipsizeMode="tail">
           {value}
         </Typography>
-        {isPassword && <EyeOff size={14} color="#000" style={{ marginLeft: 6 }} />}
-        {showCopy && <Copy size={14} color="#000" style={{ marginLeft: 6 }} />}
-        {showCheck && <Check size={14} color="#000" style={{ marginLeft: 6 }} />}
+        {isPassword && <EyeOff size={16} color="#000" style={{ marginLeft: 8 }} />}
+        {showCopy && <Copy size={16} color="#000" style={{ marginLeft: 8 }} />}
+        {showCheck && <Check size={16} color="#000" style={{ marginLeft: 8 }} />}
       </View>
     </View>
   );
@@ -95,10 +95,10 @@ export const ProfileScreen = () => {
 
       <View style={styles.navHeader}>
         <View style={styles.leftIcons}>
-          <Plus size={26} color="#FFF" strokeWidth={2.5} />
-          <Search size={24} color="#FFF" strokeWidth={2.5} style={{ marginLeft: 20 }} />
+          <Plus size={28} color="#FFF" strokeWidth={2} />
+          <Search size={26} color="#FFF" strokeWidth={2} style={{ marginLeft: 24 }} />
         </View>
-        <LayoutGrid size={26} color="#FFF" strokeWidth={2.5} />
+        <LayoutGrid size={28} color="#FFF" strokeWidth={2} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -118,14 +118,21 @@ export const ProfileScreen = () => {
 
             <View style={styles.cardBody}>
               <InfoRow label="Username" value={`@${profile?.username || 'keerthan_reddy'}`} />
-              <InfoRow label="Email" value={profile?.email || 'keerthan@mail.com'} />
+              <InfoRow label="Email" value={profile?.email || 'keerthan101011@gmail.com'} />
               <InfoRow label="Password" value="••••••••" isPassword />
               <InfoRow label="Phone" value="+91 9876543210" />
+              
+              <View style={[styles.infoRow, { borderBottomWidth: 0, marginTop: 10 }]}>
+                <Typography style={styles.infoLabel}>Account Status</Typography>
+                <View style={styles.activePill}>
+                  <Typography style={styles.activeText}>Active</Typography>
+                </View>
+              </View>
             </View>
 
             <View style={styles.cardActions}>
               <Pressable style={styles.darkButton}>
-                <Typography style={styles.darkButtonText}>Save</Typography>
+                <Typography style={styles.darkButtonText}>Save Changes</Typography>
               </Pressable>
               <Pressable style={styles.lightButton}>
                 <Typography style={styles.lightButtonText}>Deactivate</Typography>
@@ -133,7 +140,7 @@ export const ProfileScreen = () => {
             </View>
 
             <Typography style={styles.footerText}>
-              SECURE ACCOUNT
+              SECURELY ENCRYPTED VIA COLLABSPHERE
             </Typography>
           </Animated.View>
         </Animated.View>
@@ -149,7 +156,7 @@ const styles = StyleSheet.create({
   },
   gridBg: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.08,
+    opacity: 0.1,
   },
   gridLineH: {
     position: 'absolute',
@@ -170,7 +177,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingHorizontal: 32,
+    paddingHorizontal: 28,
     zIndex: 10,
   },
   leftIcons: {
@@ -178,55 +185,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scrollContent: {
-    paddingHorizontal: 32, // Reduced side space for a slightly narrower card
-    paddingTop: 20,
-    paddingBottom: 120,
+    paddingHorizontal: 24,
+    paddingTop: 30,
+    paddingBottom: 140,
   },
   mainTitle: {
     color: '#FFF',
-    fontSize: 56,
+    fontSize: 60,
     fontWeight: '900',
-    lineHeight: 52,
+    lineHeight: 58,
     letterSpacing: -2,
-    marginBottom: 24,
+    marginBottom: 30,
+    paddingLeft: 4,
   },
   profileCard: {
     backgroundColor: '#FFF',
-    borderRadius: 36,
-    padding: 24, // Reduced internal padding
+    borderRadius: 45,
+    padding: 28,
     width: '100%',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.3,
-    shadowRadius: 30,
-    elevation: 15,
+    shadowOffset: { width: 0, height: 30 },
+    shadowOpacity: 0.4,
+    shadowRadius: 40,
+    elevation: 25,
   },
   cardTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24, // Reduced from 32
+    marginBottom: 32,
   },
   cardAvatar: {
-    width: 56, // Reduced from 64
-    height: 56,
-    borderRadius: 28,
-    marginRight: 14,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    marginRight: 16,
     backgroundColor: '#F5F5F5',
   },
   cardHeaderTitle: {
-    fontSize: 36, // Reduced from 42
+    fontSize: 42,
     fontWeight: '900',
     color: '#000',
-    letterSpacing: -1.5,
+    letterSpacing: -2,
   },
   cardBody: {
-    marginBottom: 24, // Reduced from 32
+    marginBottom: 32,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12, // Reduced from 14
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
@@ -235,7 +243,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   infoLabel: {
-    fontSize: 14, // Reduced from 15
+    fontSize: 15,
     color: '#999',
     fontWeight: '700',
   },
@@ -244,37 +252,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     justifyContent: 'flex-end',
-    paddingLeft: 16,
+    paddingLeft: 20,
   },
   infoValue: {
-    fontSize: 14, // Reduced from 15
+    fontSize: 15,
     color: '#000',
     fontWeight: '800',
     textAlign: 'right',
   },
+  activePill: {
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  activeText: {
+    color: '#2E7D32',
+    fontSize: 12,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
   cardActions: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 20,
+    gap: 12,
+    marginBottom: 24,
   },
   darkButton: {
-    flex: 1.2, // "Save" button slightly wider
-    height: 52, // Reduced from 64
+    flex: 1,
+    height: 64,
     backgroundColor: '#111',
-    borderRadius: 26,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },
   darkButtonText: {
     color: '#FFF',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
   },
   lightButton: {
     flex: 1,
-    height: 52, // Reduced from 64
+    height: 64,
     backgroundColor: '#F5F5F5',
-    borderRadius: 26,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -282,14 +302,15 @@ const styles = StyleSheet.create({
   },
   lightButtonText: {
     color: '#000',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
   },
   footerText: {
     textAlign: 'center',
-    fontSize: 9,
+    fontSize: 10,
     color: '#BBB',
     fontWeight: '900',
-    letterSpacing: 1.5,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
   },
 });
