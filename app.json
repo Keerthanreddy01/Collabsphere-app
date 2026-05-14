@@ -1,46 +1,29 @@
 {
   "expo": {
     "name": "CollabSphere",
-    "slug": "CollabsphereMobile",
-    "version": "2.0.0",
+    "slug": "collabsphere",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "scheme": "collabsphere",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FFEB3B"
+      "backgroundColor": "#000000"
     },
     "ios": {
-      "supportsTablet": false,
-      "requireFullScreen": true
+      "supportsTablet": false
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFEB3B"
+        "backgroundColor": "#000000"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": true,
       "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-font",
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "CollabSphere needs access to your photos to set a profile picture."
-        }
-      ]
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "collabsphere-mobile"
-      }
     }
   }
 }

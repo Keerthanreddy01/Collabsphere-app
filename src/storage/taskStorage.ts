@@ -1,14 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Task } from '../types';
 
-const TASKS_KEY = 'collabsphere_tasks';
+type TaskItem = {
+  id: string;
+  title: string;
+  done: boolean;
+};
+
+const TASKS_KEY = 'collabsphere_tasks_v2';
 
 export const taskStorage = {
-  getTasks: async (): Promise<Task[]> => {
+  getTasks: async (): Promise<TaskItem[]> => {
     const data = await AsyncStorage.getItem(TASKS_KEY);
-    return data ? JSON.parse(data) : [];
+    return data ? (JSON.parse(data) as TaskItem[]) : [];
   },
-  saveTask: async (task: Task) => {
+  saveTask: async (task: TaskItem) => {
     const tasks = await taskStorage.getTasks();
     const updated = [task, ...tasks];
     await AsyncStorage.setItem(TASKS_KEY, JSON.stringify(updated));
@@ -16,14 +21,16 @@ export const taskStorage = {
   },
   toggleTask: async (id: string) => {
     const tasks = await taskStorage.getTasks();
-    const updated = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+    const updated = tasks.map((task) =>
+      task.id === id ? { ...task, done: !task.done } : task
+    );
     await AsyncStorage.setItem(TASKS_KEY, JSON.stringify(updated));
     return updated;
   },
   deleteTask: async (id: string) => {
     const tasks = await taskStorage.getTasks();
-    const updated = tasks.filter(t => t.id !== id);
+    const updated = tasks.filter((task) => task.id !== id);
     await AsyncStorage.setItem(TASKS_KEY, JSON.stringify(updated));
     return updated;
-  }
+  },
 };
