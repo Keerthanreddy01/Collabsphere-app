@@ -1,137 +1,210 @@
 import React, { useMemo } from 'react';
-import { FlatList, Image, Pressable, StyleSheet, View, ScrollView } from 'react-native';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Bell, Search, Play } from 'lucide-react-native';
+import { FlatList, Image, Pressable, StyleSheet, View, ScrollView, Dimensions } from 'react-native';
+import Animated, { 
+  FadeIn, 
+  FadeInDown, 
+  FadeInUp, 
+  useAnimatedScrollHandler, 
+  useSharedValue, 
+  useAnimatedStyle,
+  interpolate,
+  withSpring,
+  FadeInRight
+} from 'react-native-reanimated';
+import { 
+  Heart, 
+  MessageCircle, 
+  Share2, 
+  MoreHorizontal, 
+  Bell, 
+  Search, 
+  Play, 
+  Sparkles,
+  Zap
+} from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { colors, radius, spacing } from '../../theme/colors';
 import { Typography } from '../../components/Typography';
 import { mockFeedPosts } from '../../data/mockBuilders';
 
+const { width, height } = Dimensions.get('window');
+
+// Using high-fidelity remote images as a fallback to ensure immediate visibility
 const STORY_DATA = [
-  { id: '1', type: 'audio', title: 'Audio space\nLive', icon: '🎧', bg: '#0052FF' },
-  { id: '2', type: 'post', title: 'Creative\nWork', icon: '☁️', bg: '#4A4A4A' },
-  { id: '3', type: 'share', title: '@theKappe\nmade a post', icon: '👤', bg: '#FF4D4D' },
-  { id: '4', type: 'live', title: 'Orb v2\nRelease', icon: '🚀', bg: '#6C63FF' },
+  { id: '1', type: 'audio', title: 'Audio space\nLive', uri: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=600&fit=crop', bg: ['#FF00CC', '#333399'] },
+  { id: '2', type: 'post', title: 'Creative\nWork', uri: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=400&h=600&fit=crop', bg: ['#4A4A4A', '#111111'] },
+  { id: '3', type: 'share', title: '@theKappe\nmade a post', uri: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=600&fit=crop', bg: ['#FF4D4D', '#800000'] },
+  { id: '4', type: 'live', title: 'Orb v2\nRelease', uri: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=600&fit=crop', bg: ['#6C63FF', '#330066'] },
 ];
 
 export const FeedScreen = () => {
   const data = useMemo(() => mockFeedPosts, []);
+  const scrollY = useSharedValue(0);
+
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+
+  const headerStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(scrollY.value, [0, 60], [1, 0.2]);
+    const scale = interpolate(scrollY.value, [0, 60], [1, 0.95]);
+    return {
+      opacity,
+      transform: [{ scale }],
+    };
+  });
 
   const renderHeader = () => (
-    <View style={styles.topContainer}>
-      {/* Top Icons Header */}
-      <View style={styles.navHeader}>
+    <View style={styles.topHeaderWrapper}>
+      {/* Top Navigation - Still Padded */}
+      <Animated.View style={[styles.navHeader, headerStyle]}>
         <View style={styles.leftNav}>
           <Pressable style={styles.iconCircle}>
             <Bell size={20} color="#FFF" />
-            <View style={styles.badge}>
-              <Typography style={styles.badgeText}>3</Typography>
-            </View>
+            <View style={styles.badge} />
           </Pressable>
           <Pressable style={[styles.iconCircle, { marginLeft: 12 }]}>
             <Search size={20} color="#FFF" />
           </Pressable>
         </View>
+        <Typography style={styles.logoText}>CollabSphere</Typography>
         <Image 
           source={{ uri: 'https://i.pravatar.cc/100?u=me' }} 
           style={styles.profileAvatar} 
         />
-      </View>
+      </Animated.View>
 
-      {/* Stories / Spaces Horizontal List */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false} 
-        contentContainerStyle={styles.storiesContent}
-      >
-        {STORY_DATA.map((story) => (
-          <View key={story.id} style={[styles.storyCard, { backgroundColor: story.bg }]}>
-            <View style={styles.storyHeader}>
-              <Typography style={styles.storyIcon}>{story.icon}</Typography>
-              <Typography style={styles.storyTitle}>{story.title}</Typography>
-            </View>
-            <View style={styles.storyBottom} />
-          </View>
-        ))}
-      </ScrollView>
+      {/* Hero Section / Stories - EDGE TO EDGE */}
+      <View style={styles.heroSection}>
+        <View style={styles.heroHeader}>
+           <Typography style={styles.sectionTitle}>Active Spaces</Typography>
+           <Sparkles size={16} color="#6C63FF" />
+        </View>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          contentContainerStyle={styles.storiesContent}
+          decelerationRate="fast"
+          snapToInterval={140 + 16} // card width + gap
+        >
+          {STORY_DATA.map((story, index) => (
+            <Animated.View 
+              key={story.id} 
+              entering={FadeInRight.delay(index * 100)}
+              style={styles.storyCardWrapper}
+            >
+              <Image 
+                source={{ uri: story.uri }} 
+                style={StyleSheet.absoluteFill} 
+                resizeMode="cover"
+              />
+              <LinearGradient
+                colors={['rgba(0,0,0,0.1)', 'rgba(0,0,0,0.8)']}
+                style={styles.storyCard}
+              >
+                <View style={styles.storyOverlay}>
+                   <Typography style={styles.storyTitle}>{story.title}</Typography>
+                   <View style={styles.liveIndicator}>
+                      <View style={styles.liveDot} />
+                      <Typography style={styles.liveText}>LIVE</Typography>
+                   </View>
+                </View>
+              </LinearGradient>
+            </Animated.View>
+          ))}
+        </ScrollView>
+      </View>
     </View>
   );
 
   const renderItem = ({ item, index }: { item: any; index: number }) => (
-    <Animated.View entering={FadeInUp.delay(index * 100)} style={styles.postCard}>
-      {/* Social Context */}
-      <View style={styles.socialContext}>
-        <View style={styles.socialAvatars}>
-          <Image source={{ uri: 'https://i.pravatar.cc/50?u=1' }} style={styles.smallAvatar} />
-          <Image source={{ uri: 'https://i.pravatar.cc/50?u=2' }} style={[styles.smallAvatar, { marginLeft: -8 }]} />
+    <Animated.View entering={FadeInDown.delay(index * 150)} style={styles.postWrapper}>
+      {/* Glass Post Card */}
+      <View style={styles.postCard}>
+        {/* Social Proof Bar */}
+        <View style={styles.socialProof}>
+           <View style={styles.miniAvatars}>
+              <Image source={{ uri: 'https://i.pravatar.cc/50?u=a' }} style={styles.miniAvatar} />
+              <Image source={{ uri: 'https://i.pravatar.cc/50?u=b' }} style={[styles.miniAvatar, { marginLeft: -8 }]} />
+           </View>
+           <Typography style={styles.socialProofText}>Trusted by 12 builders</Typography>
         </View>
-        <Typography style={styles.contextText}>16 friends liked</Typography>
-      </View>
 
-      {/* Post Header */}
-      <View style={styles.postHeader}>
-        <Image source={{ uri: item.avatar }} style={styles.postAvatar} />
-        <View style={styles.postAuthorInfo}>
-          <Typography style={styles.postAuthorName}>{item.author}</Typography>
-          <Typography style={styles.postTime}>Posted in orb • {item.timeAgo}</Typography>
-        </View>
-      </View>
-
-      {/* Post Content */}
-      <Typography style={styles.postContent}>
-        {item.update || "Very excited to welcome you here on orb v2. Listen to our podcast with @kimmo to get all new features."}
-      </Typography>
-
-      {/* Media Attachment */}
-      <View style={styles.mediaContainer}>
-        <Image 
-          source={{ uri: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=500' }} 
-          style={styles.mediaImage} 
-        />
-        <View style={styles.mediaOverlay}>
-          <View style={styles.mediaText}>
-            <Typography style={styles.mediaTitle}>orb v2 release</Typography>
-            <Typography style={styles.mediaSubtitle}>{item.author} x Kimmo</Typography>
+        {/* Post Header */}
+        <View style={styles.postHeader}>
+          <Image source={{ uri: item.avatar }} style={styles.postAvatar} />
+          <View style={styles.authorInfo}>
+            <Typography style={styles.authorName}>{item.author}</Typography>
+            <View style={styles.authorSubRow}>
+               <Typography style={styles.authorHandle}>@builder</Typography>
+               <View style={styles.dot} />
+               <Typography style={styles.postTime}>{item.timeAgo}</Typography>
+            </View>
           </View>
-          <View style={styles.mediaControls}>
-            <Typography style={styles.duration}>48:56</Typography>
-            <Pressable style={styles.playButton}>
-              <Play size={16} fill="#000" color="#000" />
+          <Pressable style={styles.moreBtn}>
+             <MoreHorizontal size={20} color="#666" />
+          </Pressable>
+        </View>
+
+        {/* Post Content */}
+        <Typography style={styles.postContent}>
+          {item.update || "Exploring the intersection of AI and Collaborative design. 🚀 @collabsphere v2 coming soon."}
+        </Typography>
+
+        {/* Visual Media - Floating Style */}
+        <View style={styles.mediaContainer}>
+          <Image 
+            source={{ uri: `https://picsum.photos/seed/${item.id}/800/600` }} 
+            style={styles.mediaImage} 
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.8)']}
+            style={styles.mediaOverlay}
+          >
+            <View style={styles.mediaDetails}>
+               <Typography style={styles.mediaLabel}>Orbital Update</Typography>
+               <Typography style={styles.mediaTitle}>Designing the Future</Typography>
+            </View>
+            <Pressable style={styles.glassPlay}>
+               <Play size={18} fill="#FFF" color="#FFF" />
             </Pressable>
-          </View>
+          </LinearGradient>
         </View>
-      </View>
 
-      {/* Footer Actions */}
-      <View style={styles.postFooter}>
-        <View style={styles.footerLeft}>
-          <Pressable style={styles.footerAction}>
-            <Heart size={20} color="#666" />
-            <Typography style={styles.footerActionText}>{item.likes}</Typography>
-          </Pressable>
-          <Pressable style={styles.footerAction}>
-            <MessageCircle size={20} color="#666" />
-            <Typography style={styles.footerActionText}>{item.comments}</Typography>
-          </Pressable>
-          <Pressable style={styles.footerAction}>
-            <Share2 size={20} color="#666" />
-            <Typography style={styles.footerActionText}>17</Typography>
-          </Pressable>
+        {/* Interaction Bar */}
+        <View style={styles.postFooter}>
+           <View style={styles.actionGroup}>
+              <Pressable style={styles.actionBtn}>
+                 <Heart size={22} color="#FF2D55" />
+                 <Typography style={styles.actionValue}>{item.likes}</Typography>
+              </Pressable>
+              <Pressable style={styles.actionBtn}>
+                 <MessageCircle size={22} color="#FFF" />
+                 <Typography style={styles.actionValue}>{item.comments}</Typography>
+              </Pressable>
+              <Pressable style={styles.actionBtn}>
+                 <Share2 size={22} color="#FFF" />
+              </Pressable>
+           </View>
+           <View style={styles.zapBadge}>
+              <Zap size={14} color="#FFD60A" fill="#FFD60A" />
+              <Typography style={styles.zapText}>TOP</Typography>
+           </View>
         </View>
-        <Pressable>
-          <MoreHorizontal size={20} color="#666" />
-        </Pressable>
       </View>
     </Animated.View>
   );
 
   return (
     <View style={styles.container}>
-      <FlatList
+      <Animated.FlatList
         data={data}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={renderHeader}
         renderItem={renderItem}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={styles.listPadding}
         showsVerticalScrollIndicator={false}
       />
@@ -142,21 +215,21 @@ export const FeedScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#050505',
   },
   listPadding: {
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
-  topContainer: {
+  topHeaderWrapper: {
     paddingTop: 60,
-    paddingHorizontal: 20,
     marginBottom: 20,
   },
   navHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
+    paddingHorizontal: 20,
   },
   leftNav: {
     flexDirection: 'row',
@@ -165,28 +238,28 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#333',
+    backgroundColor: '#111',
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
+    borderWidth: 1,
+    borderColor: '#222',
   },
   badge: {
     position: 'absolute',
-    top: 10,
-    right: 8,
-    backgroundColor: '#FFF',
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#333',
+    top: 12,
+    right: 12,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF2D55',
+    borderWidth: 1.5,
+    borderColor: '#111',
   },
-  badgeText: {
-    color: '#000',
-    fontSize: 9,
+  logoText: {
+    fontSize: 18,
     fontWeight: '900',
+    color: '#FFF',
+    letterSpacing: -1,
   },
   profileAvatar: {
     width: 44,
@@ -195,142 +268,206 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#333',
   },
+  heroSection: {
+    marginBottom: 12,
+  },
+  heroHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#FFF',
+    letterSpacing: -0.5,
+  },
   storiesContent: {
-    paddingRight: 20,
-    gap: 12,
+    paddingHorizontal: 20,
+    gap: 16,
+  },
+  storyCardWrapper: {
+    width: 140,
+    height: 210,
+    borderRadius: 50,
+    overflow: 'hidden',
+    backgroundColor: '#111',
+    borderWidth: 1.5,
+    borderColor: '#222',
   },
   storyCard: {
-    width: 100,
-    height: 120,
-    borderRadius: 20,
-    padding: 12,
-    justifyContent: 'space-between',
+    flex: 1,
+    padding: 16,
+    justifyContent: 'flex-end',
   },
-  storyHeader: {
-    gap: 4,
-  },
-  storyIcon: {
-    fontSize: 24,
+  storyOverlay: {
+    gap: 8,
   },
   storyTitle: {
     color: '#FFF',
-    fontSize: 11,
-    fontWeight: '700',
-    lineHeight: 14,
+    fontSize: 14,
+    fontWeight: '900',
+    lineHeight: 18,
+    letterSpacing: -0.5,
   },
-  storyBottom: {},
-  
-  postCard: {
-    backgroundColor: '#FFF',
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 24,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 5,
-  },
-  socialContext: {
+  liveIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    backgroundColor: 'rgba(255, 45, 85, 0.2)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    gap: 4,
   },
-  socialAvatars: {
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FF2D55',
+  },
+  liveText: {
+    color: '#FF2D55',
+    fontSize: 8,
+    fontWeight: '900',
+  },
+  postWrapper: {
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  postCard: {
+    backgroundColor: '#111',
+    borderRadius: 50,
+    padding: 26,
+    borderWidth: 1,
+    borderColor: '#222',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.5,
+    shadowRadius: 30,
+  },
+  socialProof: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    alignSelf: 'flex-start',
+    paddingRight: 12,
+    borderRadius: 20,
+  },
+  miniAvatars: {
     flexDirection: 'row',
     marginRight: 8,
   },
-  smallAvatar: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1,
-    borderColor: '#FFF',
+  miniAvatar: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: '#111',
   },
-  contextText: {
-    color: '#999',
-    fontSize: 12,
-    fontWeight: '600',
+  socialProofText: {
+    fontSize: 11,
+    color: '#AAA',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   postHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   postAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     marginRight: 12,
   },
-  postAuthorInfo: {},
-  postAuthorName: {
-    color: '#000',
-    fontSize: 16,
+  authorInfo: {
+    flex: 1,
+  },
+  authorName: {
+    fontSize: 17,
     fontWeight: '800',
+    color: '#FFF',
+  },
+  authorSubRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  authorHandle: {
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '600',
+  },
+  dot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: '#444',
+    marginHorizontal: 6,
   },
   postTime: {
-    color: '#999',
-    fontSize: 12,
+    fontSize: 13,
+    color: '#666',
+  },
+  moreBtn: {
+    padding: 4,
   },
   postContent: {
-    color: '#333',
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#DDD',
     fontWeight: '500',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   mediaContainer: {
     width: '100%',
-    height: 180,
-    borderRadius: 20,
+    height: 280,
+    borderRadius: 40,
     overflow: 'hidden',
-    marginBottom: 16,
     position: 'relative',
+    marginBottom: 20,
   },
   mediaImage: {
     width: '100%',
     height: '100%',
   },
   mediaOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    padding: 16,
+    ...StyleSheet.absoluteFillObject,
+    padding: 20,
+    justifyContent: 'flex-end',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-end',
   },
-  mediaText: {},
-  mediaTitle: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '700',
+  mediaDetails: {
+    flex: 1,
   },
-  mediaSubtitle: {
+  mediaLabel: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginBottom: 4,
   },
-  mediaControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  duration: {
+  mediaTitle: {
     color: '#FFF',
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '900',
   },
-  playButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FFF',
+  glassPlay: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   postFooter: {
     flexDirection: 'row',
@@ -338,18 +475,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 8,
   },
-  footerLeft: {
+  actionGroup: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 20,
   },
-  footerAction: {
+  actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
-  footerActionText: {
-    color: '#666',
-    fontSize: 13,
-    fontWeight: '700',
+  actionValue: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  zapBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255,214,10,0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  zapText: {
+    color: '#FFD60A',
+    fontSize: 10,
+    fontWeight: '900',
   },
 });

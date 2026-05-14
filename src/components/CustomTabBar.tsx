@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
     width: '94%',
     height: TAB_BAR_HEIGHT,
-    borderRadius: 40,
+    borderRadius: 50,
     paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'space-between',

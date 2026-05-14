@@ -123,7 +123,7 @@ const ChatScreen = ({ navigation }: any) => {
                 {item.topText ? (
                   <Typography style={styles.cardTopText}>{item.topText}</Typography>
                 ) : null}
-                
+
                 <View style={styles.cardHeader}>
                   <Image source={{ uri: item.avatar }} style={styles.cardAvatar} />
                   <View style={styles.cardHeaderText}>
@@ -192,6 +192,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: spacing.md,
+  },
+  mintBanner: {
+    backgroundColor: '#FF5C00',
+    marginHorizontal: 24,
+    marginTop: Platform.OS === 'ios' ? 60 : 40,
+    borderRadius: 50, // Perfectly smooth
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   topBarLeft: {
     flexDirection: 'row',

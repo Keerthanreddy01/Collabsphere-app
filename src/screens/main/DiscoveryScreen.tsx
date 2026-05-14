@@ -1,204 +1,346 @@
 import React, { useMemo, useState } from 'react';
 import {
   FlatList,
-  KeyboardAvoidingView,
-  Platform,
+  Image,
   Pressable,
   StyleSheet,
-  TextInput,
   View,
+  Platform,
+  Dimensions,
+  TextInput,
+  ScrollView,
 } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
-import { UserPlus } from 'lucide-react-native';
+import Animated, { FadeIn, FadeInUp, SlideInRight } from 'react-native-reanimated';
+import { Plus, X, Search, Sparkles, Code, Palette, Zap } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { colors, radius, spacing, typography } from '../../theme/colors';
+import { colors, radius, spacing } from '../../theme/colors';
 import { Typography } from '../../components/Typography';
-import { BuilderProfile } from '../../types';
-import { mockBuilders } from '../../data/mockBuilders';
+
+const { width } = Dimensions.get('window');
+
+const DISCOVERY_DATA = [
+  {
+    id: '1',
+    section: 'Suggested Squads',
+    name: 'kamskry',
+    avatar: 'https://i.pravatar.cc/150?u=10',
+    role: 'UI/UX DESIGNER',
+    time: '2H AGO',
+    badge: '🎨',
+  },
+  {
+    id: '2',
+    section: 'Recently Joined',
+    name: 'artem',
+    avatar: 'https://i.pravatar.cc/150?u=11',
+    role: 'FULLSTACK DEV',
+    time: '5M AGO',
+    badge: '💻',
+  },
+  {
+    id: '3',
+    section: 'All Builders',
+    name: 'arp_misha',
+    avatar: 'https://i.pravatar.cc/150?u=12',
+    role: 'AI ENGINEER',
+    time: 'JUST NOW',
+    badge: '🤖',
+  },
+  {
+    id: '4',
+    section: 'All Builders',
+    name: 'raffazerbaizan',
+    avatar: 'https://i.pravatar.cc/150?u=13',
+    role: 'PRODUCT LEAD',
+    time: '3 HOURS AGO',
+    badge: '🚀',
+  },
+  {
+    id: '5',
+    section: 'All Builders',
+    name: 'mohosin',
+    avatar: 'https://i.pravatar.cc/150?u=14',
+    role: 'MOTION DESIGNER',
+    time: '1 DAY AGO',
+    badge: '🎬',
+  },
+];
+
+const SKILL_CLUSTERS = [
+  { id: '1', name: 'Design', icon: '🎨', count: 124 },
+  { id: '2', name: 'Dev', icon: '💻', count: 89 },
+  { id: '3', name: 'AI', icon: '🤖', count: 45 },
+  { id: '4', name: 'Product', icon: '🚀', count: 32 },
+];
 
 export const DiscoveryScreen = () => {
   const [query, setQuery] = useState('');
 
-  const filtered = useMemo(() => {
-    if (!query) return mockBuilders;
-    const lowered = query.toLowerCase();
-    return mockBuilders.filter((builder) =>
-      `${builder.name} ${builder.role} ${builder.skills.join(' ')}`
-        .toLowerCase()
-        .includes(lowered)
-    );
-  }, [query]);
+  const sections = useMemo(() => {
+    const map = new Map();
+    DISCOVERY_DATA.forEach((item) => {
+      if (!map.has(item.section)) map.set(item.section, []);
+      map.get(item.section).push(item);
+    });
+    return Array.from(map.entries());
+  }, []);
 
-  const renderItem = ({ item, index }: { item: BuilderProfile; index: number }) => (
-    <Animated.View entering={FadeIn.delay(index * 30)} style={styles.cardWrapper}>
-      <View style={[styles.card, styles.cardStyle]}>
-        <View style={styles.cardHeader}>
-          <Typography style={styles.name}>{item.name}</Typography>
-          <View style={styles.matchBadge}>
-            <Typography style={styles.matchText}>{item.match}%</Typography>
+  const renderSection = ([title, items]: [string, any[]], sectionIndex: number) => (
+    <View key={title} style={styles.sectionContainer}>
+      <Typography style={styles.sectionTitle}>{title}</Typography>
+      {items.map((item, index) => (
+        <Animated.View 
+          key={item.id} 
+          entering={FadeInUp.delay(sectionIndex * 150 + index * 50)}
+          style={styles.builderRow}
+        >
+          <View style={styles.badgeContainer}>
+             <Typography style={styles.badgeEmoji}>{item.badge}</Typography>
           </View>
-        </View>
-        <Typography style={styles.role}>{item.role}</Typography>
-        <View style={styles.tagsRow}>
-          {item.skills.map((skill) => (
-            <View key={skill} style={styles.tag}>
-              <Typography style={styles.tagText}>{skill}</Typography>
-            </View>
-          ))}
-        </View>
-        <Pressable style={styles.connectButton}>
-          <UserPlus size={16} color={colors.white} />
-          <Typography style={styles.connectText}>Connect</Typography>
-        </Pressable>
-      </View>
-    </Animated.View>
+          <Image source={{ uri: item.avatar }} style={styles.avatar} />
+          <View style={styles.builderInfo}>
+            <Typography style={styles.userName}>@{item.name}</Typography>
+            <Typography style={styles.userRole}>
+              {item.role} {item.time ? `• ${item.time}` : ''}
+            </Typography>
+          </View>
+          <Pressable style={styles.miniConnect}>
+             <Plus size={16} color="#FFF" />
+          </Pressable>
+        </Animated.View>
+      ))}
+    </View>
   );
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <Animated.View entering={FadeIn.duration(300)} style={styles.screen}>
-        <View style={styles.header}>
-          <Typography style={styles.headerTitle}>Discovery</Typography>
-          <Typography style={styles.headerSubtitle}>
-            Find builders and match with squads
-          </Typography>
-          <TextInput
-            placeholder="Search builders"
-            placeholderTextColor={colors.textMuted}
-            value={query}
-            onChangeText={setQuery}
-            style={styles.search}
-          />
-        </View>
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          numColumns={2}
-          columnWrapperStyle={styles.column}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
+    <View style={styles.container}>
+      {/* Premium Pink Gradient Banner */}
+      <Animated.View entering={FadeIn.delay(200)}>
+        <LinearGradient
+          colors={['#FF00CC', '#333399']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.matchBanner}
+        >
+          <View style={styles.matchContent}>
+            <Sparkles size={20} color="#FFF" />
+            <Typography style={styles.matchText}>AI SQUAD MATCHING</Typography>
+            <View style={styles.matchBadge}>
+               <Typography style={styles.matchPercentage}>98%</Typography>
+            </View>
+          </View>
+        </LinearGradient>
       </Animated.View>
-    </KeyboardAvoidingView>
+
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <Animated.View entering={FadeIn.duration(600)}>
+          <View style={styles.header}>
+            <Typography style={styles.mainTitle}>Discovery</Typography>
+            
+            {/* Skill Clusters Horizontal Scroll */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.clusterScroll}>
+              {SKILL_CLUSTERS.map((cluster, idx) => (
+                <Animated.View 
+                  key={cluster.id} 
+                  entering={SlideInRight.delay(idx * 100)}
+                  style={styles.clusterItem}
+                >
+                   <Typography style={styles.clusterEmoji}>{cluster.icon}</Typography>
+                   <View style={styles.clusterBadge}>
+                      <Typography style={styles.clusterCount}>{cluster.count}</Typography>
+                   </View>
+                   <Typography style={styles.clusterName}>{cluster.name}</Typography>
+                </Animated.View>
+              ))}
+            </ScrollView>
+          </View>
+
+          <View style={styles.searchContainer}>
+             <Search size={18} color="#666" />
+             <TextInput 
+                placeholder="Search by skill or username"
+                placeholderTextColor="#666"
+                style={styles.searchInput}
+                value={query}
+                onChangeText={setQuery}
+             />
+          </View>
+
+          {sections.map((section, index) => renderSection(section, index))}
+        </Animated.View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.black,
+    backgroundColor: '#000',
   },
-  screen: {
-    flex: 1,
-  },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.md,
-  },
-  headerTitle: {
-    ...typography.title,
-    color: colors.textPrimary,
-  },
-  headerSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-  search: {
-    marginTop: spacing.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    color: colors.textPrimary,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-  },
-  listContent: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
-  },
-  column: {
-    gap: spacing.md,
-  },
-  cardWrapper: {
-    flex: 1,
-    marginTop: spacing.md,
-  },
-  card: {
-    padding: spacing.md,
-    minHeight: 190,
-  },
-  cardStyle: {
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  name: {
-    ...typography.subtitle,
-    color: colors.textCard,
-    flex: 1,
-    marginRight: spacing.xs,
-  },
-  matchBadge: {
-    backgroundColor: colors.accent,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-  },
-  matchText: {
-    ...typography.caption,
-    color: colors.white,
-  },
-  role: {
-    ...typography.body,
-    color: colors.textCard,
-    marginTop: spacing.xs,
-  },
-  tagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-    marginTop: spacing.md,
-  },
-  tag: {
-    backgroundColor: colors.panel,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: colors.glassBorder,
-  },
-  tagText: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  connectButton: {
-    marginTop: spacing.md,
-    backgroundColor: colors.accent,
-    borderRadius: radius.md,
+  matchBanner: {
+    marginHorizontal: 24,
+    marginTop: Platform.OS === 'ios' ? 60 : 40,
+    borderRadius: 50, // Ultra smooth
+    padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.sm,
+    // Glow effect
+    shadowColor: '#FF00CC',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
-  connectText: {
-    ...typography.caption,
-    color: colors.white,
+  matchContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  matchText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  matchBadge: {
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  matchPercentage: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 150,
+  },
+  header: {
+    marginBottom: 32,
+  },
+  mainTitle: {
+    color: '#FFF',
+    fontSize: 52,
+    fontWeight: '900',
+    letterSpacing: -2,
+    marginBottom: 24,
+  },
+  clusterScroll: {
+    flexDirection: 'row',
+  },
+  clusterItem: {
+    alignItems: 'center',
+    marginRight: 28,
+    position: 'relative',
+  },
+  clusterEmoji: {
+    fontSize: 34,
+  },
+  clusterBadge: {
+    position: 'absolute',
+    top: 24,
+    right: -4,
+    backgroundColor: '#FF00CC',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#000',
+  },
+  clusterCount: {
+    color: '#FFF',
+    fontSize: 8,
+    fontWeight: '900',
+  },
+  clusterName: {
+    color: '#999',
+    fontSize: 10,
+    fontWeight: '800',
+    marginTop: 14,
+    textTransform: 'uppercase',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0F0F0F',
+    borderRadius: 32, // Smoother
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    marginBottom: 40,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  searchInput: {
+    flex: 1,
+    color: '#FFF',
+    fontSize: 16,
+    marginLeft: 12,
+    fontWeight: '600',
+  },
+  sectionContainer: {
+    marginBottom: 36,
+  },
+  sectionTitle: {
+    color: '#555',
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 20,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  builderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  badgeContainer: {
+    width: 32,
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  badgeEmoji: {
+    fontSize: 26,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 14,
+    backgroundColor: '#111',
+    borderWidth: 1,
+    borderColor: '#222',
+  },
+  builderInfo: {
+    flex: 1,
+  },
+  userName: {
+    color: '#FFF',
+    fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  userRole: {
+    color: '#666',
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 4,
+    textTransform: 'uppercase',
+  },
+  miniConnect: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#111',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#333',
   },
 });
