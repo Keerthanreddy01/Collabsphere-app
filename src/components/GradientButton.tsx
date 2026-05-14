@@ -1,61 +1,42 @@
 import React from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  TouchableOpacity, 
-  TouchableOpacityProps,
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  TextStyle,
   ViewStyle,
-  TextStyle
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS, BORDER_RADIUS, TYPOGRAPHY } from '../theme/theme';
 
-interface GradientButtonProps extends TouchableOpacityProps {
+import { colors, radius, spacing } from '../theme/colors';
+
+interface GradientButtonProps {
   title: string;
-  colors?: readonly [string, string, ...string[]];
+  onPress?: () => void;
   containerStyle?: ViewStyle;
   textStyle?: TextStyle;
-  icon?: React.ReactNode;
 }
 
-export const GradientButton: React.FC<GradientButtonProps> = ({ 
-  title, 
-  colors = COLORS.primaryGradient, 
+export const GradientButton: React.FC<GradientButtonProps> = ({
+  title,
+  onPress,
   containerStyle,
   textStyle,
-  icon,
-  ...props 
-}) => {
-  return (
-    <TouchableOpacity activeOpacity={0.8} {...props}>
-      <LinearGradient
-        colors={colors}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={[styles.gradient, containerStyle]}
-      >
-        {icon && icon}
-        <Text style={[styles.text, textStyle, icon ? { marginLeft: 8 } : {}]}>
-          {title}
-        </Text>
-      </LinearGradient>
-    </TouchableOpacity>
-  );
-};
+}) => (
+  <Pressable style={[styles.button, containerStyle]} onPress={onPress}>
+    <Text style={[styles.text, textStyle]}>{title}</Text>
+  </Pressable>
+);
 
 const styles = StyleSheet.create({
-  gradient: {
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: BORDER_RADIUS.xl,
-    flexDirection: 'row',
+  button: {
+    backgroundColor: colors.terracotta,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
     alignItems: 'center',
-    justifyContent: 'center',
   },
   text: {
-    color: '#FFF',
-    fontSize: 16,
+    color: colors.black,
     fontWeight: '700',
-    letterSpacing: 0.5,
   },
 });

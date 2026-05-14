@@ -1,75 +1,72 @@
-export type Priority = 'High' | 'Medium' | 'Low';
+export type AuthStackParamList = {
+  Login: undefined;
+  Signup: undefined;
+};
 
-export interface Task {
-  id: string;
-  title: string;
-  priority: Priority;
-  completed: boolean;
-  dueDate: string;
-  createdAt: string;
-}
+export type MainTabParamList = {
+  Feed: undefined;
+  Discovery: undefined;
+  Chat: undefined;
+  CollabBoard: undefined;
+  Profile: undefined;
+};
 
-export type PostTag = 'SNIPPET' | 'SHIPPING' | 'HELP NEEDED' | 'TERMINAL';
+export type RootStackParamList = {
+  MainTabs: undefined;
+  ChatDetail: { chatId: string; title: string };
+};
 
-export interface Comment {
-  id: string;
-  author: string;
-  avatar: string;
-  text: string;
-  timeAgo: string;
-}
-
-export interface Post {
+export type FeedPost = {
   id: string;
   author: string;
   avatar: string;
   timeAgo: string;
-  tech: string;
-  tag: PostTag;
   title: string;
-  body: string;
-  boosts: number;
-  comments: Comment[];
-  repoLink?: string;
-}
+  update: string;
+  stack: string[];
+  likes: number;
+  comments: number;
+};
 
-export interface Builder {
+export type BuilderProfile = {
   id: string;
   name: string;
   role: string;
-  avatar: string;
-  stack: string[];
-  compatibility: number;
-  isOpenToCollab: boolean;
-  githubStats: {
-    commits: number;
-    repos: number;
-    streak: number;
-  };
-}
+  skills: string[];
+  match: number;
+};
 
-export interface Project {
+export type ConversationPreview = {
+  id: string;
+  name: string;
+  avatar: string;
+  lastMessage: string;
+  time: string;
+};
+
+export type CollabProject = {
   id: string;
   name: string;
   description: string;
-  founderId: string;
   stack: string[];
-  rolesNeeded: string[];
-  priority: Priority;
-  recruiting: boolean;
-  applications: number;
-}
+  teamSize: string;
+  status: 'Open' | 'Recruiting' | 'Paused';
+};
 
-export interface UserProfile {
+export type ChatMessage = {
   id: string;
-  name: string;
-  role: string;
-  avatar: string;
-  bio: string;
-  techStack: string[];
-  xp: number;
-  level: number;
-  streakDays: number;
-  isOpenToCollab: boolean;
-  connections: string[];
-}
+  chat_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+};
+
+export type Profile = {
+  id: string;
+  full_name: string | null;
+  username: string | null;
+  bio: string | null;
+  skills: string[] | null;
+  github_url: string | null;
+  avatar_url: string | null;
+};
