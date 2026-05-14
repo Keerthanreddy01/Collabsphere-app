@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   TextInput,
   View,
@@ -11,6 +12,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Animated, {
   FadeIn,
+  FadeInUp,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -18,6 +20,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
+import { Mail, Star } from 'lucide-react-native';
 
 import { supabase } from '../../lib/supabase';
 import { colors, radius, typography } from '../../theme/colors';
@@ -33,7 +36,7 @@ const FloatingBubble = ({ initial, color, size, top, left, right, bottom, delay 
     translateY.value = withDelay(
       delay,
       withRepeat(
-        withTiming(-20, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
+        withTiming(-10, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
         -1,
         true
       )
@@ -57,11 +60,12 @@ const FloatingBubble = ({ initial, color, size, top, left, right, bottom, delay 
           borderColor: '#FFFFFF',
           alignItems: 'center',
           justifyContent: 'center',
-          shadowColor: '#6C63FF',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.6,
-          shadowRadius: 12,
-          elevation: 10,
+          zIndex: 5,
+          shadowColor: '#FFFFFF',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.3,
+          shadowRadius: 5,
+          elevation: 5,
         },
         animatedStyle,
       ]}
@@ -100,6 +104,7 @@ export const LoginScreen = ({ navigation }: Props) => {
   const [loading, setLoading] = useState(false);
   const [guestLoading, setGuestLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
   const handleGuestLogin = async () => {
     setGuestLoading(true);
@@ -168,89 +173,107 @@ export const LoginScreen = ({ navigation }: Props) => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <Animated.View style={styles.innerContainer} entering={FadeIn.duration(800)}>
-        
-        {/* Glow Background */}
-        <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-          <View style={styles.glowOuter} />
-          <View style={styles.glowInner} />
-        </View>
-
-        {/* Top 55% - Hero & Bubbles */}
-        <View style={styles.topSection}>
-          <FloatingBubble initial="K" color="#6C63FF" size={60} top="15%" left="15%" delay={0} />
-          <FloatingBubble initial="A" color="#00BFA5" size={75} top="35%" left="5%" delay={500} />
-          <FloatingBubble initial="S" color="#FF6B35" size={80} top="10%" right="15%" delay={1000} />
-          <FloatingBubble initial="M" color="#FF4081" size={65} top="30%" right="8%" delay={1500} />
-          <FloatingBubble initial="J" color="#2196F3" size={70} top="50%" left="20%" delay={800} />
-          <FloatingBubble initial="T" color="#4CAF50" size={65} top="48%" right="25%" delay={1200} />
-
-          <View style={styles.heroContainer}>
-            <Typography style={styles.heroTitle}>CollabSphere</Typography>
-            <Typography style={styles.heroSubtitle}>Find your squad. Ship together.</Typography>
+      <ScrollView contentContainerStyle={styles.scrollContent} bounces={false} showsVerticalScrollIndicator={false}>
+        <Animated.View style={styles.innerContainer} entering={FadeIn.duration(800)}>
+          
+          {/* Top Header Section */}
+          <View style={styles.header}>
+            <Typography style={styles.logoText}>CollabSphere</Typography>
+            <Typography style={styles.subtitleText}>Find your squad. Ship together.</Typography>
           </View>
-        </View>
 
-        {/* Bottom 35% - Form */}
-        <View style={styles.bottomSection}>
-          <View style={styles.form}>
-            <TextInput
-              placeholder="Email"
-              placeholderTextColor="#888888"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Password"
-              placeholderTextColor="#888888"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              style={styles.input}
-            />
-            
-            <ScaleButton
-              style={[styles.primaryButton, (loading || guestLoading) && { opacity: 0.8 }]}
-              onPress={handleLogin}
-              disabled={loading || guestLoading}
-            >
-              {loading ? (
-                <ActivityIndicator color={colors.black} />
-              ) : (
-                <Typography style={styles.primaryButtonText}>Sign In</Typography>
-              )}
-            </ScaleButton>
+          {/* Center Globe Graphic */}
+          <View style={styles.globeSection}>
+            <View style={styles.globeContainer}>
+              <View style={styles.globe} />
+              
+              {/* Floating Avatars on the globe */}
+              <FloatingBubble initial="K" color="#6C63FF" size={48} top={-10} left={60} delay={0} />
+              <FloatingBubble initial="A" color="#00BFA5" size={54} top={20} right={40} delay={500} />
+              <FloatingBubble initial="S" color="#FF6B35" size={44} top={80} left={-10} delay={1000} />
+              <FloatingBubble initial="M" color="#FF4081" size={50} top={100} right={-15} delay={1500} />
+              <FloatingBubble initial="J" color="#2196F3" size={46} top={160} left={20} delay={800} />
+              <FloatingBubble initial="T" color="#4CAF50" size={42} top={180} right={30} delay={1200} />
+              <FloatingBubble initial="C" color="#FFC107" size={38} top={120} left={60} delay={300} />
+              <FloatingBubble initial="R" color="#9C27B0" size={40} top={50} right={80} delay={700} />
 
-            <View style={styles.orContainer}>
-              <Typography style={styles.orText}>or continue as</Typography>
+              {/* Star Mascot */}
+              <View style={styles.starContainer}>
+                <Star fill="#000" color="#000" size={36} />
+              </View>
             </View>
-
-            <ScaleButton
-              style={[styles.guestButton, (loading || guestLoading) && { opacity: 0.8 }]}
-              onPress={handleGuestLogin}
-              disabled={loading || guestLoading}
-            >
-              {guestLoading ? (
-                <ActivityIndicator color="#6C63FF" />
-              ) : (
-                <Typography style={styles.guestButtonText}>Guest Login</Typography>
-              )}
-            </ScaleButton>
-
-            {error ? <Typography style={styles.error}>{error}</Typography> : null}
-
-            <Pressable
-              onPress={() => navigation.navigate('Signup')}
-              style={styles.linkButton}
-            >
-              <Typography style={styles.linkText}>New here? Create account</Typography>
-            </Pressable>
           </View>
-        </View>
-      </Animated.View>
+
+          {/* Bottom Actions Section */}
+          <View style={styles.bottomSection}>
+            {!showForm ? (
+              <Animated.View entering={FadeInUp.duration(400)} style={styles.actionsContainer}>
+                <ScaleButton
+                  style={styles.whitePillButton}
+                  onPress={() => setShowForm(true)}
+                >
+                  <Mail size={20} color="#000" style={{ marginRight: 8 }} />
+                  <Typography style={styles.whitePillButtonText}>Sign in with Email</Typography>
+                </ScaleButton>
+
+                <Pressable onPress={handleGuestLogin} disabled={guestLoading} style={styles.anotherWayButton}>
+                  {guestLoading ? (
+                    <ActivityIndicator color="#A0A0A0" />
+                  ) : (
+                    <Typography style={styles.anotherWayText}>GUEST LOGIN</Typography>
+                  )}
+                </Pressable>
+
+                <Typography style={styles.legalText}>
+                  By pressing "Sign in", you agree to our{'\n'}
+                  <Typography style={styles.legalLink}>license agreement</Typography> and <Typography style={styles.legalLink}>privacy policy</Typography>.
+                </Typography>
+              </Animated.View>
+            ) : (
+              <Animated.View entering={FadeInUp.duration(400)} style={styles.formContainer}>
+                <TextInput
+                  placeholder="Email"
+                  placeholderTextColor="#888"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  style={styles.input}
+                />
+                <TextInput
+                  placeholder="Password"
+                  placeholderTextColor="#888"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  style={styles.input}
+                />
+                
+                <ScaleButton
+                  style={[styles.whitePillButton, { marginTop: 8 }]}
+                  onPress={handleLogin}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#000" />
+                  ) : (
+                    <Typography style={styles.whitePillButtonText}>Log In</Typography>
+                  )}
+                </ScaleButton>
+
+                {error ? <Typography style={styles.error}>{error}</Typography> : null}
+
+                <Pressable onPress={() => navigation.navigate('Signup')} style={{ marginTop: 16 }}>
+                  <Typography style={styles.anotherWayText}>NEW HERE? CREATE ACCOUNT</Typography>
+                </Pressable>
+                <Pressable onPress={() => setShowForm(false)} style={{ marginTop: 16 }}>
+                  <Typography style={[styles.anotherWayText, { color: '#666' }]}>CANCEL</Typography>
+                </Pressable>
+              </Animated.View>
+            )}
+          </View>
+        </Animated.View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
@@ -260,68 +283,124 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000000',
   },
+  scrollContent: {
+    flexGrow: 1,
+  },
   innerContainer: {
     flex: 1,
   },
-  glowOuter: {
-    position: 'absolute',
-    top: '15%',
-    left: '-20%',
-    right: '-20%',
-    height: 600,
-    backgroundColor: '#2D1B69',
-    borderRadius: 300,
-    opacity: 0.4,
-    transform: [{ scale: 1.2 }],
-    filter: [{ blur: 60 }], // Fallback if supported
-  },
-  glowInner: {
-    position: 'absolute',
-    top: '25%',
-    left: '10%',
-    right: '10%',
-    height: 400,
-    backgroundColor: '#6C63FF',
-    borderRadius: 200,
-    opacity: 0.2,
-    transform: [{ scale: 1.4 }],
-  },
-  topSection: {
-    flex: 0.55,
-    justifyContent: 'center',
+  header: {
+    flex: 0.2,
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: 20,
     zIndex: 10,
   },
-  heroContainer: {
-    alignItems: 'center',
-    marginTop: 60, // offset slightly to sit well with bubbles
-  },
-  heroTitle: {
+  logoText: {
     color: '#FFFFFF',
-    fontSize: 36,
+    fontSize: 40,
     fontWeight: '900',
-    textShadowColor: '#6C63FF',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 15,
+    fontStyle: 'italic',
     letterSpacing: 1,
   },
-  heroSubtitle: {
-    ...typography.body,
+  subtitleText: {
     color: '#A0A0A0',
-    marginTop: 8,
+    fontSize: 16,
     fontWeight: '500',
+    marginTop: 8,
+  },
+  globeSection: {
+    flex: 0.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  globeContainer: {
+    width: 280,
+    height: 280,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  globe: {
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: '#2b50ff',
+    opacity: 0.6,
+    shadowColor: '#6cb5ff',
+    shadowOpacity: 0.8,
+    shadowRadius: 50,
+    elevation: 10,
+  },
+  starContainer: {
+    position: 'absolute',
+    bottom: -20,
+    backgroundColor: '#FFFFFF',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#FFFFFF',
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 15,
+    zIndex: 10,
   },
   bottomSection: {
-    flex: 0.45,
+    flex: 0.3,
     paddingHorizontal: 24,
-    justifyContent: 'flex-start',
-    zIndex: 20,
+    justifyContent: 'flex-end',
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    zIndex: 10,
   },
-  form: {
-    gap: 16,
+  actionsContainer: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  formContainer: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  whitePillButton: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    width: '100%',
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  whitePillButtonText: {
+    color: '#000000',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  anotherWayButton: {
+    marginTop: 24,
+    paddingVertical: 10,
+  },
+  anotherWayText: {
+    color: '#A0A0A0',
+    fontSize: 13,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
+  legalText: {
+    color: '#666666',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 32,
+    lineHeight: 18,
+  },
+  legalLink: {
+    color: '#888888',
+    textDecorationLine: 'underline',
   },
   input: {
     backgroundColor: '#1A1A1A',
+    width: '100%',
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#333333',
@@ -329,56 +408,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     color: '#FFFFFF',
     fontSize: 16,
-  },
-  primaryButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    height: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  primaryButtonText: {
-    color: '#000000',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  orContainer: {
-    alignItems: 'center',
-    marginVertical: 4,
-  },
-  orText: {
-    fontSize: 14,
-    color: '#888888',
-  },
-  guestButton: {
-    backgroundColor: 'transparent',
-    borderRadius: 16,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#6C63FF',
-  },
-  guestButtonText: {
-    color: '#6C63FF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    marginBottom: 12,
   },
   error: {
     color: colors.danger,
     fontSize: 14,
     textAlign: 'center',
-    marginTop: 8,
-  },
-  linkButton: {
-    alignItems: 'center',
-    marginTop: 8,
-    paddingVertical: 8,
-  },
-  linkText: {
-    color: '#888888',
-    fontSize: 14,
-    fontWeight: '500',
+    marginTop: 12,
   },
 });
