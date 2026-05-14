@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -8,6 +9,7 @@ import {
   StyleSheet,
   TextInput,
   View,
+  Dimensions,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Animated, {
@@ -15,67 +17,19 @@ import Animated, {
   FadeInUp,
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
-  withRepeat,
   withTiming,
-  Easing,
 } from 'react-native-reanimated';
-import { Mail, Star } from 'lucide-react-native';
+import { Mail } from 'lucide-react-native';
 
 import { supabase } from '../../lib/supabase';
-import { colors, radius, typography } from '../../theme/colors';
+import { colors } from '../../theme/colors';
 import { Typography } from '../../components/Typography';
 import { AuthStackParamList } from '../../types';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
-const FloatingBubble = ({ initial, color, size, top, left, right, bottom, delay }: any) => {
-  const translateY = useSharedValue(0);
-
-  useEffect(() => {
-    translateY.value = withDelay(
-      delay,
-      withRepeat(
-        withTiming(-10, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
-        -1,
-        true
-      )
-    );
-  }, [delay, translateY]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
-
-  return (
-    <Animated.View
-      style={[
-        {
-          position: 'absolute',
-          top, left, right, bottom,
-          width: size, height: size,
-          borderRadius: size / 2,
-          backgroundColor: color,
-          borderWidth: 2,
-          borderColor: '#FFFFFF',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 5,
-          shadowColor: '#FFFFFF',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 5,
-          elevation: 5,
-        },
-        animatedStyle,
-      ]}
-    >
-      <Typography style={{ color: '#FFF', fontSize: size * 0.45, fontWeight: '900' }}>
-        {initial}
-      </Typography>
-    </Animated.View>
-  );
-};
+const { width } = Dimensions.get('window');
+const BG_IMAGE = require('../../../src/assets/login-screen/loginscreen.png');
 
 const ScaleButton = ({ onPress, disabled, style, children }: any) => {
   const scale = useSharedValue(1);
@@ -90,6 +44,7 @@ const ScaleButton = ({ onPress, disabled, style, children }: any) => {
       onPressOut={() => { scale.value = withTiming(1, { duration: 100 }); }}
       onPress={onPress}
       disabled={disabled}
+      style={{ width: '100%' }}
     >
       <Animated.View style={[style, animatedStyle]}>
         {children}
@@ -122,10 +77,7 @@ export const LoginScreen = ({ navigation }: Props) => {
         email: guestEmail,
         password: guestPassword,
         options: {
-          data: {
-            full_name: 'Guest User',
-            username: 'guest',
-          },
+          data: { full_name: 'Guest User', username: 'guest' },
         },
       });
 
@@ -149,10 +101,9 @@ export const LoginScreen = ({ navigation }: Props) => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError('Please enter an email and password.');
+      setError('Please enter your email and password.');
       return;
     }
-
     setLoading(true);
     setError(null);
 
@@ -161,259 +112,278 @@ export const LoginScreen = ({ navigation }: Props) => {
       password,
     });
 
-    if (authError) {
-      setError(authError.message);
-    }
-
+    if (authError) setError(authError.message);
     setLoading(false);
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    <ImageBackground
+      source={BG_IMAGE}
+      style={styles.bg}
+      resizeMode="cover"
     >
-      <ScrollView contentContainerStyle={styles.scrollContent} bounces={false} showsVerticalScrollIndicator={false}>
-        <Animated.View style={styles.innerContainer} entering={FadeIn.duration(800)}>
-          
-          {/* Top Header Section */}
-          <View style={styles.header}>
-            <Typography style={styles.logoText}>CollabSphere</Typography>
-            <Typography style={styles.subtitleText}>Find your squad. Ship together.</Typography>
-          </View>
+      <View style={styles.overlay} />
 
-          {/* Center Globe Graphic */}
-          <View style={styles.globeSection}>
-            <View style={styles.globeContainer}>
-              <View style={styles.globe} />
-              
-              {/* Floating Avatars on the globe */}
-              <FloatingBubble initial="K" color="#6C63FF" size={48} top={-10} left={60} delay={0} />
-              <FloatingBubble initial="A" color="#00BFA5" size={54} top={20} right={40} delay={500} />
-              <FloatingBubble initial="S" color="#FF6B35" size={44} top={80} left={-10} delay={1000} />
-              <FloatingBubble initial="M" color="#FF4081" size={50} top={100} right={-15} delay={1500} />
-              <FloatingBubble initial="J" color="#2196F3" size={46} top={160} left={20} delay={800} />
-              <FloatingBubble initial="T" color="#4CAF50" size={42} top={180} right={30} delay={1200} />
-              <FloatingBubble initial="C" color="#FFC107" size={38} top={120} left={60} delay={300} />
-              <FloatingBubble initial="R" color="#9C27B0" size={40} top={50} right={80} delay={700} />
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Animated.View style={styles.inner} entering={FadeIn.duration(800)}>
 
-              {/* Star Mascot */}
-              <View style={styles.starContainer}>
-                <Star fill="#000" color="#000" size={36} />
-              </View>
+            {/* Top Logo Section — Fixed text size and alignment */}
+            <View style={styles.topSection}>
+              <Typography style={styles.logoText} numberOfLines={1} adjustsFontSizeToFit>
+                CollabSphere
+              </Typography>
+              <Typography style={styles.tagline}>Find your squad. Ship together.</Typography>
             </View>
-          </View>
 
-          {/* Bottom Actions Section */}
-          <View style={styles.bottomSection}>
-            {!showForm ? (
-              <Animated.View entering={FadeInUp.duration(400)} style={styles.actionsContainer}>
-                <ScaleButton
-                  style={styles.whitePillButton}
-                  onPress={() => setShowForm(true)}
-                >
-                  <Mail size={20} color="#000" style={{ marginRight: 8 }} />
-                  <Typography style={styles.whitePillButtonText}>Sign in with Email</Typography>
-                </ScaleButton>
+            <View style={styles.spacer} />
 
-                <Pressable onPress={handleGuestLogin} disabled={guestLoading} style={styles.anotherWayButton}>
-                  {guestLoading ? (
-                    <ActivityIndicator color="#A0A0A0" />
-                  ) : (
-                    <Typography style={styles.anotherWayText}>GUEST LOGIN</Typography>
-                  )}
-                </Pressable>
+            {/* Bottom Actions Section — Fixed button layout */}
+            <View style={styles.bottomSection}>
+              {!showForm ? (
+                <Animated.View entering={FadeInUp.duration(600).delay(200)} style={styles.actions}>
+                  <ScaleButton
+                    style={styles.whitePill}
+                    onPress={() => setShowForm(true)}
+                  >
+                    <View style={styles.pillContent}>
+                      <Mail size={20} color="#000" style={{ marginRight: 12 }} />
+                      <Typography style={styles.whitePillText}>Sign in with Email</Typography>
+                    </View>
+                  </ScaleButton>
 
-                <Typography style={styles.legalText}>
-                  By pressing "Sign in", you agree to our{'\n'}
-                  <Typography style={styles.legalLink}>license agreement</Typography> and <Typography style={styles.legalLink}>privacy policy</Typography>.
-                </Typography>
-              </Animated.View>
-            ) : (
-              <Animated.View entering={FadeInUp.duration(400)} style={styles.formContainer}>
-                <TextInput
-                  placeholder="Email"
-                  placeholderTextColor="#888"
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                  style={styles.input}
-                />
-                <TextInput
-                  placeholder="Password"
-                  placeholderTextColor="#888"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  style={styles.input}
-                />
-                
-                <ScaleButton
-                  style={[styles.whitePillButton, { marginTop: 8 }]}
-                  onPress={handleLogin}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <ActivityIndicator color="#000" />
-                  ) : (
-                    <Typography style={styles.whitePillButtonText}>Log In</Typography>
-                  )}
-                </ScaleButton>
+                  <Pressable
+                    style={styles.guestBtn}
+                    onPress={handleGuestLogin}
+                    disabled={guestLoading}
+                  >
+                    {guestLoading
+                      ? <ActivityIndicator color="#FFFFFF" />
+                      : <Typography style={styles.guestText}>GUEST LOGIN</Typography>
+                    }
+                  </Pressable>
 
-                {error ? <Typography style={styles.error}>{error}</Typography> : null}
+                  <Pressable onPress={() => navigation.navigate('Signup')} style={styles.signupBtn}>
+                    <Typography style={styles.signupText}>
+                      New here? <Typography style={styles.signupLink}>Create account</Typography>
+                    </Typography>
+                  </Pressable>
 
-                <Pressable onPress={() => navigation.navigate('Signup')} style={{ marginTop: 16 }}>
-                  <Typography style={styles.anotherWayText}>NEW HERE? CREATE ACCOUNT</Typography>
-                </Pressable>
-                <Pressable onPress={() => setShowForm(false)} style={{ marginTop: 16 }}>
-                  <Typography style={[styles.anotherWayText, { color: '#666' }]}>CANCEL</Typography>
-                </Pressable>
-              </Animated.View>
-            )}
-          </View>
-        </Animated.View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+                  <View style={styles.legalContainer}>
+                    <Typography style={styles.legal}>
+                      By continuing, you agree to our{' '}
+                      <Typography style={styles.legalLink}>Terms</Typography> and{' '}
+                      <Typography style={styles.legalLink}>Privacy Policy</Typography>.
+                    </Typography>
+                  </View>
+                </Animated.View>
+              ) : (
+                <Animated.View entering={FadeInUp.duration(400)} style={styles.actions}>
+                  <TextInput
+                    placeholder="Email"
+                    placeholderTextColor="rgba(255,255,255,0.4)"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    style={styles.input}
+                  />
+                  <TextInput
+                    placeholder="Password"
+                    placeholderTextColor="rgba(255,255,255,0.4)"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    style={styles.input}
+                  />
+
+                  <ScaleButton
+                    style={styles.whitePill}
+                    onPress={handleLogin}
+                    disabled={loading}
+                  >
+                    <View style={styles.pillContent}>
+                      {loading
+                        ? <ActivityIndicator color="#000" />
+                        : <Typography style={styles.whitePillText}>Log In</Typography>
+                      }
+                    </View>
+                  </ScaleButton>
+
+                  {error ? (
+                    <Typography style={styles.error}>{error}</Typography>
+                  ) : null}
+
+                  <Pressable onPress={() => setShowForm(false)} style={styles.backBtn}>
+                    <Typography style={styles.backText}>← CANCEL</Typography>
+                  </Pressable>
+                </Animated.View>
+              )}
+            </View>
+          </Animated.View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  bg: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: '#000',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  flex: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
   },
-  innerContainer: {
+  inner: {
     flex: 1,
+    justifyContent: 'space-between',
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    minHeight: Dimensions.get('window').height,
   },
-  header: {
-    flex: 0.2,
+  topSection: {
+    paddingTop: Platform.OS === 'ios' ? 80 : 60,
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingBottom: 20,
-    zIndex: 10,
+    paddingHorizontal: 20,
   },
   logoText: {
     color: '#FFFFFF',
-    fontSize: 40,
+    fontSize: width * 0.11, // Dynamic font size to prevent overflow
     fontWeight: '900',
     fontStyle: 'italic',
-    letterSpacing: 1,
+    letterSpacing: -1,
+    textAlign: 'center',
+    width: '100%',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 4 },
+    textShadowRadius: 10,
   },
-  subtitleText: {
-    color: '#A0A0A0',
+  tagline: {
+    color: 'rgba(255,255,255,0.7)',
     fontSize: 16,
     fontWeight: '500',
-    marginTop: 8,
+    marginTop: 4,
+    letterSpacing: 0.5,
+    textAlign: 'center',
   },
-  globeSection: {
-    flex: 0.5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  globeContainer: {
-    width: 280,
-    height: 280,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  globe: {
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: '#2b50ff',
-    opacity: 0.6,
-    shadowColor: '#6cb5ff',
-    shadowOpacity: 0.8,
-    shadowRadius: 50,
-    elevation: 10,
-  },
-  starContainer: {
-    position: 'absolute',
-    bottom: -20,
-    backgroundColor: '#FFFFFF',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#FFFFFF',
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 15,
-    zIndex: 10,
+  spacer: {
+    flex: 1,
   },
   bottomSection: {
-    flex: 0.3,
-    paddingHorizontal: 24,
-    justifyContent: 'flex-end',
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
-    zIndex: 10,
+    paddingHorizontal: 32,
+    width: '100%',
+    marginBottom: 20,
   },
-  actionsContainer: {
+  actions: {
     alignItems: 'center',
     width: '100%',
   },
-  formContainer: {
-    alignItems: 'center',
-    width: '100%',
-  },
-  whitePillButton: {
-    flexDirection: 'row',
+  whitePill: {
     backgroundColor: '#FFFFFF',
     width: '100%',
-    height: 56,
-    borderRadius: 28,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
-  whitePillButtonText: {
+  pillContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  whitePillText: {
     color: '#000000',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '800',
+    letterSpacing: -0.2,
   },
-  anotherWayButton: {
+  guestBtn: {
     marginTop: 24,
     paddingVertical: 10,
   },
-  anotherWayText: {
-    color: '#A0A0A0',
-    fontSize: 13,
-    fontWeight: 'bold',
-    letterSpacing: 1,
+  guestText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 2,
+    opacity: 0.8,
   },
-  legalText: {
-    color: '#666666',
+  signupBtn: {
+    marginTop: 12,
+    paddingVertical: 8,
+  },
+  signupText: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  signupLink: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    textDecorationLine: 'underline',
+  },
+  legalContainer: {
+    marginTop: 32,
+    paddingHorizontal: 20,
+  },
+  legal: {
+    color: 'rgba(255,255,255,0.4)',
     fontSize: 12,
     textAlign: 'center',
-    marginTop: 32,
     lineHeight: 18,
   },
   legalLink: {
-    color: '#888888',
-    textDecorationLine: 'underline',
+    color: 'rgba(255,255,255,0.6)',
+    fontWeight: '600',
   },
   input: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     width: '100%',
-    borderRadius: 16,
+    height: 60,
+    borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#333333',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    borderColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 20,
     color: '#FFFFFF',
     fontSize: 16,
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+  backBtn: {
+    marginTop: 20,
+    paddingVertical: 10,
+  },
+  backText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 1,
   },
   error: {
-    color: colors.danger,
+    color: '#FF4D4D',
     fontSize: 14,
     textAlign: 'center',
     marginTop: 12,
+    fontWeight: '600',
   },
 });

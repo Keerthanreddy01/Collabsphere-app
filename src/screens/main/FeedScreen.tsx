@@ -1,67 +1,140 @@
 import React, { useMemo } from 'react';
-import { FlatList, Image, Pressable, StyleSheet, View } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
-import { Heart, MessageCircle } from 'lucide-react-native';
+import { FlatList, Image, Pressable, StyleSheet, View, ScrollView } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Bell, Search, Play } from 'lucide-react-native';
 
-import { colors, radius, spacing, typography } from '../../theme/colors';
+import { colors, radius, spacing } from '../../theme/colors';
 import { Typography } from '../../components/Typography';
-
-import { FeedPost } from '../../types';
 import { mockFeedPosts } from '../../data/mockBuilders';
+
+const STORY_DATA = [
+  { id: '1', type: 'audio', title: 'Audio space\nLive', icon: '🎧', bg: '#0052FF' },
+  { id: '2', type: 'post', title: 'Creative\nWork', icon: '☁️', bg: '#4A4A4A' },
+  { id: '3', type: 'share', title: '@theKappe\nmade a post', icon: '👤', bg: '#FF4D4D' },
+  { id: '4', type: 'live', title: 'Orb v2\nRelease', icon: '🚀', bg: '#6C63FF' },
+];
 
 export const FeedScreen = () => {
   const data = useMemo(() => mockFeedPosts, []);
 
-  const renderItem = ({ item, index }: { item: FeedPost; index: number }) => (
-    <Animated.View entering={FadeIn.delay(index * 40)} style={styles.cardWrapper}>
-      <View style={[styles.card, styles.cardStyle]}>
-        <View style={styles.cardHeader}>
-          <Image source={{ uri: item.avatar }} style={styles.avatar} />
-          <View style={styles.headerText}>
-            <Typography style={styles.name}>{item.author}</Typography>
-            <Typography style={styles.caption}>{item.timeAgo}</Typography>
+  const renderHeader = () => (
+    <View style={styles.topContainer}>
+      {/* Top Icons Header */}
+      <View style={styles.navHeader}>
+        <View style={styles.leftNav}>
+          <Pressable style={styles.iconCircle}>
+            <Bell size={20} color="#FFF" />
+            <View style={styles.badge}>
+              <Typography style={styles.badgeText}>3</Typography>
+            </View>
+          </Pressable>
+          <Pressable style={[styles.iconCircle, { marginLeft: 12 }]}>
+            <Search size={20} color="#FFF" />
+          </Pressable>
+        </View>
+        <Image 
+          source={{ uri: 'https://i.pravatar.cc/100?u=me' }} 
+          style={styles.profileAvatar} 
+        />
+      </View>
+
+      {/* Stories / Spaces Horizontal List */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false} 
+        contentContainerStyle={styles.storiesContent}
+      >
+        {STORY_DATA.map((story) => (
+          <View key={story.id} style={[styles.storyCard, { backgroundColor: story.bg }]}>
+            <View style={styles.storyHeader}>
+              <Typography style={styles.storyIcon}>{story.icon}</Typography>
+              <Typography style={styles.storyTitle}>{story.title}</Typography>
+            </View>
+            <View style={styles.storyBottom} />
+          </View>
+        ))}
+      </ScrollView>
+    </View>
+  );
+
+  const renderItem = ({ item, index }: { item: any; index: number }) => (
+    <Animated.View entering={FadeInUp.delay(index * 100)} style={styles.postCard}>
+      {/* Social Context */}
+      <View style={styles.socialContext}>
+        <View style={styles.socialAvatars}>
+          <Image source={{ uri: 'https://i.pravatar.cc/50?u=1' }} style={styles.smallAvatar} />
+          <Image source={{ uri: 'https://i.pravatar.cc/50?u=2' }} style={[styles.smallAvatar, { marginLeft: -8 }]} />
+        </View>
+        <Typography style={styles.contextText}>16 friends liked</Typography>
+      </View>
+
+      {/* Post Header */}
+      <View style={styles.postHeader}>
+        <Image source={{ uri: item.avatar }} style={styles.postAvatar} />
+        <View style={styles.postAuthorInfo}>
+          <Typography style={styles.postAuthorName}>{item.author}</Typography>
+          <Typography style={styles.postTime}>Posted in orb • {item.timeAgo}</Typography>
+        </View>
+      </View>
+
+      {/* Post Content */}
+      <Typography style={styles.postContent}>
+        {item.update || "Very excited to welcome you here on orb v2. Listen to our podcast with @kimmo to get all new features."}
+      </Typography>
+
+      {/* Media Attachment */}
+      <View style={styles.mediaContainer}>
+        <Image 
+          source={{ uri: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=500' }} 
+          style={styles.mediaImage} 
+        />
+        <View style={styles.mediaOverlay}>
+          <View style={styles.mediaText}>
+            <Typography style={styles.mediaTitle}>orb v2 release</Typography>
+            <Typography style={styles.mediaSubtitle}>{item.author} x Kimmo</Typography>
+          </View>
+          <View style={styles.mediaControls}>
+            <Typography style={styles.duration}>48:56</Typography>
+            <Pressable style={styles.playButton}>
+              <Play size={16} fill="#000" color="#000" />
+            </Pressable>
           </View>
         </View>
-        <Typography style={styles.title}>{item.title}</Typography>
-        <Typography style={styles.body}>{item.update}</Typography>
-        <View style={styles.tagsRow}>
-          {item.stack.map((tag) => (
-            <View key={tag} style={styles.tag}>
-              <Typography style={styles.tagText}>{tag}</Typography>
-            </View>
-          ))}
-        </View>
-        <View style={styles.actionsRow}>
-          <Pressable style={styles.actionButton}>
-            <Heart size={16} color={colors.accent} />
-            <Typography style={styles.actionText}>{item.likes}</Typography>
+      </View>
+
+      {/* Footer Actions */}
+      <View style={styles.postFooter}>
+        <View style={styles.footerLeft}>
+          <Pressable style={styles.footerAction}>
+            <Heart size={20} color="#666" />
+            <Typography style={styles.footerActionText}>{item.likes}</Typography>
           </Pressable>
-          <Pressable style={styles.actionButton}>
-            <MessageCircle size={16} color={colors.accent} />
-            <Typography style={styles.actionText}>{item.comments}</Typography>
+          <Pressable style={styles.footerAction}>
+            <MessageCircle size={20} color="#666" />
+            <Typography style={styles.footerActionText}>{item.comments}</Typography>
+          </Pressable>
+          <Pressable style={styles.footerAction}>
+            <Share2 size={20} color="#666" />
+            <Typography style={styles.footerActionText}>17</Typography>
           </Pressable>
         </View>
+        <Pressable>
+          <MoreHorizontal size={20} color="#666" />
+        </Pressable>
       </View>
     </Animated.View>
   );
 
   return (
     <View style={styles.container}>
-      <Animated.View style={styles.screen} entering={FadeIn.duration(300)}>
-        <View style={styles.header}>
-          <Typography style={styles.headerTitle}>Feed</Typography>
-          <Typography style={styles.headerSubtitle}>
-            Builder updates from your network
-          </Typography>
-        </View>
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-        />
-      </Animated.View>
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listPadding}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 };
@@ -69,105 +142,214 @@ export const FeedScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.black,
-    paddingHorizontal: spacing.lg,
+    backgroundColor: '#000',
   },
-  screen: {
-    flex: 1,
+  listPadding: {
+    paddingBottom: 100,
   },
-  header: {
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.lg,
+  topContainer: {
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
-  headerTitle: {
-    ...typography.title,
-    color: colors.textPrimary,
-  },
-  headerSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-  listContent: {
-    paddingBottom: spacing.xxl,
-  },
-  cardWrapper: {
-    marginBottom: spacing.lg,
-  },
-  card: {
-    padding: spacing.lg,
-  },
-  cardStyle: {
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  cardHeader: {
+  navHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: 24,
   },
-  avatar: {
+  leftNav: {
+    flexDirection: 'row',
+  },
+  iconCircle: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    marginRight: spacing.md,
+    backgroundColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
-  headerText: {
-    flex: 1,
+  badge: {
+    position: 'absolute',
+    top: 10,
+    right: 8,
+    backgroundColor: '#FFF',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#333',
   },
-  name: {
-    ...typography.subtitle,
-    color: colors.textCard,
+  badgeText: {
+    color: '#000',
+    fontSize: 9,
+    fontWeight: '900',
   },
-  caption: {
-    ...typography.caption,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  title: {
-    ...typography.subtitle,
-    color: colors.textCard,
-    marginBottom: spacing.sm,
-  },
-  body: {
-    ...typography.body,
-    color: colors.textCard,
-    marginBottom: spacing.md,
-  },
-  tagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-    marginBottom: spacing.md,
-  },
-  tag: {
-    backgroundColor: colors.panel,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
+  profileAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: colors.glassBorder,
+    borderColor: '#333',
   },
-  tagText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+  storiesContent: {
+    paddingRight: 20,
+    gap: 12,
   },
-  actionsRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
+  storyCard: {
+    width: 100,
+    height: 120,
+    borderRadius: 20,
+    padding: 12,
+    justifyContent: 'space-between',
   },
-  actionButton: {
+  storyHeader: {
+    gap: 4,
+  },
+  storyIcon: {
+    fontSize: 24,
+  },
+  storyTitle: {
+    color: '#FFF',
+    fontSize: 11,
+    fontWeight: '700',
+    lineHeight: 14,
+  },
+  storyBottom: {},
+  
+  postCard: {
+    backgroundColor: '#FFF',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 24,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  socialContext: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
+    marginBottom: 12,
   },
-  actionText: {
-    ...typography.caption,
-    color: colors.textSecondary,
+  socialAvatars: {
+    flexDirection: 'row',
+    marginRight: 8,
+  },
+  smallAvatar: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderColor: '#FFF',
+  },
+  contextText: {
+    color: '#999',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  postHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  postAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  postAuthorInfo: {},
+  postAuthorName: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  postTime: {
+    color: '#999',
+    fontSize: 12,
+  },
+  postContent: {
+    color: '#333',
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '500',
+    marginBottom: 16,
+  },
+  mediaContainer: {
+    width: '100%',
+    height: 180,
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginBottom: 16,
+    position: 'relative',
+  },
+  mediaImage: {
+    width: '100%',
+    height: '100%',
+  },
+  mediaOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  mediaText: {},
+  mediaTitle: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  mediaSubtitle: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 11,
+  },
+  mediaControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  duration: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  playButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  postFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 8,
+  },
+  footerLeft: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  footerAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  footerActionText: {
+    color: '#666',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });
