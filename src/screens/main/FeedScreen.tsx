@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   StyleSheet, 
   View, 
-  Dimensions, 
   Image, 
   TouchableOpacity, 
   StatusBar,
+  useWindowDimensions,
 } from 'react-native';
 import Animated, { 
   useSharedValue, 
@@ -13,6 +13,10 @@ import Animated, {
   useAnimatedScrollHandler,
   interpolate,
   Extrapolate,
+  SharedValue,
+  withSpring,
+  Layout,
+  FadeIn,
 } from 'react-native-reanimated';
 import { 
   LayoutGrid, 
@@ -21,12 +25,6 @@ import {
   ThumbsUp,
 } from 'lucide-react-native';
 import { Typography } from '../../components/Typography';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-// Defensive CARD_WIDTH to prevent [0,0,0] inputRange
-const VALID_WIDTH = SCREEN_WIDTH > 0 ? SCREEN_WIDTH : 375;
-const CARD_WIDTH = VALID_WIDTH * 0.82;
-const SPACING = (VALID_WIDTH - CARD_WIDTH) / 2;
 
 const CATEGORIES = ['Trending', 'Squads', 'Projects', 'Design', 'Stack'];
 
@@ -77,49 +75,68 @@ const COLLAB_DATA = [
   }
 ];
 
-const NewsCard = ({ item, index, scrollX }: { item: any, index: number, scrollX: Animated.SharedValue<number> }) => {
+type AnimationMode = 'TRENDING' | 'SQUADS' | 'PROJECTS' | 'DESIGN' | 'STACK';
+
+const NewsCard = ({ 
+  item, 
+  index, 
+  scrollX, 
+  cardWidth, 
+  mode 
+}: { 
+  item: any, 
+  index: number, 
+  scrollX: SharedValue<number>, 
+  cardWidth: number,
+  mode: AnimationMode 
+}) => {
   const animatedStyle = useAnimatedStyle(() => {
-    // Ensure scrollX is treated as a number
-    const xVal = scrollX.value || 0;
+    const x = scrollX.value || 0;
+    const w = cardWidth || 300;
     
     const inputRange = [
-      (index - 1) * CARD_WIDTH,
-      index * CARD_WIDTH,
-      (index + 1) * CARD_WIDTH,
+      (index - 1) * w,
+      index * w,
+      (index + 1) * w,
     ];
 
-    const scale = interpolate(
-      xVal,
-      inputRange,
-      [0.92, 1, 0.92],
-      Extrapolate.CLAMP
-    );
+    if (mode === 'TRENDING') {
+      // 3D Perspective Stack
+      const scale = interpolate(x, inputRange, [0.85, 1, 0.85], Extrapolate.CLAMP);
+      const rotate = interpolate(x, inputRange, [-10, 0, 10], Extrapolate.CLAMP);
+      const opacity = interpolate(x, inputRange, [0.4, 1, 0.4], Extrapolate.CLAMP);
+      return {
+        transform: [{ scale: scale || 1 }, { rotateY: `${rotate || 0}deg` }],
+        opacity: opacity || 1,
+      };
+    }
 
-    const opacity = interpolate(
-      xVal,
-      inputRange,
-      [0.6, 1, 0.6],
-      Extrapolate.CLAMP
-    );
+    if (mode === 'SQUADS') {
+      // Vertical Elevation
+      const translateY = interpolate(x, inputRange, [40, 0, 40], Extrapolate.CLAMP);
+      const scale = interpolate(x, inputRange, [0.9, 1, 0.9], Extrapolate.CLAMP);
+      return {
+        transform: [{ translateY }, { scale: scale || 1 }],
+      };
+    }
 
-    const rotate = interpolate(
-      xVal,
-      inputRange,
-      [-4, 0, 4],
-      Extrapolate.CLAMP
-    );
+    if (mode === 'PROJECTS') {
+      // Flip Effect
+      const rotateX = interpolate(x, inputRange, [90, 0, -90], Extrapolate.CLAMP);
+      return {
+        transform: [{ perspective: 1000 }, { rotateX: `${rotateX}deg` }],
+      };
+    }
 
+    // Default: Horizontal Carousel
+    const scale = interpolate(x, inputRange, [0.95, 1, 0.95], Extrapolate.CLAMP);
     return {
-      transform: [
-        { scale: scale || 1 },
-        { rotateZ: `${rotate || 0}deg` }
-      ],
-      opacity: opacity || 1,
+      transform: [{ scale: scale || 1 }],
     };
   });
 
   return (
-    <Animated.View style={[styles.newsCard, { backgroundColor: item.cardColor }, animatedStyle]}>
+    <Animated.View style={[styles.newsCard, { backgroundColor: item.cardColor, width: cardWidth }, animatedStyle]}>
       <View style={styles.cardHeader}>
         {item.isLive && (
           <View style={styles.liveBadge}>
@@ -162,12 +179,21 @@ const NewsCard = ({ item, index, scrollX }: { item: any, index: number, scrollX:
 };
 
 export const FeedScreen = () => {
-  const [activeCategory, setActiveCategory] = useState('Trending');
+  const { width: windowWidth } = useWindowDimensions();
+  const [activeCategory, setActiveCategory] = useState<AnimationMode>('TRENDING');
   const scrollX = useSharedValue(0);
+
+  const cardWidth = windowWidth * 0.82;
+  const spacing = (windowWidth - cardWidth) / 2;
+
+  const filteredData = useMemo(() => {
+    if (activeCategory === 'TRENDING') return COLLAB_DATA;
+    return COLLAB_DATA.filter(item => item.category.toUpperCase() === activeCategory);
+  }, [activeCategory]);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
-      scrollX.value = event.contentOffset.x || 0;
+      scrollX.value = event.contentOffset.x;
     },
   });
 
@@ -193,32 +219,52 @@ export const FeedScreen = () => {
           showsHorizontalScrollIndicator={false} 
           contentContainerStyle={styles.categoriesScroll}
         >
-          {CATEGORIES.map(cat => (
-            <TouchableOpacity 
-              key={cat} 
-              onPress={() => setActiveCategory(cat)}
-              style={styles.categoryTab}
-            >
-              <Typography style={[styles.categoryText, activeCategory === cat && styles.categoryActive]}>
-                {cat}
-              </Typography>
-              {activeCategory === cat && <View style={styles.activeIndicator} />}
-            </TouchableOpacity>
-          ))}
+          {CATEGORIES.map(cat => {
+            const mode = cat.toUpperCase() as AnimationMode;
+            const isActive = activeCategory === mode;
+            return (
+              <TouchableOpacity 
+                key={cat} 
+                onPress={() => {
+                  setActiveCategory(mode);
+                  scrollX.value = 0; // Reset scroll on category change
+                }}
+                style={styles.categoryTab}
+              >
+                <Typography style={[styles.categoryText, isActive && styles.categoryActive]}>
+                  {cat}
+                </Typography>
+                {isActive && (
+                  <Animated.View 
+                    entering={FadeIn.duration(300)}
+                    style={styles.activeIndicator} 
+                  />
+                )}
+              </TouchableOpacity>
+            );
+          })}
         </Animated.ScrollView>
       </View>
 
       <Animated.ScrollView 
+        key={activeCategory} // Force re-render to reset layout for new mode
         horizontal 
         onScroll={onScroll}
         scrollEventThrottle={16}
-        snapToInterval={CARD_WIDTH}
+        snapToInterval={cardWidth + 20} // Width + Margin
         decelerationRate="fast"
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.feedScroll}
+        contentContainerStyle={[styles.feedScroll, { paddingHorizontal: spacing }]}
       >
-        {COLLAB_DATA.map((item, index) => (
-          <NewsCard key={item.id} item={item} index={index} scrollX={scrollX} />
+        {filteredData.map((item, index) => (
+          <NewsCard 
+            key={item.id} 
+            item={item} 
+            index={index} 
+            scrollX={scrollX} 
+            cardWidth={cardWidth} 
+            mode={activeCategory}
+          />
         ))}
       </Animated.ScrollView>
     </View>
@@ -295,18 +341,17 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   feedScroll: {
-    paddingHorizontal: SPACING,
     paddingVertical: 20,
   },
   newsCard: {
-    width: CARD_WIDTH,
-    height: SCREEN_WIDTH * 1.3,
+    height: 520,
     borderRadius: 40,
     padding: 24,
+    marginRight: 20,
     justifyContent: 'space-between',
-    shadowColor: '#FFF',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 5,
   },
@@ -333,7 +378,7 @@ const styles = StyleSheet.create({
   },
   updatedText: {
     fontSize: 14,
-    color: '#888',
+    color: 'rgba(0,0,0,0.5)',
     marginBottom: 20,
   },
   authorSection: {
@@ -352,7 +397,7 @@ const styles = StyleSheet.create({
   },
   publishedBy: {
     fontSize: 12,
-    color: '#888',
+    color: 'rgba(0,0,0,0.4)',
   },
   authorName: {
     fontSize: 14,
@@ -372,7 +417,7 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     fontSize: 16,
-    color: '#444',
+    color: 'rgba(0,0,0,0.7)',
     lineHeight: 24,
     marginBottom: 20,
   },
