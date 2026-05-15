@@ -13,7 +13,6 @@ import Animated, {
   useAnimatedScrollHandler,
   interpolate,
   Extrapolate,
-  FadeInDown,
 } from 'react-native-reanimated';
 import { 
   LayoutGrid, 
@@ -24,7 +23,7 @@ import {
 import { Typography } from '../../components/Typography';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH * 0.85;
+const CARD_WIDTH = SCREEN_WIDTH * 0.82;
 const SPACING = (SCREEN_WIDTH - CARD_WIDTH) / 2;
 
 const CATEGORIES = ['Trending', 'Squads', 'Projects', 'Design', 'Stack'];
@@ -39,7 +38,7 @@ const COLLAB_DATA = [
     author: 'Keerthan Reddy',
     authorAvatar: 'https://i.pravatar.cc/100?u=keerthan',
     summary: 'We are building a real-time collaborative whiteboard using Socket.io and Supabase. Looking for 2 builders to join the squad and ship by next week!',
-    cardColor: '#FDF1CB', // Cream
+    cardColor: '#FDF1CB',
   },
   {
     id: '2',
@@ -50,7 +49,7 @@ const COLLAB_DATA = [
     author: 'Sarah Chen',
     authorAvatar: 'https://i.pravatar.cc/100?u=sarah',
     summary: 'Just shipped a premium UI kit with 50+ components featuring sleek blur effects and high-fidelity animations. Open for collaborations!',
-    cardColor: '#E0F2FE', // Light blue
+    cardColor: '#E0F2FE',
   },
   {
     id: '3',
@@ -61,7 +60,7 @@ const COLLAB_DATA = [
     author: 'Alex Rivera',
     authorAvatar: 'https://i.pravatar.cc/100?u=alex',
     summary: 'We are redesigning the entire interaction model for project matching. If you love Figma and high-fidelity prototypes, join us!',
-    cardColor: '#FADADD', // Light pink
+    cardColor: '#FADADD',
   },
   {
     id: '4',
@@ -72,7 +71,7 @@ const COLLAB_DATA = [
     author: 'James Wilson',
     authorAvatar: 'https://i.pravatar.cc/100?u=james',
     summary: 'Expo Router, EAS, and the new Modules API have changed the game for cross-platform development. Let\'s discuss the best setup.',
-    cardColor: '#E0E7FF', // Indigo
+    cardColor: '#E0E7FF',
   }
 ];
 
@@ -87,7 +86,7 @@ const NewsCard = ({ item, index, scrollX }: { item: any, index: number, scrollX:
     const scale = interpolate(
       scrollX.value,
       inputRange,
-      [0.9, 1, 0.9],
+      [0.92, 1, 0.92],
       Extrapolate.CLAMP
     );
 
@@ -101,7 +100,7 @@ const NewsCard = ({ item, index, scrollX }: { item: any, index: number, scrollX:
     const rotate = interpolate(
       scrollX.value,
       inputRange,
-      ['-2deg', '0deg', '2deg'],
+      ['-4deg', '0deg', '4deg'],
       Extrapolate.CLAMP
     );
 
@@ -169,7 +168,6 @@ export const FeedScreen = () => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       
-      {/* Header */}
       <View style={styles.header}>
         <View style={styles.logoRow}>
           <View style={styles.logoIcon}>
@@ -182,7 +180,6 @@ export const FeedScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Categories */}
       <View style={styles.categoriesWrapper}>
         <Animated.ScrollView 
           horizontal 
@@ -204,7 +201,6 @@ export const FeedScreen = () => {
         </Animated.ScrollView>
       </View>
 
-      {/* Main Feed perspective carousel */}
       <Animated.ScrollView 
         horizontal 
         onScroll={onScroll}
@@ -297,11 +293,10 @@ const styles = StyleSheet.create({
   },
   newsCard: {
     width: CARD_WIDTH,
-    height: SCREEN_WIDTH * 1.25,
+    height: SCREEN_WIDTH * 1.3,
     borderRadius: 40,
     padding: 24,
     justifyContent: 'space-between',
-    // Shadow for elevation effect
     shadowColor: '#FFF',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
