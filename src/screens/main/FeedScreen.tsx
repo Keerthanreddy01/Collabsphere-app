@@ -7,15 +7,9 @@ import {
   Image, 
   TouchableOpacity, 
   StatusBar,
-  FlatList
 } from 'react-native';
 import Animated, { 
   FadeInDown, 
-  useSharedValue, 
-  useAnimatedStyle,
-  withSpring,
-  interpolate,
-  Extrapolate
 } from 'react-native-reanimated';
 import { 
   LayoutGrid, 
@@ -23,38 +17,46 @@ import {
   Bookmark, 
   Share2, 
   ThumbsUp,
-  ChevronRight,
-  Home
 } from 'lucide-react-native';
-import { BlurView } from 'expo-blur';
 import { Typography } from '../../components/Typography';
 
 const { width, height } = Dimensions.get('window');
 
-const CATEGORIES = ['Trending', 'Health', 'Sports', 'Finance', 'Tech'];
+const CATEGORIES = ['Trending', 'Squads', 'Projects', 'Design', 'Stack'];
 
-const NEWS_DATA = [
+const COLLAB_DATA = [
   {
     id: '1',
-    category: 'Trending',
+    category: 'Squads',
     isLive: true,
-    title: 'Demand for Indian generic drugs skyrockets in China amid shortage',
-    updatedAt: 'Updated just now',
-    author: 'Wade Warren',
-    authorAvatar: 'https://i.pravatar.cc/100?u=wade',
-    summary: 'The demand for Indian generic drugs has shot up in China amid the massive COVID surge in the country, with Chinese experts cautioning that fake versions of these drugs are flooding the market.',
-    cardColor: '#FDF1CB', // Cream color from design
+    title: 'React Native Devs needed for an AI-powered Whiteboard app',
+    updatedAt: 'Posted just now',
+    author: 'Keerthan Reddy',
+    authorAvatar: 'https://i.pravatar.cc/100?u=keerthan',
+    summary: 'We are building a real-time collaborative whiteboard using Socket.io and Supabase. Looking for 2 builders to join the squad and ship by next week!',
+    cardColor: '#FDF1CB', // Cream
   },
   {
     id: '2',
-    category: 'Health',
+    category: 'Projects',
     isLive: false,
-    title: 'New breakthroughs in AI-assisted surgery announced',
-    updatedAt: '2h ago',
-    author: 'Jane Cooper',
-    authorAvatar: 'https://i.pravatar.cc/100?u=jane',
-    summary: 'Researchers have developed a new robotic system that can assist surgeons with 99% precision during complex neurosurgical procedures.',
-    cardColor: '#FADADD', // Light pink color
+    title: 'Showcase: Modern Glassmorphism UI Kit for Expo',
+    updatedAt: '3h ago',
+    author: 'Sarah Chen',
+    authorAvatar: 'https://i.pravatar.cc/100?u=sarah',
+    summary: 'Just shipped a premium UI kit with 50+ components featuring sleek blur effects and high-fidelity animations. Open for collaborations!',
+    cardColor: '#E0F2FE', // Light blue
+  },
+  {
+    id: '3',
+    category: 'Design',
+    isLive: true,
+    title: 'Join the Design Squad for CollabSphere v2.0',
+    updatedAt: 'Updated 5m ago',
+    author: 'Alex Rivera',
+    authorAvatar: 'https://i.pravatar.cc/100?u=alex',
+    summary: 'We are redesigning the entire interaction model for project matching. If you love Figma and high-fidelity prototypes, join us!',
+    cardColor: '#FADADD', // Light pink
   }
 ];
 
@@ -67,7 +69,7 @@ const NewsCard = ({ item, index }: { item: any, index: number }) => {
       <View style={styles.cardHeader}>
         {item.isLive && (
           <View style={styles.liveBadge}>
-            <Typography style={styles.liveText}>LIVE</Typography>
+            <Typography style={styles.liveText}>BUILDING</Typography>
           </View>
         )}
       </View>
@@ -78,11 +80,11 @@ const NewsCard = ({ item, index }: { item: any, index: number }) => {
       <View style={styles.authorSection}>
         <Image source={{ uri: item.authorAvatar }} style={styles.authorAvatar} />
         <View style={styles.authorInfo}>
-          <Typography style={styles.publishedBy}>Published by</Typography>
+          <Typography style={styles.publishedBy}>Posted by</Typography>
           <Typography style={styles.authorName}>{item.author}</Typography>
         </View>
         <TouchableOpacity style={styles.followBtn}>
-          <Typography style={styles.followText}>Follow</Typography>
+          <Typography style={styles.followText}>Join Squad</Typography>
         </TouchableOpacity>
       </View>
 
@@ -116,9 +118,9 @@ export const FeedScreen = () => {
       <View style={styles.header}>
         <View style={styles.logoRow}>
           <View style={styles.logoIcon}>
-            <Typography style={styles.logoChar}>Z</Typography>
+            <Typography style={styles.logoChar}>C</Typography>
           </View>
-          <Typography style={styles.logoText}>News</Typography>
+          <Typography style={styles.logoText}>Sphere</Typography>
         </View>
         <TouchableOpacity style={styles.gridBtn}>
           <LayoutGrid size={24} color="#FFF" />
@@ -150,7 +152,7 @@ export const FeedScreen = () => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.feedScroll}
       >
-        {NEWS_DATA.map((item, index) => (
+        {COLLAB_DATA.map((item, index) => (
           <NewsCard key={item.id} item={item} index={index} />
         ))}
       </ScrollView>
@@ -229,7 +231,7 @@ const styles = StyleSheet.create({
   },
   feedScroll: {
     paddingLeft: 24,
-    paddingRight: 60, // Peak into next card
+    paddingRight: 60,
   },
   newsCard: {
     width: width * 0.8,
@@ -315,31 +317,5 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  navWrapper: {
-    position: 'absolute',
-    bottom: 40,
-    width: width,
-    alignItems: 'center',
-  },
-  floatingNav: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 40,
-    padding: 6,
-    alignItems: 'center',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  navBtn: {
-    width: 54,
-    height: 54,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navBtnActive: {
-    backgroundColor: '#FFF',
-    borderRadius: 27,
   },
 });
