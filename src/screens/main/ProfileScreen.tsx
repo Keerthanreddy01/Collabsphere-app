@@ -10,16 +10,19 @@ import {
   Platform,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import { Plus, Search, LayoutGrid, Copy, Check, Info, EyeOff } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Plus, Search, LayoutGrid, Copy, Check, Info, EyeOff, Sparkles } from 'lucide-react-native';
 
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../theme/colors';
 import { Typography } from '../../components/Typography';
-import { Profile } from '../../types';
+import { Profile, RootStackParamList } from '../../types';
 
 const { width, height } = Dimensions.get('window');
 
 export const ProfileScreen = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -103,9 +106,18 @@ export const ProfileScreen = () => {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeIn.duration(600)}>
-          <Typography style={styles.mainTitle}>
-            Edit{"\n"}Account
-          </Typography>
+          <View style={styles.recapTriggerWrapper}>
+             <Typography style={styles.mainTitle}>
+               Edit{"\n"}Account
+             </Typography>
+             <TouchableOpacity 
+               onPress={() => navigation.navigate('Recap')}
+               style={styles.recapBadge}
+             >
+                <Sparkles size={16} color="#000" />
+                <Typography style={styles.recapBadgeText}>VIEW RECAP</Typography>
+             </TouchableOpacity>
+          </View>
 
           <Animated.View entering={FadeInUp.delay(200).duration(800)} style={styles.profileCard}>
             <View style={styles.cardTop}>
@@ -195,8 +207,29 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     lineHeight: 58,
     letterSpacing: -2,
-    marginBottom: 30,
     paddingLeft: 4,
+  },
+  recapTriggerWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 30,
+  },
+  recapBadge: {
+    backgroundColor: '#FFF',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 25,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  recapBadgeText: {
+    color: '#000',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 1,
   },
   profileCard: {
     backgroundColor: '#FFF',

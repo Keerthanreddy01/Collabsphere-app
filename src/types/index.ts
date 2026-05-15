@@ -14,6 +14,7 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   MainTabs: undefined;
   ChatDetail: { chatId: string; title: string };
+  Recap: undefined;
 };
 
 export type FeedPost = {

@@ -19,6 +19,7 @@ import { ChatScreen } from '../screens/main/ChatScreen';
 import { CollabBoardScreen } from '../screens/main/CollabBoardScreen';
 import { ProfileScreen } from '../screens/main/ProfileScreen';
 import { ChatDetailScreen } from '../screens/main/ChatDetailScreen';
+import { RecapScreen } from '../screens/main/RecapScreen';
 import { AuthStackParamList, MainTabParamList, RootStackParamList } from '../types';
 
 enableScreens(true);
@@ -57,6 +58,7 @@ const RootNavigator = () => (
   <RootStack.Navigator screenOptions={{ headerShown: false }}>
     <RootStack.Screen name="MainTabs" component={MainNavigator} />
     <RootStack.Screen name="ChatDetail" component={ChatDetailScreen} />
+    <RootStack.Screen name="Recap" component={RecapScreen} />
   </RootStack.Navigator>
 );
 
