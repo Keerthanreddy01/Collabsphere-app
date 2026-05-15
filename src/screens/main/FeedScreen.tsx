@@ -2,25 +2,30 @@ import React, { useState } from 'react';
 import { 
   StyleSheet, 
   View, 
-  ScrollView, 
   Dimensions, 
   Image, 
   TouchableOpacity, 
   StatusBar,
 } from 'react-native';
 import Animated, { 
-  FadeInDown, 
+  useSharedValue, 
+  useAnimatedStyle,
+  useAnimatedScrollHandler,
+  interpolate,
+  Extrapolate,
+  FadeInDown,
 } from 'react-native-reanimated';
 import { 
   LayoutGrid, 
-  Search, 
   Bookmark, 
   Share2, 
   ThumbsUp,
 } from 'lucide-react-native';
 import { Typography } from '../../components/Typography';
 
-const { width, height } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = SCREEN_WIDTH * 0.85;
+const SPACING = (SCREEN_WIDTH - CARD_WIDTH) / 2;
 
 const CATEGORIES = ['Trending', 'Squads', 'Projects', 'Design', 'Stack'];
 
@@ -57,15 +62,60 @@ const COLLAB_DATA = [
     authorAvatar: 'https://i.pravatar.cc/100?u=alex',
     summary: 'We are redesigning the entire interaction model for project matching. If you love Figma and high-fidelity prototypes, join us!',
     cardColor: '#FADADD', // Light pink
+  },
+  {
+    id: '4',
+    category: 'Stack',
+    isLive: false,
+    title: 'Why Expo is the ultimate choice for shipping fast',
+    updatedAt: '1d ago',
+    author: 'James Wilson',
+    authorAvatar: 'https://i.pravatar.cc/100?u=james',
+    summary: 'Expo Router, EAS, and the new Modules API have changed the game for cross-platform development. Let\'s discuss the best setup.',
+    cardColor: '#E0E7FF', // Indigo
   }
 ];
 
-const NewsCard = ({ item, index }: { item: any, index: number }) => {
+const NewsCard = ({ item, index, scrollX }: { item: any, index: number, scrollX: Animated.SharedValue<number> }) => {
+  const animatedStyle = useAnimatedStyle(() => {
+    const inputRange = [
+      (index - 1) * CARD_WIDTH,
+      index * CARD_WIDTH,
+      (index + 1) * CARD_WIDTH,
+    ];
+
+    const scale = interpolate(
+      scrollX.value,
+      inputRange,
+      [0.9, 1, 0.9],
+      Extrapolate.CLAMP
+    );
+
+    const opacity = interpolate(
+      scrollX.value,
+      inputRange,
+      [0.6, 1, 0.6],
+      Extrapolate.CLAMP
+    );
+
+    const rotate = interpolate(
+      scrollX.value,
+      inputRange,
+      ['-2deg', '0deg', '2deg'],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      transform: [
+        { scale },
+        { rotateZ: rotate }
+      ],
+      opacity,
+    };
+  });
+
   return (
-    <Animated.View 
-      entering={FadeInDown.delay(index * 200).springify()}
-      style={[styles.newsCard, { backgroundColor: item.cardColor }]}
-    >
+    <Animated.View style={[styles.newsCard, { backgroundColor: item.cardColor }, animatedStyle]}>
       <View style={styles.cardHeader}>
         {item.isLive && (
           <View style={styles.liveBadge}>
@@ -109,6 +159,11 @@ const NewsCard = ({ item, index }: { item: any, index: number }) => {
 
 export const FeedScreen = () => {
   const [activeCategory, setActiveCategory] = useState('Trending');
+  const scrollX = useSharedValue(0);
+
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollX.value = event.contentOffset.x;
+  });
 
   return (
     <View style={styles.container}>
@@ -129,7 +184,11 @@ export const FeedScreen = () => {
 
       {/* Categories */}
       <View style={styles.categoriesWrapper}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
+        <Animated.ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          contentContainerStyle={styles.categoriesScroll}
+        >
           {CATEGORIES.map(cat => (
             <TouchableOpacity 
               key={cat} 
@@ -142,20 +201,23 @@ export const FeedScreen = () => {
               {activeCategory === cat && <View style={styles.activeIndicator} />}
             </TouchableOpacity>
           ))}
-        </ScrollView>
+        </Animated.ScrollView>
       </View>
 
-      {/* Main Feed Carousel */}
-      <ScrollView 
+      {/* Main Feed perspective carousel */}
+      <Animated.ScrollView 
         horizontal 
-        pagingEnabled 
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        snapToInterval={CARD_WIDTH}
+        decelerationRate="fast"
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.feedScroll}
       >
         {COLLAB_DATA.map((item, index) => (
-          <NewsCard key={item.id} item={item} index={index} />
+          <NewsCard key={item.id} item={item} index={index} scrollX={scrollX} />
         ))}
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 };
@@ -230,16 +292,21 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   feedScroll: {
-    paddingLeft: 24,
-    paddingRight: 60,
+    paddingHorizontal: SPACING,
+    paddingVertical: 20,
   },
   newsCard: {
-    width: width * 0.8,
-    height: height * 0.6,
+    width: CARD_WIDTH,
+    height: SCREEN_WIDTH * 1.25,
     borderRadius: 40,
     padding: 24,
-    marginRight: 20,
     justifyContent: 'space-between',
+    // Shadow for elevation effect
+    shadowColor: '#FFF',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 5,
   },
   cardHeader: {
     marginBottom: 10,
