@@ -8,6 +8,7 @@ import {
   View,
   Dimensions,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
