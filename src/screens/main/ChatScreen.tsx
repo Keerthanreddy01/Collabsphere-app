@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -7,21 +7,27 @@ import {
   Platform,
   Pressable,
   StyleSheet,
+  TouchableOpacity,
   TextInput,
   View,
 } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import Animated, { FadeIn } from 'react-native-reanimated';
-import { Bell, Heart, MessageCircle, MoreHorizontal, Play, Send, Settings2, Share } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Animated, { 
+  FadeIn, 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withRepeat, 
+  withSequence, 
+  withSpring 
+} from 'react-native-reanimated';
+import { Bell, Heart, MessageCircle, MoreHorizontal, Play, Send, Settings2, Share, Sparkles } from 'lucide-react-native';
 
 import { supabase } from '../../lib/supabase';
 import { colors, radius, spacing, typography } from '../../theme/colors';
 import { Typography } from '../../components/Typography';
 import { ChatMessage, RootStackParamList } from '../../types';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'MainTabs'>;
-
-// Extended mock data for Orb.club style
 const orbConversations = [
   {
     id: '1',
@@ -63,9 +69,24 @@ const activeStories = [
   { id: 's5', name: 'Eve', avatar: 'https://i.pravatar.cc/150?u=5', isActive: true },
 ];
 
-const ChatScreen = ({ navigation }: any) => {
-  const data = orbConversations;
-  const stories = activeStories;
+const ChatScreen = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const pulse = useSharedValue(1);
+
+  useEffect(() => {
+    pulse.value = withRepeat(
+      withSequence(
+        withSpring(1.15),
+        withSpring(1)
+      ),
+      -1,
+      true
+    );
+  }, []);
+
+  const animatedPulse = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value }],
+  }));
 
   return (
     <View style={styles.container}>
@@ -83,13 +104,25 @@ const ChatScreen = ({ navigation }: any) => {
               <Settings2 size={20} color={colors.white} />
             </View>
           </View>
-          <Image source={{ uri: 'https://i.pravatar.cc/150?u=me' }} style={styles.topBarAvatar} />
+          
+          <View style={styles.topBarRight}>
+            <TouchableOpacity 
+              onPress={() => navigation.navigate('Recap')}
+              style={styles.recapPill}
+            >
+               <Animated.View style={animatedPulse}>
+                 <Sparkles size={18} color="#000" />
+               </Animated.View>
+               <Typography style={styles.recapText}>Recap</Typography>
+            </TouchableOpacity>
+            <Image source={{ uri: 'https://i.pravatar.cc/150?u=me' }} style={styles.topBarAvatar} />
+          </View>
         </View>
 
         <View>
           <FlatList
             horizontal
-            data={stories}
+            data={activeStories}
             keyExtractor={(item) => item.id}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.storiesContent}
@@ -106,7 +139,7 @@ const ChatScreen = ({ navigation }: any) => {
         </View>
 
         <FlatList
-          data={data}
+          data={orbConversations}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           renderItem={({ item, index }) => (
@@ -193,19 +226,14 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: spacing.md,
   },
-  mintBanner: {
-    backgroundColor: '#FF5C00',
-    marginHorizontal: 24,
-    marginTop: Platform.OS === 'ios' ? 60 : 40,
-    borderRadius: 50, // Perfectly smooth
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   topBarLeft: {
     flexDirection: 'row',
     gap: spacing.sm,
+  },
+  topBarRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   iconPill: {
     width: 44,
@@ -231,6 +259,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.white,
   },
+  recapPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+    shadowColor: '#FFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  recapText: {
+    color: '#000',
+    fontSize: 13,
+    fontWeight: '900',
+  },
   topBarAvatar: {
     width: 44,
     height: 44,
@@ -250,7 +297,7 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     backgroundColor: colors.surface,
-    padding: 2, // Space for border/gradient
+    padding: 2,
   },
   storyAvatar: {
     width: '100%',
@@ -264,7 +311,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#22C55E', // Green Live/Active badge
+    backgroundColor: '#22C55E',
     borderWidth: 2,
     borderColor: colors.black,
   },
@@ -276,7 +323,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: 100, // Space for tab bar
+    paddingBottom: 100,
   },
   listItemWrapper: {
     marginBottom: spacing.lg,

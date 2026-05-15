@@ -107,18 +107,9 @@ export const ProfileScreen = () => {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeIn.duration(600)}>
-          <View style={styles.recapTriggerWrapper}>
-             <Typography style={styles.mainTitle}>
-               Edit{"\n"}Account
-             </Typography>
-             <TouchableOpacity 
-               onPress={() => navigation.navigate('Recap')}
-               style={styles.recapBadge}
-             >
-                <Sparkles size={16} color="#000" />
-                <Typography style={styles.recapBadgeText}>VIEW RECAP</Typography>
-             </TouchableOpacity>
-          </View>
+          <Typography style={[styles.mainTitle, { marginBottom: 30 }]}>
+            Edit{"\n"}Account
+          </Typography>
 
           <Animated.View entering={FadeInUp.delay(200).duration(800)} style={styles.profileCard}>
             <View style={styles.cardTop}>

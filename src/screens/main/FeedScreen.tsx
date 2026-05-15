@@ -18,147 +18,154 @@ import Animated, {
   Extrapolate
 } from 'react-native-reanimated';
 import { 
-  MessageCircle, 
-  Repeat, 
-  Star, 
-  MoreHorizontal, 
+  LayoutGrid, 
   Search, 
-  Bell, 
-  Mail, 
-  Plus,
-  Home,
-  User,
-  Layout
+  Bookmark, 
+  Share2, 
+  ThumbsUp,
+  ChevronRight,
+  Home
 } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { Typography } from '../../components/Typography';
 
 const { width, height } = Dimensions.get('window');
 
-const POSTS = [
+const CATEGORIES = ['Trending', 'Health', 'Sports', 'Finance', 'Tech'];
+
+const NEWS_DATA = [
   {
     id: '1',
-    author: 'Unknown artist',
-    handle: '@unknown',
-    time: '9h',
-    content: 'Another awesome image from @steve\n\n#design #games #4k',
-    media: require('../../../assets/gundam.png'),
-    comments: 4,
-    shares: 7,
-    likes: 68,
-    avatar: 'https://i.pravatar.cc/100?u=artist'
+    category: 'Trending',
+    isLive: true,
+    title: 'Demand for Indian generic drugs skyrockets in China amid shortage',
+    updatedAt: 'Updated just now',
+    author: 'Wade Warren',
+    authorAvatar: 'https://i.pravatar.cc/100?u=wade',
+    summary: 'The demand for Indian generic drugs has shot up in China amid the massive COVID surge in the country, with Chinese experts cautioning that fake versions of these drugs are flooding the market.',
+    cardColor: '#FDF1CB', // Cream color from design
   },
   {
     id: '2',
-    author: 'Apple super user',
-    handle: '@apple_fan',
-    time: '11h',
-    content: 'MacOS has replaced Windows in every part of my life.\n\nHere\'s why:\n\n- macOS simply works better for me.\n- It\'s a system built for people who create and build from scratch.\n- Apple sets the standard.',
-    comments: 12,
-    shares: 3,
-    likes: 142,
-    avatar: 'https://i.pravatar.cc/100?u=apple',
-    verified: true
+    category: 'Health',
+    isLive: false,
+    title: 'New breakthroughs in AI-assisted surgery announced',
+    updatedAt: '2h ago',
+    author: 'Jane Cooper',
+    authorAvatar: 'https://i.pravatar.cc/100?u=jane',
+    summary: 'Researchers have developed a new robotic system that can assist surgeons with 99% precision during complex neurosurgical procedures.',
+    cardColor: '#FADADD', // Light pink color
   }
 ];
 
-const PostItem = ({ item, index }: { item: any, index: number }) => {
+const NewsCard = ({ item, index }: { item: any, index: number }) => {
   return (
     <Animated.View 
-      entering={FadeInDown.delay(index * 100)}
-      style={styles.postContainer}
+      entering={FadeInDown.delay(index * 200).springify()}
+      style={[styles.newsCard, { backgroundColor: item.cardColor }]}
     >
-      <View style={styles.postHeader}>
-        <Image source={{ uri: item.avatar }} style={styles.avatar} />
+      <View style={styles.cardHeader}>
+        {item.isLive && (
+          <View style={styles.liveBadge}>
+            <Typography style={styles.liveText}>LIVE</Typography>
+          </View>
+        )}
+      </View>
+
+      <Typography style={styles.cardTitle}>{item.title}</Typography>
+      <Typography style={styles.updatedText}>{item.updatedAt}</Typography>
+
+      <View style={styles.authorSection}>
+        <Image source={{ uri: item.authorAvatar }} style={styles.authorAvatar} />
         <View style={styles.authorInfo}>
-           <View style={styles.authorRow}>
-             <Typography style={styles.authorName}>{item.author}</Typography>
-             {item.verified && <View style={styles.verifiedBadge} />}
-             <Typography style={styles.postTime}>• {item.time}</Typography>
-           </View>
+          <Typography style={styles.publishedBy}>Published by</Typography>
+          <Typography style={styles.authorName}>{item.author}</Typography>
         </View>
-        <TouchableOpacity style={styles.moreBtn}>
-           <MoreHorizontal size={20} color="#666" />
+        <TouchableOpacity style={styles.followBtn}>
+          <Typography style={styles.followText}>Follow</Typography>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.postContentWrapper}>
-        <Typography style={styles.postText}>
-          {item.content.split(' ').map((word, i) => {
-            if (word.startsWith('#') || word.startsWith('@')) {
-              return <Typography key={i} style={styles.highlightText}>{word} </Typography>;
-            }
-            return word + ' ';
-          })}
-        </Typography>
+      <Typography style={styles.summaryText} numberOfLines={4}>
+        {item.summary}
+      </Typography>
 
-        {item.media && (
-          <Image source={item.media} style={styles.mediaCard} resizeMode="cover" />
-        )}
-
-        <View style={styles.interactionBar}>
-          <TouchableOpacity style={styles.interactionPill}>
-             <MessageCircle size={18} color="#FFF" />
-             <Typography style={styles.interactionCount}>{item.comments}</Typography>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.interactionPill}>
-             <Repeat size={18} color="#FFF" />
-             <Typography style={styles.interactionCount}>{item.shares}</Typography>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.interactionPill, { backgroundColor: '#332400' }]}>
-             <Star size={18} color="#FFD60A" fill="#FFD60A" />
-             <Typography style={[styles.interactionCount, { color: '#FFD60A' }]}>{item.likes}</Typography>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.interactionIcons}>
+        <TouchableOpacity style={styles.iconBtn}>
+          <ThumbsUp size={20} color="#000" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconBtn}>
+          <Bookmark size={20} color="#000" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconBtn}>
+          <Share2 size={20} color="#000" />
+        </TouchableOpacity>
       </View>
     </Animated.View>
   );
 };
 
 export const FeedScreen = () => {
-  const [activeTab, setActiveTab] = useState('For you');
+  const [activeCategory, setActiveCategory] = useState('Trending');
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       
+      {/* Header */}
       <View style={styles.header}>
-        <View style={styles.tabContainer}>
-          <TouchableOpacity onPress={() => setActiveTab('For you')}>
-            <Typography style={[styles.tabText, activeTab === 'For you' && styles.tabActive]}>For you</Typography>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setActiveTab('Follows')}>
-            <Typography style={[styles.tabText, activeTab === 'Follows' && styles.tabActive]}>Follows</Typography>
-          </TouchableOpacity>
+        <View style={styles.logoRow}>
+          <View style={styles.logoIcon}>
+            <Typography style={styles.logoChar}>Z</Typography>
+          </View>
+          <Typography style={styles.logoText}>News</Typography>
         </View>
-        <Image source={{ uri: 'https://i.pravatar.cc/100?u=me' }} style={styles.headerAvatar} />
+        <TouchableOpacity style={styles.gridBtn}>
+          <LayoutGrid size={24} color="#FFF" />
+        </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={POSTS}
-        keyExtractor={item => item.id}
-        renderItem={({ item, index }) => <PostItem item={item} index={index} />}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
+      {/* Categories */}
+      <View style={styles.categoriesWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
+          {CATEGORIES.map(cat => (
+            <TouchableOpacity 
+              key={cat} 
+              onPress={() => setActiveCategory(cat)}
+              style={styles.categoryTab}
+            >
+              <Typography style={[styles.categoryText, activeCategory === cat && styles.categoryActive]}>
+                {cat}
+              </Typography>
+              {activeCategory === cat && <View style={styles.activeIndicator} />}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
-      {/* Floating Glass Navigation */}
+      {/* Main Feed Carousel */}
+      <ScrollView 
+        horizontal 
+        pagingEnabled 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.feedScroll}
+      >
+        {NEWS_DATA.map((item, index) => (
+          <NewsCard key={item.id} item={item} index={index} />
+        ))}
+      </ScrollView>
+
+      {/* Floating Bottom Navigation */}
       <View style={styles.navWrapper}>
         <BlurView intensity={80} tint="dark" style={styles.floatingNav}>
-          <TouchableOpacity style={styles.navBtn}>
-            <Search size={24} color="#FFF" />
+          <TouchableOpacity style={[styles.navBtn, styles.navBtnActive]}>
+            <Home size={24} color="#000" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.navBtn}>
-            <Layout size={24} color="#666" />
+            <Search size={24} color="#666" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.navBtn}>
-            <MessageCircle size={24} color="#666" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navBtn}>
-            <Bell size={24} color="#666" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.plusBtn}>
-            <Plus size={24} color="#FFF" />
+            <Bookmark size={24} color="#666" />
           </TouchableOpacity>
         </BlurView>
       </View>
@@ -176,108 +183,153 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 60,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     marginBottom: 20,
   },
-  tabContainer: {
-    flexDirection: 'row',
-    gap: 20,
-  },
-  tabText: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#333',
-  },
-  tabActive: {
-    color: '#FFF',
-  },
-  headerAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  listContent: {
-    paddingBottom: 150,
-  },
-  postContainer: {
-    padding: 20,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#222',
-  },
-  postHeader: {
+  logoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    gap: 10,
   },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  logoIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoChar: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#000',
+  },
+  logoText: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#FFF',
+  },
+  gridBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#1A1A1A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoriesWrapper: {
+    marginBottom: 20,
+  },
+  categoriesScroll: {
+    paddingHorizontal: 24,
+    gap: 24,
+  },
+  categoryTab: {
+    alignItems: 'center',
+  },
+  categoryText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#444',
+  },
+  categoryActive: {
+    color: '#FFF',
+  },
+  activeIndicator: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFF',
+    marginTop: 6,
+  },
+  feedScroll: {
+    paddingLeft: 24,
+    paddingRight: 60, // Peak into next card
+  },
+  newsCard: {
+    width: width * 0.8,
+    height: height * 0.6,
+    borderRadius: 40,
+    padding: 24,
+    marginRight: 20,
+    justifyContent: 'space-between',
+  },
+  cardHeader: {
+    marginBottom: 10,
+  },
+  liveBadge: {
+    backgroundColor: '#E53E3E',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  liveText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  cardTitle: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#000',
+    lineHeight: 34,
+  },
+  updatedText: {
+    fontSize: 14,
+    color: '#888',
+    marginBottom: 20,
+  },
+  authorSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  authorAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     marginRight: 12,
   },
   authorInfo: {
     flex: 1,
   },
-  authorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+  publishedBy: {
+    fontSize: 12,
+    color: '#888',
   },
   authorName: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  verifiedBadge: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#007AFF',
-  },
-  postTime: {
-    color: '#666',
     fontSize: 14,
+    fontWeight: '700',
+    color: '#000',
   },
-  moreBtn: {
-    padding: 4,
-  },
-  postContentWrapper: {
-    paddingLeft: 48,
-  },
-  postText: {
-    color: '#FFF',
-    fontSize: 16,
-    lineHeight: 22,
-    marginBottom: 16,
-  },
-  highlightText: {
-    color: '#007AFF',
-  },
-  mediaCard: {
-    width: '100%',
-    height: 240,
-    borderRadius: 24,
-    marginBottom: 16,
-  },
-  interactionBar: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  interactionPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1A1A1A',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  followBtn: {
+    backgroundColor: '#000',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 20,
-    gap: 6,
   },
-  interactionCount: {
+  followText: {
     color: '#FFF',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
+  },
+  summaryText: {
+    fontSize: 16,
+    color: '#444',
+    lineHeight: 24,
+    marginBottom: 20,
+  },
+  interactionIcons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 16,
+  },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   navWrapper: {
     position: 'absolute',
@@ -296,18 +348,13 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   navBtn: {
-    width: 48,
-    height: 48,
+    width: 54,
+    height: 54,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  plusBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#007AFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 10,
+  navBtnActive: {
+    backgroundColor: '#FFF',
+    borderRadius: 27,
   },
 });
