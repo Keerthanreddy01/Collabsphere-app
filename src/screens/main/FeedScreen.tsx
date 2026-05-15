@@ -23,8 +23,10 @@ import {
 import { Typography } from '../../components/Typography';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH * 0.82;
-const SPACING = (SCREEN_WIDTH - CARD_WIDTH) / 2;
+// Defensive CARD_WIDTH to prevent [0,0,0] inputRange
+const VALID_WIDTH = SCREEN_WIDTH > 0 ? SCREEN_WIDTH : 375;
+const CARD_WIDTH = VALID_WIDTH * 0.82;
+const SPACING = (VALID_WIDTH - CARD_WIDTH) / 2;
 
 const CATEGORIES = ['Trending', 'Squads', 'Projects', 'Design', 'Stack'];
 
@@ -77,6 +79,9 @@ const COLLAB_DATA = [
 
 const NewsCard = ({ item, index, scrollX }: { item: any, index: number, scrollX: Animated.SharedValue<number> }) => {
   const animatedStyle = useAnimatedStyle(() => {
+    // Ensure scrollX is treated as a number
+    const xVal = scrollX.value || 0;
+    
     const inputRange = [
       (index - 1) * CARD_WIDTH,
       index * CARD_WIDTH,
@@ -84,21 +89,21 @@ const NewsCard = ({ item, index, scrollX }: { item: any, index: number, scrollX:
     ];
 
     const scale = interpolate(
-      scrollX.value,
+      xVal,
       inputRange,
       [0.92, 1, 0.92],
       Extrapolate.CLAMP
     );
 
     const opacity = interpolate(
-      scrollX.value,
+      xVal,
       inputRange,
       [0.6, 1, 0.6],
       Extrapolate.CLAMP
     );
 
     const rotate = interpolate(
-      scrollX.value,
+      xVal,
       inputRange,
       [-4, 0, 4],
       Extrapolate.CLAMP
@@ -106,10 +111,10 @@ const NewsCard = ({ item, index, scrollX }: { item: any, index: number, scrollX:
 
     return {
       transform: [
-        { scale },
-        { rotateZ: `${rotate}deg` }
+        { scale: scale || 1 },
+        { rotateZ: `${rotate || 0}deg` }
       ],
-      opacity,
+      opacity: opacity || 1,
     };
   });
 
@@ -160,8 +165,10 @@ export const FeedScreen = () => {
   const [activeCategory, setActiveCategory] = useState('Trending');
   const scrollX = useSharedValue(0);
 
-  const onScroll = useAnimatedScrollHandler((event) => {
-    scrollX.value = event.contentOffset.x;
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollX.value = event.contentOffset.x || 0;
+    },
   });
 
   return (
