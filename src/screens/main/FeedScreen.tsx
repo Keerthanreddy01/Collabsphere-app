@@ -154,21 +154,6 @@ export const FeedScreen = () => {
           <NewsCard key={item.id} item={item} index={index} />
         ))}
       </ScrollView>
-
-      {/* Floating Bottom Navigation */}
-      <View style={styles.navWrapper}>
-        <BlurView intensity={80} tint="dark" style={styles.floatingNav}>
-          <TouchableOpacity style={[styles.navBtn, styles.navBtnActive]}>
-            <Home size={24} color="#000" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navBtn}>
-            <Search size={24} color="#666" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navBtn}>
-            <Bookmark size={24} color="#666" />
-          </TouchableOpacity>
-        </BlurView>
-      </View>
     </View>
   );
 };
