@@ -100,14 +100,14 @@ const NewsCard = ({ item, index, scrollX }: { item: any, index: number, scrollX:
     const rotate = interpolate(
       scrollX.value,
       inputRange,
-      ['-4deg', '0deg', '4deg'],
+      [-4, 0, 4],
       Extrapolate.CLAMP
     );
 
     return {
       transform: [
         { scale },
-        { rotateZ: rotate }
+        { rotateZ: `${rotate}deg` }
       ],
       opacity,
     };
