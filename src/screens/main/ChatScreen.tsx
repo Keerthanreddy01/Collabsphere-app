@@ -1,424 +1,458 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
   View,
+  StyleSheet,
+  ScrollView,
+  Image,
+  Pressable,
+  StatusBar,
+  Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import Animated, { 
-  FadeIn, 
   useSharedValue, 
   useAnimatedStyle, 
+  withTiming, 
   withRepeat, 
-  withSequence, 
-  withSpring 
+  withSpring,
+  FadeInUp,
+  createAnimatedComponent,
+  interpolate,
 } from 'react-native-reanimated';
-import { Bell, Heart, MessageCircle, MoreHorizontal, Play, Send, Settings2, Share, Sparkles } from 'lucide-react-native';
-
-import { supabase } from '../../lib/supabase';
-import { colors, radius, spacing, typography } from '../../theme/colors';
+import { Pin } from 'lucide-react-native';
 import { Typography } from '../../components/Typography';
-import { ChatMessage, RootStackParamList } from '../../types';
+import { RootStackParamList } from '../../types';
 
-const orbConversations = [
+const { width, height } = Dimensions.get('window');
+
+const JAMS = [
   {
     id: '1',
-    name: 'Alice Johnson',
-    avatar: 'https://i.pravatar.cc/150?u=1',
-    lastMessage: 'Hey, I just pushed the new design system to main.',
-    time: '1h ago',
-    subtitle: 'In CollabSphere · 1h ago',
-    likes: 3,
-    comments: 2,
-    shares: 0,
-    topText: '3 teammates liked',
-    hasPreview: true,
-    previewTitle: 'Orb UI Refactor',
-    previewStack: 'React Native, Reanimated',
+    tag: '/orb',
+    authorName: 'nilesh',
+    authorAvatar: 'https://i.pravatar.cc/100?u=nilesh',
+    mainImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&auto=format&fit=crop',
+    time: '12:56',
+    message: 'Introducing Jams!\nIn this release:',
+    unreadCount: 28,
+    isPinned: true,
   },
   {
     id: '2',
-    name: 'Bob Smith',
-    avatar: 'https://i.pravatar.cc/150?u=2',
-    lastMessage: 'Let\'s sync tomorrow on the backend schema.',
-    time: '2h ago',
-    subtitle: 'In Backend Squad · 2h ago',
-    likes: 5,
-    comments: 8,
-    shares: 1,
-    topText: 'New message',
-    hasPreview: false,
-    previewTitle: '',
-    previewStack: '',
+    tag: '/aiart',
+    authorName: 'artem',
+    authorAvatar: 'https://i.pravatar.cc/100?u=artem',
+    mainImage: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=200&auto=format&fit=crop',
+    time: '1 min ago',
+    message: 'reacted on your message',
+    unreadCount: 5,
+    mention: true,
   },
+  {
+    id: '3',
+    tag: '/lens',
+    authorName: 'mia',
+    authorAvatar: 'https://i.pravatar.cc/100?u=mia',
+    mainImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=200&auto=format&fit=crop',
+    time: '37 min ago',
+    message: 'Check out the new photo collection!\nShare your favorites and discuss...',
+    unreadCount: 2,
+  },
+  {
+    id: '4',
+    tag: '/creators',
+    authorName: 'michael',
+    authorAvatar: 'https://i.pravatar.cc/100?u=michael',
+    mainImage: 'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=200&auto=format&fit=crop',
+    time: '2 hours ago',
+    message: 'Check out the latest collection and share\nyour thoughts with other collectors...',
+    unreadCount: 1,
+    mention: true,
+  }
 ];
 
-const activeStories = [
-  { id: 's1', name: 'Alice', avatar: 'https://i.pravatar.cc/150?u=1', isActive: true },
-  { id: 's2', name: 'Bob', avatar: 'https://i.pravatar.cc/150?u=2', isActive: false },
-  { id: 's3', name: 'Charlie', avatar: 'https://i.pravatar.cc/150?u=3', isActive: true },
-  { id: 's4', name: 'Diana', avatar: 'https://i.pravatar.cc/150?u=4', isActive: false },
-  { id: 's5', name: 'Eve', avatar: 'https://i.pravatar.cc/150?u=5', isActive: true },
+const DMS = [
+  {
+    id: '1',
+    name: 'jacob',
+    avatar: 'https://i.pravatar.cc/200?u=jacob',
+    time: '1 min ago',
+    unreadCount: 2,
+  }
 ];
 
-const ChatScreen = () => {
+const AnimatedPressable = createAnimatedComponent(Pressable);
+
+// Premium Glass Card Component
+const JamCard = ({ item, index, navigation, isDM = false }: any) => {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }]
+  }));
+
+  return (
+    <Animated.View entering={FadeInUp.delay(index * 150).springify().damping(18).stiffness(120)}>
+      <AnimatedPressable 
+        style={[styles.cardWrapper, animatedStyle]}
+        onPressIn={() => scale.value = withSpring(0.96, { damping: 15, stiffness: 200 })}
+        onPressOut={() => scale.value = withSpring(1, { damping: 15, stiffness: 200 })}
+        onPress={() => navigation.navigate('ChatDetail', { chatId: item.id, title: item.authorName || item.name })}
+      >
+        <BlurView intensity={35} tint="dark" style={styles.blurCard}>
+          <View style={styles.cardInner}>
+            
+            {/* Left Image Section */}
+            <View style={styles.imageWrapper}>
+              <Image source={{ uri: isDM ? item.avatar : item.mainImage }} style={isDM ? styles.dmAvatar : styles.jamImage} />
+              {!isDM && item.isPinned && (
+                <View style={styles.pinBadge}>
+                  <Pin size={12} color="#000" fill="#000" />
+                </View>
+              )}
+            </View>
+
+            {/* Content Section */}
+            <View style={styles.cardContent}>
+              {!isDM && (
+                <View style={styles.cardHeaderRow}>
+                  <Typography style={styles.tagText}>{item.tag}</Typography>
+                  <Typography style={styles.timeText}>{item.time}</Typography>
+                </View>
+              )}
+              
+              {isDM && (
+                <View style={[styles.cardHeaderRow, { marginBottom: 8 }]}>
+                  <Typography style={styles.authorName}>{item.name}</Typography>
+                  <Typography style={styles.timeText}>{item.time}</Typography>
+                </View>
+              )}
+
+              {!isDM && (
+                <View style={styles.authorRow}>
+                  <Image source={{ uri: item.authorAvatar }} style={styles.authorAvatar} />
+                  <Typography style={styles.authorName}>{item.authorName}</Typography>
+                </View>
+              )}
+
+              {!isDM ? (
+                <Typography style={styles.messageText} numberOfLines={2}>
+                  {item.message}
+                </Typography>
+              ) : (
+                <View style={styles.placeholderLines}>
+                  <View style={styles.placeholderLine} />
+                  <View style={[styles.placeholderLine, { width: '60%' }]} />
+                </View>
+              )}
+            </View>
+
+            {/* Badges */}
+            <View style={styles.badgesWrapper}>
+              {item.unreadCount > 0 && (
+                <LinearGradient
+                  colors={['#FF4B2B', '#FF416C']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.gradientBadge}
+                >
+                  <Typography style={styles.badgeText}>{item.unreadCount}</Typography>
+                </LinearGradient>
+              )}
+              {item.mention && (
+                <LinearGradient
+                  colors={['#8A2BE2', '#FF69B4']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.gradientBadge}
+                >
+                  <Typography style={styles.badgeText}>@</Typography>
+                </LinearGradient>
+              )}
+            </View>
+          </View>
+        </BlurView>
+      </AnimatedPressable>
+    </Animated.View>
+  );
+};
+
+export const ChatScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const pulse = useSharedValue(1);
-
+  const insets = useSafeAreaInsets();
+  
+  // Background animation
+  const time = useSharedValue(0);
   useEffect(() => {
-    pulse.value = withRepeat(
-      withSequence(
-        withSpring(1.15),
-        withSpring(1)
-      ),
-      -1,
-      true
-    );
+    time.value = withRepeat(withTiming(2 * Math.PI, { duration: 15000 }), -1, false);
   }, []);
 
-  const animatedPulse = useAnimatedStyle(() => ({
-    transform: [{ scale: pulse.value }],
+  const orb1Style = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: Math.sin(time.value) * 50 },
+      { translateY: Math.cos(time.value) * 30 },
+      { scale: interpolate(Math.sin(time.value), [-1, 1], [0.9, 1.1]) }
+    ]
+  }));
+
+  const orb2Style = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: Math.cos(time.value) * -40 },
+      { translateY: Math.sin(time.value) * 60 },
+      { scale: interpolate(Math.cos(time.value), [-1, 1], [0.8, 1.2]) }
+    ]
   }));
 
   return (
     <View style={styles.container}>
-      <Animated.View entering={FadeIn.duration(300)} style={styles.screen}>
-        {/* Top bar */}
-        <View style={styles.topBar}>
-          <View style={styles.topBarLeft}>
-            <View style={styles.iconPill}>
-              <Bell size={20} color={colors.white} />
-              <View style={styles.badge}>
-                <Typography style={styles.badgeText}>3</Typography>
-              </View>
-            </View>
-            <View style={styles.iconPill}>
-              <Settings2 size={20} color={colors.white} />
-            </View>
-          </View>
-          
-          <View style={styles.topBarRight}>
-            <TouchableOpacity 
-              onPress={() => navigation.navigate('Recap')}
-              style={styles.recapPill}
-            >
-               <Animated.View style={animatedPulse}>
-                 <Sparkles size={18} color="#000" />
-               </Animated.View>
-               <Typography style={styles.recapText}>Recap</Typography>
-            </TouchableOpacity>
-            <Image source={{ uri: 'https://i.pravatar.cc/150?u=me' }} style={styles.topBarAvatar} />
-          </View>
+      <StatusBar barStyle="light-content" />
+      
+      {/* Dynamic Animated Background Mesh */}
+      <View style={StyleSheet.absoluteFill}>
+        <Animated.View style={[styles.orb1, orb1Style]}>
+          <LinearGradient colors={['#FF3B30', '#FF9500']} style={StyleSheet.absoluteFill} />
+        </Animated.View>
+        <Animated.View style={[styles.orb2, orb2Style]}>
+          <LinearGradient colors={['#E50000', '#8A2BE2']} style={StyleSheet.absoluteFill} />
+        </Animated.View>
+      </View>
+
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: Math.max(insets.top, 50) }]}
+      >
+        <Animated.View entering={FadeInUp.delay(50).springify()}>
+          <Typography style={styles.headerTitle}>My Jams</Typography>
+        </Animated.View>
+
+        <View style={styles.listContainer}>
+          {JAMS.map((jam, index) => (
+            <JamCard key={jam.id} item={jam} index={index} navigation={navigation} />
+          ))}
         </View>
 
-        <View>
-          <FlatList
-            horizontal
-            data={activeStories}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.storiesContent}
-            renderItem={({ item }) => (
-              <View style={styles.storyContainer}>
-                <View style={styles.storyAvatarWrapper}>
-                  <Image source={{ uri: item.avatar }} style={styles.storyAvatar} />
-                  {item.isActive && <View style={styles.activeDot} />}
-                </View>
-                <Typography style={styles.storyName} numberOfLines={1}>{item.name}</Typography>
-              </View>
-            )}
-          />
+        <Animated.View entering={FadeInUp.delay(600).springify()} style={styles.dmDividerSection}>
+          <LinearGradient
+            colors={['#FF8E53', '#FF6B6B']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.soonBadge}
+          >
+            <Typography style={styles.soonText}>SOON</Typography>
+          </LinearGradient>
+          <Typography style={styles.dmTitle}>DM</Typography>
+        </Animated.View>
+
+        <View style={styles.listContainer}>
+          {DMS.map((dm, index) => (
+            <JamCard key={dm.id} item={dm} index={index + JAMS.length} navigation={navigation} isDM={true} />
+          ))}
         </View>
 
-        <FlatList
-          data={orbConversations}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          renderItem={({ item, index }) => (
-            <Animated.View entering={FadeIn.delay(index * 40)} style={styles.listItemWrapper}>
-              <Pressable
-                style={styles.card}
-                onPress={() =>
-                  navigation.navigate('ChatDetail', {
-                    chatId: item.id,
-                    title: item.name,
-                  })
-                }
-              >
-                {item.topText ? (
-                  <Typography style={styles.cardTopText}>{item.topText}</Typography>
-                ) : null}
-
-                <View style={styles.cardHeader}>
-                  <Image source={{ uri: item.avatar }} style={styles.cardAvatar} />
-                  <View style={styles.cardHeaderText}>
-                    <Typography style={styles.cardName}>{item.name}</Typography>
-                    <Typography style={styles.cardSubtitle}>{item.subtitle}</Typography>
-                  </View>
-                </View>
-
-                <Typography style={styles.cardMessage} numberOfLines={3}>
-                  {item.lastMessage}
-                </Typography>
-
-                {item.hasPreview && (
-                  <View style={styles.previewCard}>
-                    <View style={{ flex: 1 }}>
-                      <Typography style={styles.previewTitle}>{item.previewTitle}</Typography>
-                      <Typography style={styles.previewStack}>{item.previewStack}</Typography>
-                    </View>
-                    <View style={styles.playButton}>
-                      <Play size={16} color={colors.black} fill={colors.black} />
-                    </View>
-                  </View>
-                )}
-
-                <View style={styles.cardFooter}>
-                  <View style={styles.footerActions}>
-                    <View style={styles.footerAction}>
-                      <Heart size={16} color={colors.textMuted} />
-                      <Typography style={styles.footerActionText}>{item.likes}</Typography>
-                    </View>
-                    <View style={styles.footerAction}>
-                      <MessageCircle size={16} color={colors.textMuted} />
-                      <Typography style={styles.footerActionText}>{item.comments}</Typography>
-                    </View>
-                    <View style={styles.footerAction}>
-                      <Share size={16} color={colors.textMuted} />
-                      <Typography style={styles.footerActionText}>{item.shares}</Typography>
-                    </View>
-                  </View>
-                  <MoreHorizontal size={20} color={colors.textMuted} />
-                </View>
-              </Pressable>
-            </Animated.View>
-          )}
-          showsVerticalScrollIndicator={false}
-        />
-      </Animated.View>
+        <View style={{ height: 120 }} />
+      </ScrollView>
     </View>
   );
 };
 
-export { ChatScreen };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.black,
+    backgroundColor: '#050505', 
   },
-  screen: {
-    flex: 1,
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingBottom: spacing.md,
-  },
-  topBarLeft: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  topBarRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  iconPill: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#1A1A1A',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badge: {
+  orb1: {
     position: 'absolute',
-    top: 6,
-    right: 8,
-    backgroundColor: colors.danger,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    top: -50,
+    left: -100,
+    width: width * 1.5,
+    height: 400,
+    borderRadius: width,
+    opacity: 0.45,
+    filter: 'blur(60px)', // Web/Newer RN support, otherwise opacity drives it
+  },
+  orb2: {
+    position: 'absolute',
+    top: 200,
+    right: -100,
+    width: width,
+    height: 400,
+    borderRadius: width / 2,
+    opacity: 0.35,
+    filter: 'blur(80px)',
+  },
+  scrollContent: {
+    paddingBottom: 20,
+    zIndex: 1,
+  },
+  headerTitle: {
+    fontSize: 40,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 40,
+    letterSpacing: -1,
+    textShadowColor: 'rgba(255, 255, 255, 0.3)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
+  },
+  listContainer: {
+    paddingHorizontal: 16,
+    gap: 16,
+  },
+  cardWrapper: {
+    borderRadius: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  blurCard: {
+    borderRadius: 32,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)', // Darken the blur slightly
+  },
+  cardInner: {
+    flexDirection: 'row',
+    padding: 16,
+  },
+  imageWrapper: {
+    position: 'relative',
+    marginRight: 16,
+  },
+  jamImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    backgroundColor: '#222',
+  },
+  dmAvatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#222',
+  },
+  pinBadge: {
+    position: 'absolute',
+    bottom: -6,
+    right: -6,
+    backgroundColor: '#FFFFFF',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#1A1A1A', // Match dark bg slightly
+  },
+  cardContent: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  tagText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.6)',
+    letterSpacing: 0.5,
+  },
+  timeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.4)',
+  },
+  authorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  authorAvatar: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  authorName: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
+  },
+  messageText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.7)',
+    lineHeight: 20,
+  },
+  badgesWrapper: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 12,
+    gap: 8,
+  },
+  gradientBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.4)',
+    shadowColor: '#FF416C',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
   },
   badgeText: {
-    fontSize: 8,
-    fontWeight: 'bold',
-    color: colors.white,
-  },
-  recapPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 6,
-    shadowColor: '#FFF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  recapText: {
-    color: '#000',
-    fontSize: 13,
+    color: '#FFFFFF',
+    fontSize: 11,
     fontWeight: '900',
   },
-  topBarAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-  },
-  storiesContent: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.lg,
-    gap: spacing.md,
-  },
-  storyContainer: {
+  dmDividerSection: {
     alignItems: 'center',
-    width: 70,
+    marginTop: 40,
+    marginBottom: 24,
   },
-  storyAvatarWrapper: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: colors.surface,
-    padding: 2,
-  },
-  storyAvatar: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 35,
-  },
-  activeDot: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#22C55E',
-    borderWidth: 2,
-    borderColor: colors.black,
-  },
-  storyName: {
-    ...typography.caption,
-    color: colors.white,
-    marginTop: 6,
-    textAlign: 'center',
-  },
-  listContent: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: 100,
-  },
-  listItemWrapper: {
-    marginBottom: spacing.lg,
-  },
-  card: {
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    padding: spacing.md,
-    shadowColor: colors.white,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  cardTopText: {
-    ...typography.caption,
-    color: colors.textMuted,
-    marginBottom: spacing.sm,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  cardAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: colors.accent,
-    marginRight: spacing.sm,
-  },
-  cardHeaderText: {
-    flex: 1,
-  },
-  cardName: {
-    ...typography.subtitle,
-    color: colors.black,
-  },
-  cardSubtitle: {
-    ...typography.caption,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  cardMessage: {
-    ...typography.body,
-    color: colors.black,
-    marginBottom: spacing.md,
-  },
-  previewCard: {
-    backgroundColor: '#1A1A1A',
+  soonBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 12,
-    padding: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: 4,
   },
-  previewTitle: {
-    ...typography.subtitle,
-    color: colors.white,
+  soonText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1,
   },
-  previewStack: {
-    ...typography.caption,
-    color: colors.textMuted,
-    marginTop: 4,
+  dmTitle: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
+    opacity: 0.9,
   },
-  playButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: spacing.sm,
+  placeholderLines: {
+    gap: 10,
+    marginTop: 8,
   },
-  cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-    paddingTop: spacing.sm,
-  },
-  footerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  footerAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  footerActionText: {
-    ...typography.caption,
-    color: colors.textMuted,
+  placeholderLine: {
+    height: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 4,
+    width: '85%',
   },
 });

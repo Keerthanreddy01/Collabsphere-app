@@ -1,112 +1,142 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Pressable, StyleSheet, View, Dimensions, Platform } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Home, MessageCircle, Bookmark, User, Search } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Home, Compass, MessageSquare, Layers, User } from 'lucide-react-native';
 import Animated, { 
   useAnimatedStyle, 
-  useSharedValue, 
   withSpring, 
   withTiming,
+  createAnimatedComponent,
 } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Typography } from './Typography';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const NAV_WIDTH = SCREEN_WIDTH - 48;
-const TAB_WIDTH = NAV_WIDTH / 5;
-const BUBBLE_SIZE = 58;
+const CONTAINER_WIDTH = SCREEN_WIDTH * 0.92;
 
 const ICONS = {
   Feed: Home,
-  Chat: MessageCircle,
-  CollabBoard: Bookmark,
+  Discovery: Compass,
+  Chat: MessageSquare,
+  CollabBoard: Layers,
   Profile: User,
-  Discovery: Search,
 };
 
 const LABELS = {
-  Feed: 'Today',
-  Chat: 'Games',
-  CollabBoard: 'Apps',
-  Profile: 'Arcade',
-  Discovery: 'Search',
+  Feed: 'Home',
+  Discovery: 'Explore',
+  Chat: 'Jams',
+  CollabBoard: 'Board',
+  Profile: 'Me',
 };
 
-// --- Tab Item Component ---
-const TabItem = ({ route, isFocused, onPress }: { route: any, isFocused: boolean, onPress: () => void }) => {
+const AnimatedPressable = createAnimatedComponent(Pressable);
+
+const TabItem = ({ 
+  route, 
+  isFocused, 
+  onPress,
+  showBadge = false,
+}: { 
+  route: any, 
+  isFocused: boolean,
+  onPress: () => void,
+  showBadge?: boolean,
+}) => {
   const Icon = ICONS[route.name as keyof typeof ICONS] ?? Home;
   const label = LABELS[route.name as keyof typeof LABELS] ?? route.name;
 
-  const animatedIconStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: withSpring(isFocused ? -28 : 0, { damping: 12, stiffness: 90 }) },
-      { scale: withSpring(isFocused ? 1.1 : 1) }
-    ],
-  }));
+  const animatedIconStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: withSpring(isFocused ? 1.15 : 1, { damping: 15, stiffness: 150 }) },
+        { translateY: withSpring(isFocused ? -2 : 0, { damping: 15 }) }
+      ],
+    };
+  });
 
-  const iconOpacityStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(isFocused ? 1 : 0.5),
-  }));
+  const animatedTextStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(isFocused ? 1 : 0.6, { duration: 200 }),
+      transform: [
+        { scale: withSpring(isFocused ? 1.05 : 1, { damping: 15 }) }
+      ],
+    };
+  });
+
+  const color = isFocused ? '#FFFFFF' : '#8E8E93';
+  const fill = isFocused ? '#FFFFFF' : 'transparent';
 
   return (
-    <Pressable onPress={onPress} style={styles.tabBtn}>
-      <Animated.View style={[styles.iconWrapper, animatedIconStyle, iconOpacityStyle]}>
-        <Icon size={24} color={isFocused ? "#FFF" : "#AAA"} strokeWidth={isFocused ? 2.5 : 2} />
+    <AnimatedPressable 
+      onPress={onPress} 
+      style={styles.tabItemContainer}
+    >
+      <View style={styles.iconContainer}>
+        <Animated.View style={animatedIconStyle}>
+          <Icon 
+            size={24} 
+            color={color} 
+            fill={fill}
+            strokeWidth={isFocused ? 2 : 2} 
+          />
+        </Animated.View>
+
+        {showBadge && (
+          <View style={styles.badgeContainer}>
+            {/* Glow Effect */}
+            <LinearGradient
+              colors={['rgba(138, 43, 226, 0.8)', 'rgba(255, 105, 180, 0.8)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.badgeGlow}
+            />
+            {/* Actual Badge */}
+            <LinearGradient
+              colors={['#8A2BE2', '#FF69B4']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.badge}
+            >
+              <Typography style={styles.badgeText}>NEW</Typography>
+            </LinearGradient>
+          </View>
+        )}
+      </View>
+
+      <Animated.View style={animatedTextStyle}>
+        <Typography 
+          style={[styles.tabLabel, { color: color }]}
+        >
+          {label}
+        </Typography>
       </Animated.View>
-      <Typography style={[
-        styles.tabLabel, 
-        { color: isFocused ? '#3b9fe8' : '#888' }
-      ]}>
-        {label}
-      </Typography>
-    </Pressable>
+    </AnimatedPressable>
   );
 };
 
 export const CustomTabBar = ({ state, navigation }: BottomTabBarProps) => {
   const insets = useSafeAreaInsets();
-  const activeIndex = state.index;
-  const translateX = useSharedValue(activeIndex * TAB_WIDTH);
-
-  useEffect(() => {
-    translateX.value = withSpring(activeIndex * TAB_WIDTH, { 
-      damping: 15, 
-      stiffness: 90,
-    });
-  }, [activeIndex]);
-
-  const activeBubbleStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
 
   return (
-    <View style={[styles.outerContainer, { bottom: Math.max(insets.bottom, 24) }]}>
-      <View style={styles.navBar}>
-        {/* THE FLOATING BUBBLE */}
-        <Animated.View style={[styles.bubbleContainer, activeBubbleStyle]}>
-          <View style={styles.bubbleShadow} />
-          <LinearGradient
-            colors={['#3b9fe8', '#1e40af']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.bubble}
-          >
-            <View style={styles.glare} />
-          </LinearGradient>
-        </Animated.View>
+    <View style={[styles.outerContainer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+      <View style={styles.tabBarBackground}>
+        {state.routes.map((route, index) => {
+          const isFocused = state.index === index;
+          // Add the "NEW" badge specifically to the CollabBoard tab for the aesthetic
+          const showBadge = route.name === 'CollabBoard';
 
-        {/* NAV CONTENT */}
-        <View style={styles.navContent}>
-          {state.routes.map((route, i) => (
+          return (
             <TabItem 
               key={route.key}
+              isFocused={isFocused}
               route={route}
-              isFocused={activeIndex === i}
+              showBadge={showBadge}
               onPress={() => navigation.navigate(route.name)}
             />
-          ))}
-        </View>
+          );
+        })}
       </View>
     </View>
   );
@@ -117,88 +147,83 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
+    bottom: 0,
     alignItems: 'center',
     zIndex: 1000,
   },
-  navBar: {
-    width: NAV_WIDTH,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(20,20,20,0.95)',
+  tabBarBackground: {
+    width: CONTAINER_WIDTH,
+    height: 76,
+    backgroundColor: '#09090B',
+    borderRadius: 38,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.5,
+        shadowRadius: 20,
       },
       android: {
-        elevation: 8,
+        elevation: 15,
       },
     }),
   },
-  navContent: {
+  tabItemContainer: {
     flex: 1,
-    flexDirection: 'row',
-  },
-  bubbleContainer: {
-    position: 'absolute',
-    width: TAB_WIDTH,
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  bubble: {
-    width: BUBBLE_SIZE,
-    height: BUBBLE_SIZE,
-    borderRadius: BUBBLE_SIZE / 2,
-    marginTop: -56,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    overflow: 'hidden',
-  },
-  glare: {
-    position: 'absolute',
-    top: '10%',
-    left: '15%',
-    width: '35%',
-    height: '25%',
-    backgroundColor: 'rgba(255,255,255,0.4)',
-    borderRadius: 20,
-    transform: [{ rotate: '-15deg' }],
-  },
-  bubbleShadow: {
-    position: 'absolute',
-    width: BUBBLE_SIZE * 0.8,
-    height: 20,
-    backgroundColor: '#3b9fe8',
-    borderRadius: 20,
-    top: -30,
-    opacity: 0.3,
-    shadowColor: '#3b9fe8',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 15,
-  },
-  tabBtn: {
-    width: TAB_WIDTH,
-    height: 64,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconWrapper: {
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 5,
+  iconContainer: {
+    marginBottom: 6,
+    position: 'relative',
   },
   tabLabel: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    marginTop: 4,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: -0.2,
+  },
+  badgeContainer: {
+    position: 'absolute',
+    top: -6,
+    right: -18,
+    zIndex: 10,
+  },
+  badgeGlow: {
+    position: 'absolute',
+    top: -2,
+    left: -2,
+    right: -2,
+    bottom: -2,
+    borderRadius: 10,
+    opacity: 0.6,
+    transform: [{ scale: 1.2 }],
+    ...Platform.select({
+      ios: {
+        shadowColor: '#FF69B4',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 1,
+        shadowRadius: 8,
+      },
+    }),
+  },
+  badge: {
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 8,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255,255,255,0.4)',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontWeight: '900',
+    letterSpacing: 0.5,
   },
 });

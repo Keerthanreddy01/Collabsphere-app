@@ -24,6 +24,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "owner": "keerthanreddy01",
+    "extra": {
+      "eas": {
+        "projectId": "1e7bd48a-0bb0-486c-a421-fa6a7e506e6a"
+      }
     }
   }
 }
