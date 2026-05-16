@@ -154,7 +154,7 @@ export const RecapScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#EBEBF0',
   },
   header: {
     flexDirection: 'row',
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   yearText: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#FFF',
+    color: '#000',
   },
   calendarBtn: {
     padding: 8,
@@ -186,7 +186,12 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     overflow: 'hidden',
     marginBottom: 20,
-    backgroundColor: '#111',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 5,
   },
   cardImage: {
     width: '100%',
@@ -197,7 +202,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.1)',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -208,18 +213,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.8)',
   },
   reportText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#FFF',
+    color: '#000',
   },
   moreBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.8)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -235,7 +240,7 @@ const styles = StyleSheet.create({
   monthTitle: {
     fontSize: 80,
     fontWeight: '900',
-    color: 'rgba(255,255,255,0.8)',
+    color: 'rgba(255,255,255,0.9)',
     letterSpacing: -4,
   },
   tabBarWrapper: {
@@ -246,13 +251,18 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 40,
     padding: 8,
     gap: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(0,0,0,0.05)',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
+    elevation: 5,
   },
   tabItem: {
     paddingHorizontal: 16,
@@ -262,12 +272,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   tabItemActive: {
-    backgroundColor: '#222',
+    backgroundColor: '#1C1C1E',
     borderRadius: 25,
   },
   tabLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#666',
+    color: '#8E8E93',
   },
 });

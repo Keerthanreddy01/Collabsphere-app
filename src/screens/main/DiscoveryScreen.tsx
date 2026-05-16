@@ -11,7 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp, SlideInRight } from 'react-native-reanimated';
-import { Plus, X, Search, Sparkles, Code, Palette, Zap } from 'lucide-react-native';
+import * as Lucide from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { colors, radius, spacing } from '../../theme/colors';
@@ -106,7 +106,7 @@ export const DiscoveryScreen = () => {
             </Typography>
           </View>
           <Pressable style={styles.miniConnect}>
-             <Plus size={16} color="#FFF" />
+             <Lucide.Plus size={16} color="#FFF" />
           </Pressable>
         </Animated.View>
       ))}
@@ -124,7 +124,7 @@ export const DiscoveryScreen = () => {
           style={styles.matchBanner}
         >
           <View style={styles.matchContent}>
-            <Sparkles size={20} color="#FFF" />
+            <Lucide.Sparkles size={20} color="#FFF" />
             <Typography style={styles.matchText}>AI SQUAD MATCHING</Typography>
             <View style={styles.matchBadge}>
                <Typography style={styles.matchPercentage}>98%</Typography>
@@ -157,7 +157,7 @@ export const DiscoveryScreen = () => {
           </View>
 
           <View style={styles.searchContainer}>
-             <Search size={18} color="#666" />
+             <Lucide.Search size={18} color="#666" />
              <TextInput 
                 placeholder="Search by skill or username"
                 placeholderTextColor="#666"

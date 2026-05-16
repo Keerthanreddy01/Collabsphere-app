@@ -9,7 +9,7 @@ import Animated, {
   withSpring,
   createAnimatedComponent
 } from 'react-native-reanimated';
-import { Plus, Users, Zap, ChevronRight } from 'lucide-react-native';
+import * as Lucide from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -99,7 +99,7 @@ const ProjectCard = ({ item, index }: { item: CollabProject; index: number }) =>
 
             <View style={styles.joinButton}>
               <Typography style={styles.joinText}>Review</Typography>
-              <ChevronRight size={16} color="#000000" />
+              <Lucide.ChevronRight size={16} color="#000000" />
             </View>
           </View>
         </View>
@@ -126,7 +126,7 @@ export const CollabBoardScreen = () => {
               end={{ x: 1, y: 1 }}
               style={styles.createGradient}
             >
-              <Plus size={20} color="#FFF" />
+              <Lucide.Plus size={20} color="#FFF" />
               <Typography style={styles.createText}>New</Typography>
             </LinearGradient>
           </Pressable>

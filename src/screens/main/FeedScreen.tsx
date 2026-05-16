@@ -10,15 +10,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { 
-  Search, 
-  LayoutGrid, 
-  Flame, 
-  Star, 
-  MapPin, 
-  Clock,
-  Plus
-} from 'lucide-react-native';
+import * as Lucide from 'lucide-react-native';
 import { Typography } from '../../components/Typography';
 
 const { width } = Dimensions.get('window');
@@ -109,20 +101,20 @@ const HeaderChips = () => (
   <View style={styles.headerChipsRow}>
     <View style={styles.leftChips}>
       <TouchableOpacity style={styles.chip}>
-        <Flame size={14} color="#FF9500" fill="#FF9500" />
+        <Lucide.Flame size={14} color="#FF9500" fill="#FF9500" />
         <Typography style={styles.chipText}>Post</Typography>
       </TouchableOpacity>
       <TouchableOpacity style={styles.chip}>
-        <Star size={14} color="#8E8E93" />
+        <Lucide.Star size={14} color="#8E8E93" />
         <Typography style={styles.chipText}>Creator</Typography>
       </TouchableOpacity>
     </View>
     <View style={styles.rightIcons}>
       <TouchableOpacity style={styles.iconCircle}>
-        <Search size={18} color="#000" />
+        <Lucide.Search size={18} color="#000" />
       </TouchableOpacity>
       <TouchableOpacity style={styles.iconCircle}>
-        <LayoutGrid size={18} color="#000" />
+        <Lucide.LayoutGrid size={18} color="#000" />
         <View style={styles.badge}><Typography style={styles.badgeText}>3</Typography></View>
       </TouchableOpacity>
     </View>
@@ -174,7 +166,7 @@ export const FeedScreen = () => {
                 </View>
                 {card.hasFollow && (
                   <TouchableOpacity style={styles.followButton}>
-                    <Plus size={14} color="#000" />
+                    <Lucide.Plus size={14} color="#000" />
                     <Typography style={styles.followText}>Follow</Typography>
                   </TouchableOpacity>
                 )}
@@ -197,11 +189,11 @@ export const FeedScreen = () => {
               {(card.location || card.time) && (
                 <View style={styles.cardFooter}>
                   <View style={styles.footerRow}>
-                    <MapPin size={12} color="rgba(0,0,0,0.5)" />
+                    <Lucide.MapPin size={12} color="rgba(0,0,0,0.5)" />
                     <Typography style={styles.footerText}>{card.location}</Typography>
                   </View>
                   <View style={styles.footerRow}>
-                    <Clock size={12} color="rgba(0,0,0,0.5)" />
+                    <Lucide.Clock size={12} color="rgba(0,0,0,0.5)" />
                     <Typography style={styles.footerText}>{card.time}</Typography>
                   </View>
                   <Typography style={styles.readMoreText}>Read more...</Typography>

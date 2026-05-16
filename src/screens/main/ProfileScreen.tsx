@@ -13,7 +13,7 @@ import {
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Plus, Search, LayoutGrid, Copy, Check, Info, EyeOff, Sparkles } from 'lucide-react-native';
+import * as Lucide from 'lucide-react-native';
 
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../theme/colors';
@@ -72,15 +72,15 @@ export const ProfileScreen = () => {
     <View style={styles.infoRow}>
       <View style={styles.labelContainer}>
         <Typography style={styles.infoLabel}>{label}</Typography>
-        {showInfo && <Info size={12} color="#AAA" style={{ marginLeft: 4 }} />}
+        {showInfo && <Lucide.Info size={12} color="#AAA" style={{ marginLeft: 4 }} />}
       </View>
       <View style={styles.valueContainer}>
         <Typography style={styles.infoValue} numberOfLines={1} ellipsizeMode="tail">
           {value}
         </Typography>
-        {isPassword && <EyeOff size={16} color="#000" style={{ marginLeft: 8 }} />}
-        {showCopy && <Copy size={16} color="#000" style={{ marginLeft: 8 }} />}
-        {showCheck && <Check size={16} color="#000" style={{ marginLeft: 8 }} />}
+        {isPassword && <Lucide.EyeOff size={16} color="#000" style={{ marginLeft: 8 }} />}
+        {showCopy && <Lucide.Copy size={16} color="#000" style={{ marginLeft: 8 }} />}
+        {showCheck && <Lucide.Check size={16} color="#000" style={{ marginLeft: 8 }} />}
       </View>
     </View>
   );
@@ -99,10 +99,10 @@ export const ProfileScreen = () => {
 
       <View style={styles.navHeader}>
         <View style={styles.leftIcons}>
-          <Plus size={28} color="#FFF" strokeWidth={2} />
-          <Search size={26} color="#FFF" strokeWidth={2} style={{ marginLeft: 24 }} />
+          <Lucide.Plus size={28} color="#FFF" strokeWidth={2} />
+          <Lucide.Search size={26} color="#FFF" strokeWidth={2} style={{ marginLeft: 24 }} />
         </View>
-        <LayoutGrid size={28} color="#FFF" strokeWidth={2} />
+        <Lucide.LayoutGrid size={28} color="#FFF" strokeWidth={2} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

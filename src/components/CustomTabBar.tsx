@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View, Dimensions, Platform } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Home, Compass, MessageSquare, Layers, User, Plus } from 'lucide-react-native';
+import * as Lucide from 'lucide-react-native';
 import Animated, { 
   useAnimatedStyle, 
   withSpring, 
@@ -16,11 +16,11 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CONTAINER_WIDTH = SCREEN_WIDTH * 0.92;
 
 const ICONS = {
-  Feed: Home,
-  Discovery: Compass,
-  Chat: MessageSquare,
-  CollabBoard: Layers,
-  Profile: User,
+  Feed: Lucide.Home,
+  Discovery: Lucide.Compass,
+  Chat: Lucide.MessageSquare,
+  CollabBoard: Lucide.Layers,
+  Profile: Lucide.User,
 };
 
 const LABELS = {
@@ -44,7 +44,7 @@ const TabItem = ({
   onPress: () => void,
   showBadge?: boolean,
 }) => {
-  const Icon = ICONS[route.name as keyof typeof ICONS] ?? Home;
+  const Icon = ICONS[route.name as keyof typeof ICONS] ?? Lucide.Home;
   const label = LABELS[route.name as keyof typeof LABELS] ?? route.name;
 
   const animatedIconStyle = useAnimatedStyle(() => {
@@ -75,7 +75,7 @@ const TabItem = ({
         style={[styles.tabItemContainer, styles.middleButtonContainer]}
       >
         <View style={styles.middleButton}>
-          <Plus size={24} color="#FFFFFF" />
+          <Lucide.Plus size={24} color="#FFFFFF" />
         </View>
       </AnimatedPressable>
     );
