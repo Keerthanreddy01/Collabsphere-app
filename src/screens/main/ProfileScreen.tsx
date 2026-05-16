@@ -156,25 +156,25 @@ export const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#EBEBF0',
   },
   gridBg: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.1,
+    opacity: 0.05,
   },
   gridLineH: {
     position: 'absolute',
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#000',
   },
   gridLineV: {
     position: 'absolute',
     top: 0,
     bottom: 0,
     width: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#000',
   },
   navHeader: {
     flexDirection: 'row',
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     paddingBottom: 140,
   },
   mainTitle: {
-    color: '#FFF',
+    color: '#000000',
     fontSize: 60,
     fontWeight: '900',
     lineHeight: 58,
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   recapBadge: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#000',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 25,
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   recapBadgeText: {
-    color: '#000',
+    color: '#FFF',
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 1,
@@ -230,9 +230,9 @@ const styles = StyleSheet.create({
     width: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 30 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.1,
     shadowRadius: 40,
-    elevation: 25,
+    elevation: 20,
   },
   cardTop: {
     flexDirection: 'row',
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 32,
     marginRight: 16,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F2F2F7',
   },
   cardHeaderTitle: {
     fontSize: 42,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   labelContainer: {
     flexDirection: 'row',
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 15,
-    color: '#999',
+    color: 'rgba(0,0,0,0.4)',
     fontWeight: '700',
   },
   valueContainer: {
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   darkButton: {
     flex: 1,
     height: 64,
-    backgroundColor: '#111',
+    backgroundColor: '#000',
     borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
@@ -318,12 +318,12 @@ const styles = StyleSheet.create({
   lightButton: {
     flex: 1,
     height: 64,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F2F2F7',
     borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#EEE',
+    borderColor: 'rgba(0,0,0,0.05)',
   },
   lightButtonText: {
     color: '#000',
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   footerText: {
     textAlign: 'center',
     fontSize: 10,
-    color: '#BBB',
+    color: 'rgba(0,0,0,0.3)',
     fontWeight: '900',
     letterSpacing: 1.2,
     textTransform: 'uppercase',

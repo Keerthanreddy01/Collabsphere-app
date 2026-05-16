@@ -1,21 +1,22 @@
 export const colors = {
   black: '#000000',
   white: '#FFFFFF',
-  accent: '#6C63FF',
-  tabBar: '#1A1A1A',
+  accent: '#000000', // Black as accent in light mode looks premium
+  tabBar: '#FFFFFF',
   terracotta: '#E2694A',
   sage: '#7BAF7B',
   ochre: '#D4A84B',
-  glass: 'rgba(26, 26, 26, 0.72)',
-  glassBorder: '#2A2A2A',
-  surface: '#0F0F0F',
-  panel: '#141414',
-  textPrimary: '#F5F5F5',
-  textSecondary: '#C7C7C7',
-  textMuted: '#8A8A8A',
-  textCard: '#000000',
-  danger: '#E04848',
-  success: '#2FBF71',
+  glass: 'rgba(255, 255, 255, 0.72)',
+  glassBorder: '#E5E5EA',
+  surface: '#FFFFFF',
+  panel: '#F2F2F7',
+  textPrimary: '#1C1C1E',
+  textSecondary: '#8E8E93',
+  textMuted: '#C7C7CC',
+  textCard: '#1C1C1E',
+  danger: '#FF3B30',
+  success: '#34C759',
+  background: '#EBEBF0', // Light greyish background
 };
 
 export const spacing = {

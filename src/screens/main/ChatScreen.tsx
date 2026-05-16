@@ -5,13 +5,13 @@ import {
   ScrollView,
   Image,
   Pressable,
-  StatusBar,
   Dimensions,
+  TextInput,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import Animated, { 
   useSharedValue, 
@@ -20,75 +20,164 @@ import Animated, {
   withRepeat, 
   withSpring,
   FadeInUp,
+  FadeInRight,
   createAnimatedComponent,
-  interpolate,
+  withSequence,
+  withDelay,
 } from 'react-native-reanimated';
-import { Pin } from 'lucide-react-native';
+import { Search, Edit3, CheckCheck, MoreHorizontal } from 'lucide-react-native';
 import { Typography } from '../../components/Typography';
 import { RootStackParamList } from '../../types';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-const JAMS = [
+const JAMS_DATA = [
   {
     id: '1',
-    tag: '/orb',
-    authorName: 'nilesh',
-    authorAvatar: 'https://i.pravatar.cc/100?u=nilesh',
-    mainImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&auto=format&fit=crop',
-    time: '12:56',
-    message: 'Introducing Jams!\nIn this release:',
-    unreadCount: 28,
-    isPinned: true,
+    name: 'Elena Rostova',
+    avatar: 'https://i.pravatar.cc/200?u=elena',
+    lastMessage: 'Are we still on for the design review tomorrow?',
+    time: '2m ago',
+    unreadCount: 3,
+    isOnline: true,
+    isTyping: false,
+    hasRead: false,
   },
   {
     id: '2',
-    tag: '/aiart',
-    authorName: 'artem',
-    authorAvatar: 'https://i.pravatar.cc/100?u=artem',
-    mainImage: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=200&auto=format&fit=crop',
-    time: '1 min ago',
-    message: 'reacted on your message',
-    unreadCount: 5,
-    mention: true,
+    name: 'Marcus Chen',
+    avatar: 'https://i.pravatar.cc/200?u=marcus',
+    lastMessage: 'Typing...',
+    time: 'Just now',
+    unreadCount: 0,
+    isOnline: true,
+    isTyping: true,
+    hasRead: false,
   },
   {
     id: '3',
-    tag: '/lens',
-    authorName: 'mia',
-    authorAvatar: 'https://i.pravatar.cc/100?u=mia',
-    mainImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=200&auto=format&fit=crop',
-    time: '37 min ago',
-    message: 'Check out the new photo collection!\nShare your favorites and discuss...',
-    unreadCount: 2,
+    name: 'Sophia Patel',
+    avatar: 'https://i.pravatar.cc/200?u=sophia',
+    lastMessage: 'Sent the Figma files. Take a look when you can! 🎨',
+    time: '1h ago',
+    unreadCount: 1,
+    isOnline: false,
+    isTyping: false,
+    hasRead: false,
   },
   {
     id: '4',
-    tag: '/creators',
-    authorName: 'michael',
-    authorAvatar: 'https://i.pravatar.cc/100?u=michael',
-    mainImage: 'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=200&auto=format&fit=crop',
-    time: '2 hours ago',
-    message: 'Check out the latest collection and share\nyour thoughts with other collectors...',
-    unreadCount: 1,
-    mention: true,
-  }
-];
-
-const DMS = [
+    name: 'Alex Rivera',
+    avatar: 'https://i.pravatar.cc/200?u=alex',
+    lastMessage: 'The new liquid navigation looks insane! 🚀',
+    time: '3h ago',
+    unreadCount: 0,
+    isOnline: true,
+    isTyping: false,
+    hasRead: true,
+  },
   {
-    id: '1',
-    name: 'jacob',
-    avatar: 'https://i.pravatar.cc/200?u=jacob',
-    time: '1 min ago',
-    unreadCount: 2,
+    id: '5',
+    name: 'David Kim',
+    avatar: 'https://i.pravatar.cc/200?u=david',
+    lastMessage: 'Let me check the repository and get back to you.',
+    time: 'Yesterday',
+    unreadCount: 0,
+    isOnline: false,
+    isTyping: false,
+    hasRead: true,
+  },
+  {
+    id: '6',
+    name: 'Sarah Jenkins',
+    avatar: 'https://i.pravatar.cc/200?u=sarah',
+    lastMessage: 'Sounds good to me.',
+    time: 'Yesterday',
+    unreadCount: 0,
+    isOnline: true,
+    isTyping: false,
+    hasRead: true,
   }
 ];
 
 const AnimatedPressable = createAnimatedComponent(Pressable);
 
-// Premium Glass Card Component
-const JamCard = ({ item, index, navigation, isDM = false }: any) => {
+// Bouncing Typing Dots Component
+const TypingIndicator = () => {
+  const dot1 = useSharedValue(0);
+  const dot2 = useSharedValue(0);
+  const dot3 = useSharedValue(0);
+
+  useEffect(() => {
+    const bounce = () => withRepeat(
+      withSequence(
+        withTiming(-4, { duration: 300 }),
+        withTiming(0, { duration: 300 }),
+        withDelay(400, withTiming(0, { duration: 0 }))
+      ),
+      -1,
+      false
+    );
+
+    dot1.value = bounce();
+    setTimeout(() => { dot2.value = bounce(); }, 150);
+    setTimeout(() => { dot3.value = bounce(); }, 300);
+  }, []);
+
+  return (
+    <View style={styles.typingContainer}>
+      <Animated.View style={[styles.typingDot, { transform: [{ translateY: dot1 }] }]} />
+      <Animated.View style={[styles.typingDot, { transform: [{ translateY: dot2 }] }]} />
+      <Animated.View style={[styles.typingDot, { transform: [{ translateY: dot3 }] }]} />
+    </View>
+  );
+};
+
+// Active Avatar Ring Component (Live Sync)
+const ActiveRingAvatar = ({ avatar, name, isOnline, size = 56 }: any) => {
+  const ringScale = useSharedValue(1);
+  const ringOpacity = useSharedValue(0.4);
+
+  useEffect(() => {
+    if (isOnline) {
+      ringScale.value = withRepeat(withTiming(1.15, { duration: 2500 }), -1, true);
+      ringOpacity.value = withRepeat(withTiming(0, { duration: 2500 }), -1, true);
+    }
+  }, [isOnline]);
+
+  const ringStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: ringScale.value }],
+    opacity: ringOpacity.value,
+  }));
+
+  return (
+    <View style={{ alignItems: 'center', width: size + 16 }}>
+      <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center', marginBottom: 8 }}>
+        {isOnline && (
+          <Animated.View style={[
+            styles.avatarRing, 
+            ringStyle, 
+            { width: size + 8, height: size + 8, borderRadius: (size + 8) / 2, top: -4, left: -4 }
+          ]} />
+        )}
+        <Image 
+          source={{ uri: avatar }} 
+          style={{ width: size, height: size, borderRadius: size / 2 }} 
+        />
+        {/* Overlay Border to avoid pixelation issues on images */}
+        <View style={[StyleSheet.absoluteFill, { borderRadius: size / 2, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }]} />
+        
+        {isOnline && <View style={styles.onlineBadge} />}
+      </View>
+      {name && (
+        <Typography style={styles.activeName} numberOfLines={1}>{name.split(' ')[0]}</Typography>
+      )}
+    </View>
+  );
+};
+
+// Premium Jam Card Component
+const JamCard = ({ item, index, navigation }: any) => {
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -96,86 +185,56 @@ const JamCard = ({ item, index, navigation, isDM = false }: any) => {
   }));
 
   return (
-    <Animated.View entering={FadeInUp.delay(index * 150).springify().damping(18).stiffness(120)}>
+    <Animated.View entering={FadeInUp.delay(index * 60).springify().damping(22).stiffness(150)}>
       <AnimatedPressable 
-        style={[styles.cardWrapper, animatedStyle]}
-        onPressIn={() => scale.value = withSpring(0.96, { damping: 15, stiffness: 200 })}
-        onPressOut={() => scale.value = withSpring(1, { damping: 15, stiffness: 200 })}
-        onPress={() => navigation.navigate('ChatDetail', { chatId: item.id, title: item.authorName || item.name })}
+        style={[styles.jamCardWrapper, animatedStyle]}
+        onPressIn={() => scale.value = withSpring(0.97, { damping: 15, stiffness: 300 })}
+        onPressOut={() => scale.value = withSpring(1, { damping: 15, stiffness: 300 })}
+        onPress={() => navigation.navigate('ChatDetail', { chatId: item.id, title: item.name })}
       >
-        <BlurView intensity={35} tint="dark" style={styles.blurCard}>
+        <View style={[styles.cardBg, item.unreadCount > 0 && styles.cardBgUnread]}>
           <View style={styles.cardInner}>
-            
-            {/* Left Image Section */}
-            <View style={styles.imageWrapper}>
-              <Image source={{ uri: isDM ? item.avatar : item.mainImage }} style={isDM ? styles.dmAvatar : styles.jamImage} />
-              {!isDM && item.isPinned && (
-                <View style={styles.pinBadge}>
-                  <Pin size={12} color="#000" fill="#000" />
-                </View>
-              )}
+            <View style={styles.avatarContainer}>
+              <Image source={{ uri: item.avatar }} style={styles.jamAvatar} />
+              <View style={[StyleSheet.absoluteFill, { borderRadius: 26, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }]} />
+              {item.isOnline && <View style={styles.onlineBadgeSmall} />}
             </View>
 
-            {/* Content Section */}
-            <View style={styles.cardContent}>
-              {!isDM && (
-                <View style={styles.cardHeaderRow}>
-                  <Typography style={styles.tagText}>{item.tag}</Typography>
-                  <Typography style={styles.timeText}>{item.time}</Typography>
-                </View>
-              )}
-              
-              {isDM && (
-                <View style={[styles.cardHeaderRow, { marginBottom: 8 }]}>
-                  <Typography style={styles.authorName}>{item.name}</Typography>
-                  <Typography style={styles.timeText}>{item.time}</Typography>
-                </View>
-              )}
+            <View style={styles.jamContent}>
+              <View style={styles.jamHeader}>
+                <Typography style={[styles.jamName, item.unreadCount > 0 && styles.jamNameUnread]}>{item.name}</Typography>
+                <Typography style={[styles.jamTime, item.unreadCount > 0 && styles.jamTimeUnread]}>{item.time}</Typography>
+              </View>
 
-              {!isDM && (
-                <View style={styles.authorRow}>
-                  <Image source={{ uri: item.authorAvatar }} style={styles.authorAvatar} />
-                  <Typography style={styles.authorName}>{item.authorName}</Typography>
+              <View style={styles.jamMessageRow}>
+                {item.isTyping ? (
+                  <View style={styles.typingWrapper}>
+                    <Typography style={styles.typingText}>Typing</Typography>
+                    <TypingIndicator />
+                  </View>
+                ) : (
+                  <Typography 
+                    style={[styles.jamMessage, item.unreadCount > 0 && styles.jamMessageUnread]} 
+                    numberOfLines={1}
+                  >
+                    {item.lastMessage}
+                  </Typography>
+                )}
+                
+                {/* Badges / Read Receipts */}
+                <View style={styles.jamStatus}>
+                  {item.unreadCount > 0 ? (
+                    <View style={styles.unreadBadge}>
+                      <Typography style={styles.unreadBadgeText}>{item.unreadCount}</Typography>
+                    </View>
+                  ) : item.hasRead ? (
+                    <CheckCheck size={16} color="rgba(255,255,255,0.25)" />
+                  ) : null}
                 </View>
-              )}
-
-              {!isDM ? (
-                <Typography style={styles.messageText} numberOfLines={2}>
-                  {item.message}
-                </Typography>
-              ) : (
-                <View style={styles.placeholderLines}>
-                  <View style={styles.placeholderLine} />
-                  <View style={[styles.placeholderLine, { width: '60%' }]} />
-                </View>
-              )}
-            </View>
-
-            {/* Badges */}
-            <View style={styles.badgesWrapper}>
-              {item.unreadCount > 0 && (
-                <LinearGradient
-                  colors={['#FF4B2B', '#FF416C']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.gradientBadge}
-                >
-                  <Typography style={styles.badgeText}>{item.unreadCount}</Typography>
-                </LinearGradient>
-              )}
-              {item.mention && (
-                <LinearGradient
-                  colors={['#8A2BE2', '#FF69B4']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.gradientBadge}
-                >
-                  <Typography style={styles.badgeText}>@</Typography>
-                </LinearGradient>
-              )}
+              </View>
             </View>
           </View>
-        </BlurView>
+        </View>
       </AnimatedPressable>
     </Animated.View>
   );
@@ -185,71 +244,75 @@ export const ChatScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   
-  // Background animation
-  const time = useSharedValue(0);
-  useEffect(() => {
-    time.value = withRepeat(withTiming(2 * Math.PI, { duration: 15000 }), -1, false);
-  }, []);
-
-  const orb1Style = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: Math.sin(time.value) * 50 },
-      { translateY: Math.cos(time.value) * 30 },
-      { scale: interpolate(Math.sin(time.value), [-1, 1], [0.9, 1.1]) }
-    ]
-  }));
-
-  const orb2Style = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: Math.cos(time.value) * -40 },
-      { translateY: Math.sin(time.value) * 60 },
-      { scale: interpolate(Math.cos(time.value), [-1, 1], [0.8, 1.2]) }
-    ]
-  }));
+  const onlineUsers = JAMS_DATA.filter(c => c.isOnline);
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar style="light" backgroundColor="#000000" translucent={true} />
       
-      {/* Dynamic Animated Background Mesh */}
+      {/* Refined Dark Background */}
       <View style={StyleSheet.absoluteFill}>
-        <Animated.View style={[styles.orb1, orb1Style]}>
-          <LinearGradient colors={['#FF3B30', '#FF9500']} style={StyleSheet.absoluteFill} />
-        </Animated.View>
-        <Animated.View style={[styles.orb2, orb2Style]}>
-          <LinearGradient colors={['#E50000', '#8A2BE2']} style={StyleSheet.absoluteFill} />
-        </Animated.View>
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: '#000000' }]} />
+      </View>
+
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 16) }]}>
+        <View style={styles.headerTop}>
+          <Typography style={styles.headerTitle}>Jams</Typography>
+          <View style={styles.headerActions}>
+            <Pressable style={styles.iconButton}>
+              <MoreHorizontal size={22} color="#FFFFFF" />
+            </Pressable>
+            <Pressable style={styles.iconButton}>
+              <Edit3 size={18} color="#FFFFFF" />
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={styles.searchContainer}>
+          <BlurView intensity={20} tint="dark" style={styles.searchBlur}>
+            <Search size={18} color="rgba(255,255,255,0.4)" style={styles.searchIcon} />
+            <TextInput 
+              placeholder="Search jams..."
+              placeholderTextColor="rgba(255,255,255,0.35)"
+              style={styles.searchInput}
+            />
+          </BlurView>
+        </View>
       </View>
 
       <ScrollView 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: Math.max(insets.top, 50) }]}
+        contentContainerStyle={[styles.scrollContent]}
       >
-        <Animated.View entering={FadeInUp.delay(50).springify()}>
-          <Typography style={styles.headerTitle}>My Jams</Typography>
-        </Animated.View>
-
-        <View style={styles.listContainer}>
-          {JAMS.map((jam, index) => (
-            <JamCard key={jam.id} item={jam} index={index} navigation={navigation} />
-          ))}
-        </View>
-
-        <Animated.View entering={FadeInUp.delay(600).springify()} style={styles.dmDividerSection}>
-          <LinearGradient
-            colors={['#FF8E53', '#FF6B6B']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.soonBadge}
+        {/* Live Sync Section */}
+        <Animated.View entering={FadeInRight.delay(100).springify()}>
+          <Typography style={styles.sectionTitle}>Live Sync</Typography>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={styles.activeScrollContent}
           >
-            <Typography style={styles.soonText}>SOON</Typography>
-          </LinearGradient>
-          <Typography style={styles.dmTitle}>DM</Typography>
+            <View style={{ alignItems: 'center', width: 64, marginRight: 8 }}>
+              <Pressable style={styles.myStoryButton}>
+                <View style={styles.myStoryInner}>
+                  <Typography style={styles.plusIcon}>+</Typography>
+                </View>
+              </Pressable>
+              <Typography style={styles.activeName}>Broadcast</Typography>
+            </View>
+            
+            {onlineUsers.map((user, idx) => (
+              <Animated.View key={user.id} entering={FadeInRight.delay(200 + idx * 60).springify()} style={{ marginRight: 8 }}>
+                <ActiveRingAvatar avatar={user.avatar} name={user.name} isOnline={user.isOnline} />
+              </Animated.View>
+            ))}
+          </ScrollView>
         </Animated.View>
 
+        {/* Premium Jams List */}
         <View style={styles.listContainer}>
-          {DMS.map((dm, index) => (
-            <JamCard key={dm.id} item={dm} index={index + JAMS.length} navigation={navigation} isDM={true} />
+          {JAMS_DATA.map((jam, index) => (
+            <JamCard key={jam.id} item={jam} index={index} navigation={navigation} />
           ))}
         </View>
 
@@ -262,197 +325,262 @@ export const ChatScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#050505', 
+    backgroundColor: '#EBEBF0', 
   },
-  orb1: {
-    position: 'absolute',
-    top: -50,
-    left: -100,
-    width: width * 1.5,
-    height: 400,
-    borderRadius: width,
-    opacity: 0.45,
-    filter: 'blur(60px)', // Web/Newer RN support, otherwise opacity drives it
+  header: {
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    zIndex: 10,
   },
-  orb2: {
-    position: 'absolute',
-    top: 200,
-    right: -100,
-    width: width,
-    height: 400,
-    borderRadius: width / 2,
-    opacity: 0.35,
-    filter: 'blur(80px)',
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#000000',
+    letterSpacing: -1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  iconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  searchContainer: {
+    marginBottom: 0,
+  },
+  searchBlur: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 44,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    color: '#000000',
+    fontSize: 16,
+    fontWeight: '400',
   },
   scrollContent: {
+    paddingTop: 8,
     paddingBottom: 20,
     zIndex: 1,
   },
-  headerTitle: {
-    fontSize: 40,
-    fontWeight: '900',
-    color: '#FFFFFF',
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#8E8E93',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  activeScrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+  },
+  myStoryButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: '#C7C7CC',
+    borderStyle: 'dashed',
+    marginBottom: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  myStoryInner: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  plusIcon: {
+    fontSize: 22,
+    color: '#8E8E93',
+    fontWeight: '300',
+  },
+  avatarRing: {
+    position: 'absolute',
+    borderWidth: 1.5,
+    borderColor: '#0A84FF',
+  },
+  onlineBadge: {
+    position: 'absolute',
+    bottom: -1,
+    right: -1,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#34C759',
+    borderWidth: 3,
+    borderColor: '#EBEBF0',
+  },
+  activeName: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#8E8E93',
     textAlign: 'center',
-    marginBottom: 40,
-    letterSpacing: -1,
-    textShadowColor: 'rgba(255, 255, 255, 0.3)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 20,
+    letterSpacing: -0.1,
   },
   listContainer: {
     paddingHorizontal: 16,
-    gap: 16,
+    gap: 12,
   },
-  cardWrapper: {
-    borderRadius: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 15 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
+  jamCardWrapper: {
+    borderRadius: 20,
   },
-  blurCard: {
-    borderRadius: 32,
-    overflow: 'hidden',
+  cardBg: {
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)', // Darken the blur slightly
+    borderColor: 'rgba(0,0,0,0.05)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  cardBgUnread: {
+    backgroundColor: '#F2F2F7',
+    borderColor: 'rgba(0,0,0,0.1)',
   },
   cardInner: {
     flexDirection: 'row',
     padding: 16,
+    alignItems: 'center',
   },
-  imageWrapper: {
+  avatarContainer: {
     position: 'relative',
     marginRight: 16,
   },
-  jamImage: {
-    width: 72,
-    height: 72,
-    borderRadius: 24,
-    backgroundColor: '#222',
+  jamAvatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
   },
-  dmAvatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#222',
-  },
-  pinBadge: {
+  onlineBadgeSmall: {
     position: 'absolute',
-    bottom: -6,
-    right: -6,
-    backgroundColor: '#FFFFFF',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    bottom: -1,
+    right: -1,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#34C759',
     borderWidth: 3,
-    borderColor: '#1A1A1A', // Match dark bg slightly
+    borderColor: '#FFFFFF',
   },
-  cardContent: {
+  jamContent: {
     flex: 1,
     justifyContent: 'center',
   },
-  cardHeaderRow: {
+  jamHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  tagText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.6)',
-    letterSpacing: 0.5,
-  },
-  timeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: 'rgba(255,255,255,0.4)',
-  },
-  authorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  authorAvatar: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-  },
-  authorName: {
+  jamName: {
     fontSize: 17,
-    fontWeight: '900',
-    color: '#FFFFFF',
+    fontWeight: '600',
+    color: '#000000',
     letterSpacing: -0.3,
   },
-  messageText: {
-    fontSize: 14,
+  jamNameUnread: {
+    fontWeight: '700',
+  },
+  jamTime: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: '#8E8E93',
+  },
+  jamTimeUnread: {
+    color: '#0A84FF',
+    fontWeight: '600',
+  },
+  jamMessageRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  jamMessage: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '400',
+    color: '#8E8E93',
+    marginRight: 12,
+  },
+  jamMessageUnread: {
+    color: '#1C1C1E',
     fontWeight: '500',
-    color: 'rgba(255,255,255,0.7)',
-    lineHeight: 20,
   },
-  badgesWrapper: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 12,
-    gap: 8,
+  jamStatus: {
+    minWidth: 22,
+    alignItems: 'flex-end',
   },
-  gradientBadge: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+  unreadBadge: {
+    paddingHorizontal: 8,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#0A84FF',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.4)',
-    shadowColor: '#FF416C',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
   },
-  badgeText: {
+  unreadBadgeText: {
     color: '#FFFFFF',
     fontSize: 11,
-    fontWeight: '900',
+    fontWeight: '700',
   },
-  dmDividerSection: {
+  typingWrapper: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 24,
   },
-  soonBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 4,
+  typingText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#8E8E93',
+    marginRight: 4,
+    fontStyle: 'italic',
   },
-  soonText: {
-    color: '#FFF',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1,
+  typingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingTop: 4,
   },
-  dmTitle: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    letterSpacing: -0.5,
-    opacity: 0.9,
-  },
-  placeholderLines: {
-    gap: 10,
-    marginTop: 8,
-  },
-  placeholderLine: {
-    height: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 4,
-    width: '85%',
+  typingDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#8E8E93',
   },
 });

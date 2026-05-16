@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View, Dimensions, Platform } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Home, Compass, MessageSquare, Layers, User } from 'lucide-react-native';
+import { Home, Compass, MessageSquare, Layers, User, Plus } from 'lucide-react-native';
 import Animated, { 
   useAnimatedStyle, 
   withSpring, 
@@ -65,8 +65,21 @@ const TabItem = ({
     };
   });
 
-  const color = isFocused ? '#FFFFFF' : '#8E8E93';
-  const fill = isFocused ? '#FFFFFF' : 'transparent';
+  const color = isFocused ? '#000000' : '#8E8E93';
+  const fill = isFocused ? '#000000' : 'transparent';
+
+  if (route.name === 'CollabBoard') {
+    return (
+      <AnimatedPressable 
+        onPress={onPress} 
+        style={[styles.tabItemContainer, styles.middleButtonContainer]}
+      >
+        <View style={styles.middleButton}>
+          <Plus size={24} color="#FFFFFF" />
+        </View>
+      </AnimatedPressable>
+    );
+  }
 
   return (
     <AnimatedPressable 
@@ -85,14 +98,6 @@ const TabItem = ({
 
         {showBadge && (
           <View style={styles.badgeContainer}>
-            {/* Glow Effect */}
-            <LinearGradient
-              colors={['rgba(138, 43, 226, 0.8)', 'rgba(255, 105, 180, 0.8)']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.badgeGlow}
-            />
-            {/* Actual Badge */}
             <LinearGradient
               colors={['#8A2BE2', '#FF69B4']}
               start={{ x: 0, y: 0 }}
@@ -153,24 +158,24 @@ const styles = StyleSheet.create({
   },
   tabBarBackground: {
     width: CONTAINER_WIDTH,
-    height: 76,
-    backgroundColor: '#09090B',
-    borderRadius: 38,
+    height: 70,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 35,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(0, 0, 0, 0.05)',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.5,
-        shadowRadius: 20,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 15,
+        elevation: 10,
       },
     }),
   },
@@ -189,29 +194,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: -0.2,
   },
+  middleButtonContainer: {
+    marginTop: -30,
+    zIndex: 10,
+  },
+  middleButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#1C1C1E',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
+  },
   badgeContainer: {
     position: 'absolute',
     top: -6,
     right: -18,
     zIndex: 10,
-  },
-  badgeGlow: {
-    position: 'absolute',
-    top: -2,
-    left: -2,
-    right: -2,
-    bottom: -2,
-    borderRadius: 10,
-    opacity: 0.6,
-    transform: [{ scale: 1.2 }],
-    ...Platform.select({
-      ios: {
-        shadowColor: '#FF69B4',
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 1,
-        shadowRadius: 8,
-      },
-    }),
   },
   badge: {
     paddingHorizontal: 5,

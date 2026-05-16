@@ -97,12 +97,12 @@ export const AppNavigator = () => {
   const theme = useMemo<Theme>(
     () => ({
       ...DefaultTheme,
-      dark: true,
+      dark: false,
       colors: {
         ...DefaultTheme.colors,
         primary: colors.terracotta,
-        background: colors.black,
-        card: colors.black,
+        background: colors.background,
+        card: colors.surface,
         text: colors.textPrimary,
         border: colors.glassBorder,
         notification: colors.ochre,
@@ -135,11 +135,11 @@ export const AppNavigator = () => {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: colors.black,
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: colors.black,
+    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
   },
